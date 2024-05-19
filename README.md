@@ -1,1 +1,2 @@
 # plexutil
+source init.sh

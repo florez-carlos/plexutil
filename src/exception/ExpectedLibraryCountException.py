@@ -1,0 +1,2 @@
+class ExpectedLibraryCountException(Exception):
+    pass
