@@ -5,4 +5,5 @@ class FileType(Enum):
     MP4 = "mp4"
     FLAC = "flac"
     MKV = "mkv"
+    JSON = "json"
     UNKNOWN = ""
