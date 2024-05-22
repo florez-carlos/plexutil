@@ -4,6 +4,7 @@ from plexapi.utils import json
 from throws import throws
 from alive_progress import alive_bar
 
+from dto.ResourceLocationDTO import ResourceLocationDTO
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Agent import Agent
@@ -16,12 +17,22 @@ from src.util.QueryBuilder import QueryBuilder
 class PlexOps():
 
 
-    def __init__(self, plex_server: PlexServer, library_type: LibraryType, library_name: LibraryName, library_location: str = "", music_playlist_file_location: str = ""):
+    def __init__(self, plex_server: PlexServer,
+                 library_type: LibraryType,
+                 library_name: LibraryName,
+                 library_location: ResourceLocationDTO,
+                 music_playlist_file_location: ResourceLocationDTO,
+                 movie_library_prefs_file_location: ResourceLocationDTO,
+                 tv_library_prefs_file_location: ResourceLocationDTO,
+                 music_library_prefs_file_location: ResourceLocationDTO):
         self.plex_server = plex_server
         self.library_type = library_type
         self.library_name = library_name
         self.library_location = library_location
         self.music_playlist_file_location = music_playlist_file_location
+        self.movie_library_prefs_file_location = movie_library_prefs_file_location
+        self.tv_library_prefs_file_location = tv_library_prefs_file_location
+        self.music_library_prefs_file_location = music_library_prefs_file_location
         self.test = [516,519,544,559,580,589,591,591,591,611,620,621]
 
     # @throws(ExpectedLibraryCountException)
@@ -60,9 +71,14 @@ class PlexOps():
 
         return
 
-    def create_library(self) -> None:
+    def create_music_library(self) -> None:
 
         part = ""
+        prefs = {}
+
+        with open(self.music_library_prefs_file_location.build_uri(),encoding='utf-8') as file:
+            file_dict = json.load(file)
+            prefs = file_dict.get("prefs")
 
         if (self.library_type is LibraryType.MUSIC):
 
@@ -75,15 +91,8 @@ class PlexOps():
                 language = Language.ENGLISH_US.value,
                 importFromiTunes = "",
                 enableAutoPhotoTags="",
-                location="F:\\media\\music",
-                prefs={"respectTags":True,
-                       "augmentWithSharedContent":False,
-                       "artistBios":False,
-                       "albumReviews":False,
-                       "popularTracks":False,
-                       "genres":2,
-                       "albumPosters":3}
-            )
+                location=self.library_location.build_uri(),
+                prefs=prefs)
 
             part = query_builder.build()
 
@@ -92,25 +101,63 @@ class PlexOps():
             self.plex_server.query(part,method=self.plex_server._session.post)
 
 
-        with open(self.music_playlist_file_location,encoding='utf-8') as file:
-            fileDict = json.load(file)
-            track_count = fileDict.get("trackCount")
+        with open(self.music_playlist_file_location.build_uri(),encoding='utf-8') as file:
+            file_dict = json.load(file)
+            track_count = file_dict.get("trackCount")
 
         try:
             self.poll(100,track_count,10)
         except:
             pass
 
+    def create_movie_library(self) -> None:
 
-    #
-    # elif type == "movie":
-    #     plex.library.add(name=libraryName, type=type,agent=agent,scanner=scanner, location=location,language=language)
-    #     plex.library.sections()
-    #     plex.library.section(libraryName).editAdvanced(hidden=0, enableCinemaTrailers=1, country="US", originalTitles=0, localizedArtwork=1, useLocalAssets=1, respectTags=0, useExternalExtras=1, skipNonTrailerExtras=0, useRedbandTrailers=0, includeExtrasWithLocalizedSubtitles=0, includeAdultContent=0, autoCollectionThreshold=0, enableBIFGeneration=1, augmentWithProviderContent=1, collectionMode=2)
+        self.plex_server.library.add(
+            name=self.library_name.value,
+            type=self.library_type.value,
+            agent=Agent.MOVIE.value,
+            scanner=Scanner.MOVIE.value,
+            location=self.library_location.build_uri(),
+            language=Language.ENGLISH_US.value)
+
+        #TODO: This line triggers something that refreshes that library, how can I remove this?
+        self.plex_server.library.sections()
+
+        prefs = {}
+
+        with open(self.movie_library_prefs_file_location.build_uri(),encoding='utf-8') as file:
+            file_dict = json.load(file)
+            prefs = file_dict.get("prefs")
+
+
+        self.plex_server.library.section(self.library_name).editAdvanced(**prefs)
+
+
+    def create_tv_library(self):
+
+        self.plex_server.library.add(
+            name=self.library_name.value,
+            type=self.library_type.value,
+            agent=Agent.TV.value,
+            scanner=Scanner.TV.value,
+            location=self.library_location.build_uri(),
+            language=Language.ENGLISH_US.value)
+
+        #TODO: This line triggers something that refreshes that library, how can I remove this?
+        self.plex_server.library.sections()
+
+        prefs = {}
+
+        with open(self.tv_library_prefs_file_location.build_uri(),encoding='utf-8') as file:
+            file_dict = json.load(file)
+            prefs = file_dict.get("prefs")
+
+        self.plex_server.library.section(self.library_name).editAdvanced(**prefs)
+
+        return
+
     # elif type == "show":
-    #     plex.library.add(name=libraryName, type=type,agent=agent,scanner=scanner, location=location,language=language)
-    #     plex.library.sections()
-    #     plex.library.section(libraryName).editAdvanced(hidden=0, episodeSort="0", country="US", showOrdering="aired", useSeasonTitles=0, originalTitles=1, localizedArtwork=1, useLocalAssets=1, respectTags=0, useExternalExtras=1, skipNonTrailerExtras=0, useRedbandTrailers=0, includeExtrasWithLocalizedSubtitles=0, includeAdultContent=0, enableBIFGeneration=1, augmentWithProviderContent=1, flattenSeasons=0)
+
     #     #This sets languageOverride to es-ES for spanish shows
     #     #These are tvdb ids
     #     shows_es = [327417,396583,388477,292262,282670,274522]
