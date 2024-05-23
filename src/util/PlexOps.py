@@ -1,10 +1,13 @@
 import time
+from typing import Dict, List
 from plexapi.server import PlexServer
 from plexapi.utils import json
+from plexapi.audio import Audio
+from plexapi.video import Video
 from throws import throws
 from alive_progress import alive_bar
 
-from dto.ResourceLocationDTO import ResourceLocationDTO
+from src.dto.ResourceLocationDTO import ResourceLocationDTO
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Agent import Agent
@@ -24,7 +27,8 @@ class PlexOps():
                  music_playlist_file_location: ResourceLocationDTO,
                  movie_library_prefs_file_location: ResourceLocationDTO,
                  tv_library_prefs_file_location: ResourceLocationDTO,
-                 music_library_prefs_file_location: ResourceLocationDTO):
+                 music_library_prefs_file_location: ResourceLocationDTO,
+                 tv_library_language_manifest_file_location: ResourceLocationDTO):
         self.plex_server = plex_server
         self.library_type = library_type
         self.library_name = library_name
@@ -33,14 +37,14 @@ class PlexOps():
         self.movie_library_prefs_file_location = movie_library_prefs_file_location
         self.tv_library_prefs_file_location = tv_library_prefs_file_location
         self.music_library_prefs_file_location = music_library_prefs_file_location
-        self.test = [516,519,544,559,580,589,591,591,591,611,620,621]
+        self.tv_library_language_manifest_file_location = tv_library_language_manifest_file_location
 
     # @throws(ExpectedLibraryCountException)
     #
-    def poll(self, requested_attempts: int = 0, expected_count: int = 0,interval_seconds: int = 0) -> None:
+    def poll(self, requested_attempts: int = 0, expected_count: int = 0,interval_seconds: int = 0, tvdb_ids: List[int] = []) -> None:
 
 
-        current_count = __query_library__(self,0)
+        current_count = len(self.__query_library__())
 
         offset = abs(expected_count - current_count)
         print("Requested attempts: "+str(requested_attempts))
@@ -59,7 +63,11 @@ class PlexOps():
                 if attempts >= requested_attempts:
                     raise ExpectedLibraryCountException("TIMEOUT: Did not reach expected count")
 
-                updated_current_count = __query_library__(self,attempts)
+                if tvdb_ids:
+                    updated_current_count = len(self.__query_library__(tvdb_ids))
+                else:
+                    updated_current_count = len(self.__query_library__())
+
                 offset = abs(updated_current_count - current_count)
 
                 if offset == 0:
@@ -154,74 +162,70 @@ class PlexOps():
 
         self.plex_server.library.section(self.library_name).editAdvanced(**prefs)
 
+        tvdb_ids = {}
+
+        with open(self.tv_library_language_manifest_file_location.build_uri(),encoding='utf-8') as file:
+            file_dict = json.load(file)
+            languages = file_dict.get("languages")
+            for language in languages:
+                language_name = language["name"]
+                regions = language["regions"]
+                for region in regions:
+                    region_name = region["name"]
+                    ids = region["tvdbIds"]
+                    tvdb_ids[language_name+"-"+region_name] = ids
+
+        for name,ids in tvdb_ids.items():
+
+            try:
+                self.poll(100,len(ids),10,ids)
+                shows = self.__query_library__(ids)
+                for show in shows:
+                    show.editAdvanced(languageOverride=name)
+                self.plex_server.library.section(self.library_name).refresh()
+            except:
+                pass
+
+
         return
 
-    # elif type == "show":
 
-    #     #This sets languageOverride to es-ES for spanish shows
-    #     #These are tvdb ids
-    #     shows_es = [327417,396583,388477,292262,282670,274522]
-    #     found_shows_es = []
-    #
-    #     attempts = 0
-    #     print("Waiting for es-ES shows to become available")
-    #     while(True):
-    #         attempts = attempts+1
-    #         if attempts > 100:
-    #             raise ValueError("Plex could not populate es-ES shows")
-    #         shows_found = 0
-    #         for show in plex.library.section(libraryName).all():
-    #             guids = show.guids
-    #             for guid in guids:
-    #                 if "tvdb://" in guid.id:
-    #                     tvdb = guid.id.replace("tvdb://","")
-    #                     if int(tvdb) in shows_es:
-    #                         shows_found = shows_found + 1
-    #
-    #         print("===================")
-    #         print("Attempt {}/{}".format(str(attempts),"100"))
-    #         print("Expected es-ES show count: " + str(len(shows_es)))
-    #         print("Current es-ES show count: " + str(shows_found))
-    #         if shows_found == len(shows_es):
-    #             print("es-ES shows ready, proceeding to update metadata")
-    #             break
-    #         time.sleep(20)
-    #
-    #     for show in plex.library.section(libraryName).all():
-    #         guids = show.guids
-    #         for guid in guids:
-    #             if "tvdb://" in guid.id:
-    #                 tvdb = guid.id.replace("tvdb://","")
-    #                 if int(tvdb) in shows_es:
-    #                     found_shows_es.append(show)
-    #
-    #     for found_show_es in found_shows_es:
-    #         found_show_es.editAdvanced(languageOverride="es-ES")
-    #     plex.library.section(libraryName).refresh()
-    #
-    # else:
-    #     raise ValueError("Library type: "+"\'"+type+"\' not supported")
-    #
-    #
-    #     pass
-    # else:
-    #     raise ValueError("Unsupported Library")
+    def delete_library(self) -> None:
 
-def delete_library(self) -> None:
+        if (self.library_type is LibraryType.MUSIC):
+            result = self.plex_server.library.section(self.library_name)
+            if (result):
+                result.delete()
+        else:
+            raise ValueError("Unsupported Library")
 
-    if (self.library_type is LibraryType.MUSIC):
-        result = self.plex_server.library.section(self.library_name)
-        if (result):
-            result.delete()
-    else:
-        raise ValueError("Unsupported Library")
+    def __query_library__(self,tvdb_ids: List[int] = []) -> List[Audio] | List[Video]:
 
-def __query_library__(self,count):
+        if (self.library_type is LibraryType.MUSIC):
+            if tvdb_ids:
+                raise ValueError("Library type: "+ 
+                    LibraryType.MUSIC.value +
+                    " not compatible with tvdb ids but tvdb ids supplied: " +
+                    str(tvdb_ids))
+            return self.plex_server.library.section(self.library_name).searchTracks()
+        elif (self.library_type is LibraryType.TV):
 
-    if (self.library_type is LibraryType.MUSIC):
-        return self.test[count]
-        # return len(self.plex_server.library.section(self.library_name).searchTracks())
-    else:
-        raise ExpectedLibraryCountException("Unsupported Library Type: " + self.library_type.value)
+            shows = self.plex_server.library.section(self.library_name).all()
+            shows_filtered = []
+
+            if tvdb_ids:
+
+                for show in shows:
+                    guids = show.guids
+                    for guid in guids:
+                        if "tvdb://" in guid.id:
+                            tvdb = guid.id.replace("tvdb://","")
+                            if int(tvdb) in tvdb_ids:
+                                shows_filtered.append(show)
+
+            return shows_filtered
+
+        else:
+            raise ExpectedLibraryCountException("Unsupported Library Type: " + self.library_type.value)
 
 
