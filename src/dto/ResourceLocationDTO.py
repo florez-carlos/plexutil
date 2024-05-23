@@ -1,15 +1,15 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 import os
 
-from enum.FileType import FileType
+from src.enum.FileType import FileType
 
 @dataclass(frozen=True)
 class ResourceLocationDTO():
 
     drive: str = ""
     sep: str = os.path.sep
-    uri_path_components: List[str] = []
+    uri_path_components: List[str] = field(default_factory=lambda: [])
     file_name: str = ""
     file_extension: FileType = FileType.UNKNOWN
 
