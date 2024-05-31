@@ -11,94 +11,183 @@ from datetime import datetime, timezone
 from plexapi.server import PlexServer
 from plexapi.playlist import Playlist
 import argparse
-from typing import NoReturn
 import json
+
 
 if os.name == 'nt':  # sys.platform == 'win32':
     import win32file
 import time
 from alive_progress.styles import showtime
 from src.util.PlexOps import PlexOps
+from src.util.PathOps import PathOps
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
+
+from src.exception.PlexUtilConfigException import PlexUtilConfigException
 
 
 def main():
 
-    host = ""
-    port = ""
-    token = ""
 
-    baseurl = 'http://% s:% s' % (host,port)
-    # plex_server = PlexServer(baseurl, token)
     parser = argparse.ArgumentParser(description="Plex Util")
     subparsers = parser.add_subparsers(help='Config Help')
     
 
 
     
-    # Sub Menu 1
-    parser_config = subparsers.add_parser('config', help='Config Menu')
-    # parser_sub1.add_argument('option', choices=['drive_letter', 'media_folder_abs_path','music_playlist_abs_path'], help='Options for Config Menu')
+    parser_config = subparsers.add_parser('config', help='Plex Util Config Menu')
     
-    parser_config.add_argument('-music','--music_folder_path', metavar='Music Folder Path', type=pathlib.Path, nargs=1,
-                        help="Path to music folder")
-    parser_config.add_argument('-movie','--movie_folder_path', metavar='Movie Folder Path', type=pathlib.Path, nargs=1,
-                        help="Path to movie folder")
-    parser_config.add_argument('-tv','--tv_folder_path', metavar='TV Folder Path', type=pathlib.Path, nargs=1,
-                        help="Path to tv folder")
-    parser_config.add_argument('-playlist','--music_playlist_file_path', metavar='Music Playlist File Path', type=pathlib.Path, nargs=1,
-                        help="Path to music playlist file")
-
+    parser_config.add_argument('-music','--music_folder_path', 
+                               metavar='Music Folder Path', 
+                               type=pathlib.Path,
+                               nargs="?",
+                               help="Path to music folder")
+    parser_config.add_argument('-movie','--movie_folder_path',
+                               metavar='Movie Folder Path',
+                               type=pathlib.Path,
+                               nargs="?",
+                               help="Path to movie folder")
+    parser_config.add_argument('-tv','--tv_folder_path',
+                               metavar='TV Folder Path',
+                               type=pathlib.Path,
+                               nargs="?",
+                               help="Path to tv folder")
+    parser_config.add_argument('-playlist','--music_playlist_file_path',
+                               metavar='Music Playlist File Path',
+                               type=pathlib.Path,
+                               nargs="?",
+                               help="Path to music playlist file")
+    parser_config.add_argument('-host','--plex_server_host',
+                               metavar='Plex Server Host',
+                               type=str,
+                               nargs="?",
+                               help="Plex server host e.g. localhost",
+                               default="localhost")
+    parser_config.add_argument('-port','--plex_server_port',
+                               metavar='Plex Server Port',
+                               type=int,
+                               nargs="?",
+                               help="Plex server port e.g. 3200",
+                               default=3200)
+    parser_config.add_argument('-token','--plex_server_token',
+                               metavar='Plex Server Token',
+                               type=str,
+                               nargs="?",
+                               help="Fetch the token by listening for an (X-Plex-Token) query parameter",
+                               default="")
     current_path = pathlib.Path.cwd()
     config_file = current_path / "config.json"
-    print(type(pathlib.Path.cwd()))
-    print(type(config_file))
     
     # Parse arguments
     args = parser.parse_args()
-    music_folder_path = args.music_folder_path[0]
-    movie_folder_path = args.movie_folder_path[0]
-    tv_folder_path = args.tv_folder_path[0]
-    music_playlist_file_path = args.music_playlist_file_path[0]
+    music_folder_path = args.music_folder_path or ""
+    movie_folder_path = args.movie_folder_path or ""
+    tv_folder_path = args.tv_folder_path or ""
+    music_playlist_file_path = args.music_playlist_file_path or ""
+    plex_server_host = args.plex_server_host
+    plex_server_port = args.plex_server_port
+    plex_server_token = args.plex_server_token or ""
 
     config = {
         "config": {
 
-        "paths": {
-            "music_folder":str(music_folder_path),
-            "movie_folder":str(movie_folder_path),
-            "tv_folder":str(tv_folder_path),
-            "music_playlist_file":str(music_playlist_file_path),
-        }
+            "paths": {
+                "music_folder":str(music_folder_path),
+                "movie_folder":str(movie_folder_path),
+                "tv_folder":str(tv_folder_path),
+                "music_playlist_file":str(music_playlist_file_path),
+            },
+            "plex": {
+                "host": plex_server_host,
+                "port": plex_server_port,
+                "token": plex_server_token,
+
+            }
     }}
 
 
 
     try:
+        
         with config_file.open(encoding='utf-8', mode="x") as f:
             json.dump(config, f, indent=4)
+            
     except FileExistsError:
+        
         print("=======================")
         print("Config file exists: %s" % (config_file))
-        print("Reading existing config now")
+        print("Reading existing config now: \n")
         time.sleep(1)
         with config_file.open() as f:
             file_dict = json.load(f)
             paths = file_dict["config"]["paths"]
             print("PATHS:")
-            music_folder_path = pathlib.Path(paths["music_folder"])
-            print("|-> Music Folder Path: %s" % (music_folder_path))
-            movie_folder_path = pathlib.Path(paths["movie_folder"])
-            print("|-> Movie Folder Path: %s" % (movie_folder_path))
-            tv_folder_path = pathlib.Path(paths["tv_folder"])
-            print("|-> TV Folder Path: %s" % (tv_folder_path))
-            music_playlist_file_path = pathlib.Path(paths["music_playlist_file"])
-            print("|-> Music Playlist File Path: %s" % (music_playlist_file_path))
+
+            #validate existing config
+            try:
+                
+                music_folder_path = PathOps.get_path_from_str(paths["music_folder"],"Music",is_dir=True)
+                print("|-> Music Folder Path: %s" % (music_folder_path))
+
+                movie_folder_path = PathOps.get_path_from_str(paths["movie_folder"],"Movie",is_dir=True)
+                print("|-> Movie Folder Path: %s" % (movie_folder_path))
+
+                tv_folder_path = PathOps.get_path_from_str(paths["tv_folder"],"TV",is_dir=True)
+                print("|-> TV Folder Path: %s" % (tv_folder_path))
+
+                music_playlist_file_path = PathOps.get_path_from_str(paths["music_playlist_file"],"Music Playlist",is_file=True)
+                print("|-> Music Playlist File Path: %s" % (music_playlist_file_path))
+
+                print("-----------------------")
+
+                plex = file_dict["config"]["plex"]
+                print("PLEX:")
+
+                plex_server_host = plex["host"]
+                print("|-> Host: %s" % (plex_server_host))
+
+                plex_server_port = plex["port"]
+                if not isinstance(plex_server_port,int):
+                    raise ValueError("Expected plex server port to be an int but got a %s" % (type(plex_server_port)))
+                print("|-> Port: %s" % (plex_server_port))
+
+                plex_server_token = plex["token"]
+                print("|-> Token: %s" % (plex_server_token))
+
+            except Exception as e:
+
+                raise PlexUtilConfigException(e)
+                
 
         print("=======================")
             
 
+    baseurl = 'http://% s:% s' % (plex_server_host,plex_server_port)
+    # plex_server = PlexServer(baseurl, plex_server_token)
+
+    # if (request == "init"):
+    #     deleteLibrary(plex,deleteAll=True)
+    #     createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
+    #     createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
+    #     createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
+    #     deletePlaylist(plex, deleteAll=True)
+    #     createPlaylist(plex,music_location, music_playlist_file_location)
+    # elif (request == "delete_playlist"):
+    #     deletePlaylist(plex,items)
+    # elif (request == "create_playlist"):
+    #     createPlaylist(plex,music_location, music_playlist_file_location,items)
+    # elif (request == "delete_library"):
+    #     deleteLibrary(plex,items)
+    # elif (request == "create_library"):
+    #     for item in items:
+    #         if item == "movies":
+    #             createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
+    #         elif item == "tv shows":
+    #             createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
+    #         elif item == "music":
+    #             createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
+    #         else:
+    #             raise ValueError("Requested to create unsupported library: " + item)
 
     return
 
