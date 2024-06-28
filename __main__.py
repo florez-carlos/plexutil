@@ -13,6 +13,10 @@ from plexapi.playlist import Playlist
 import argparse
 import json
 
+from src.core.Prompt import Prompt
+from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
+from src.enum.UserRequest import UserRequest
+
 
 if os.name == 'nt':  # sys.platform == 'win32':
     import win32file
@@ -29,192 +33,69 @@ from src.exception.PlexUtilConfigException import PlexUtilConfigException
 def main():
 
 
-    parser = argparse.ArgumentParser(description="Plex Util")
-    subparsers = parser.add_subparsers(help='Config Help')
-    
-
-
-    
-    parser_config = subparsers.add_parser('config', help='Plex Util Config Menu')
-    
-    parser_config.add_argument('-music','--music_folder_path', 
-                               metavar='Music Folder Path', 
-                               type=pathlib.Path,
-                               nargs="?",
-                               help="Path to music folder")
-    parser_config.add_argument('-movie','--movie_folder_path',
-                               metavar='Movie Folder Path',
-                               type=pathlib.Path,
-                               nargs="?",
-                               help="Path to movie folder")
-    parser_config.add_argument('-tv','--tv_folder_path',
-                               metavar='TV Folder Path',
-                               type=pathlib.Path,
-                               nargs="?",
-                               help="Path to tv folder")
-    parser_config.add_argument('-playlist','--music_playlist_file_path',
-                               metavar='Music Playlist File Path',
-                               type=pathlib.Path,
-                               nargs="?",
-                               help="Path to music playlist file")
-    parser_config.add_argument('-host','--plex_server_host',
-                               metavar='Plex Server Host',
-                               type=str,
-                               nargs="?",
-                               help="Plex server host e.g. localhost",
-                               default="localhost")
-    parser_config.add_argument('-port','--plex_server_port',
-                               metavar='Plex Server Port',
-                               type=int,
-                               nargs="?",
-                               help="Plex server port e.g. 3200",
-                               default=3200)
-    parser_config.add_argument('-token','--plex_server_token',
-                               metavar='Plex Server Token',
-                               type=str,
-                               nargs="?",
-                               help="Fetch the token by listening for an (X-Plex-Token) query parameter",
-                               default="")
-    current_path = pathlib.Path.cwd()
-    config_file = current_path / "config.json"
-    
-    # Parse arguments
-    args = parser.parse_args()
-    music_folder_path = args.music_folder_path or ""
-    movie_folder_path = args.movie_folder_path or ""
-    tv_folder_path = args.tv_folder_path or ""
-    music_playlist_file_path = args.music_playlist_file_path or ""
-    plex_server_host = args.plex_server_host
-    plex_server_port = args.plex_server_port
-    plex_server_token = args.plex_server_token or ""
-
-    config = {
-        "config": {
-
-            "paths": {
-                "music_folder":str(music_folder_path),
-                "movie_folder":str(movie_folder_path),
-                "tv_folder":str(tv_folder_path),
-                "music_playlist_file":str(music_playlist_file_path),
-            },
-            "plex": {
-                "host": plex_server_host,
-                "port": plex_server_port,
-                "token": plex_server_token,
-
-            }
-    }}
-
-
-
-    try:
+    instructions_dto = Prompt.get_user_instructions_dto()
         
-        with config_file.open(encoding='utf-8', mode="x") as f:
-            json.dump(config, f, indent=4)
-            
-    except FileExistsError:
         
-        print("=======================")
-        print("Config file exists: %s" % (config_file))
-        print("Reading existing config now: \n")
-        time.sleep(1)
-        with config_file.open() as f:
-            file_dict = json.load(f)
-            paths = file_dict["config"]["paths"]
-            print("PATHS:")
 
-            #validate existing config
-            try:
-                
-                music_folder_path = PathOps.get_path_from_str(paths["music_folder"],"Music",is_dir=True)
-                print("|-> Music Folder Path: %s" % (music_folder_path))
+    # config = {
+    #     "config": {
+    #
+    #         "paths": {
+    #             "music_folder":str(music_folder_path),
+    #             "movie_folder":str(movie_folder_path),
+    #             "tv_folder":str(tv_folder_path),
+    #             "music_playlist_file":str(music_playlist_file_path),
+    #         },
+    #         "plex": {
+    #             "host": plex_server_host,
+    #             "port": plex_server_port,
+    #             "token": plex_server_token,
+    #
+    #         }
+    # }}
 
-                movie_folder_path = PathOps.get_path_from_str(paths["movie_folder"],"Movie",is_dir=True)
-                print("|-> Movie Folder Path: %s" % (movie_folder_path))
-
-                tv_folder_path = PathOps.get_path_from_str(paths["tv_folder"],"TV",is_dir=True)
-                print("|-> TV Folder Path: %s" % (tv_folder_path))
-
-                music_playlist_file_path = PathOps.get_path_from_str(paths["music_playlist_file"],"Music Playlist",is_file=True)
-                print("|-> Music Playlist File Path: %s" % (music_playlist_file_path))
-
-                print("-----------------------")
-
-                plex = file_dict["config"]["plex"]
-                print("PLEX:")
-
-                plex_server_host = plex["host"]
-                print("|-> Host: %s" % (plex_server_host))
-
-                plex_server_port = plex["port"]
-                if not isinstance(plex_server_port,int):
-                    raise ValueError("Expected plex server port to be an int but got a %s" % (type(plex_server_port)))
-                print("|-> Port: %s" % (plex_server_port))
-
-                plex_server_token = plex["token"]
-                print("|-> Token: %s" % (plex_server_token))
-
-            except Exception as e:
-
-                raise PlexUtilConfigException(e)
-                
-
-        print("=======================")
             
+    request = instructions_dto.request
+    items = instructions_dto.items
+    plex_config_dto = instructions_dto.plex_config_dto
 
-    baseurl = 'http://% s:% s' % (plex_server_host,plex_server_port)
-    # plex_server = PlexServer(baseurl, plex_server_token)
+    host = plex_config_dto.host
+    port = int(plex_config_dto.port)
+    token = plex_config_dto.token
 
-    # if (request == "init"):
-    #     deleteLibrary(plex,deleteAll=True)
-    #     createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
-    #     createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
-    #     createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
-    #     deletePlaylist(plex, deleteAll=True)
-    #     createPlaylist(plex,music_location, music_playlist_file_location)
-    # elif (request == "delete_playlist"):
-    #     deletePlaylist(plex,items)
-    # elif (request == "create_playlist"):
-    #     createPlaylist(plex,music_location, music_playlist_file_location,items)
-    # elif (request == "delete_library"):
-    #     deleteLibrary(plex,items)
-    # elif (request == "create_library"):
-    #     for item in items:
-    #         if item == "movies":
-    #             createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
-    #         elif item == "tv shows":
-    #             createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
-    #         elif item == "music":
-    #             createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
-    #         else:
-    #             raise ValueError("Requested to create unsupported library: " + item)
+    baseurl = 'http://% s:% s' % (host,port)
+    # plex_server = PlexServer(baseurl, token)
+
+    print(instructions_dto)
+    return
+
+    if (request == UserRequest.INIT):
+
+        deleteLibrary(plex,deleteAll=True)
+        createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
+        createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
+        createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
+        deletePlaylist(plex, deleteAll=True)
+        createPlaylist(plex,music_location, music_playlist_file_location)
+    elif (request == "delete_playlist"):
+        deletePlaylist(plex,items)
+    elif (request == "create_playlist"):
+        createPlaylist(plex,music_location, music_playlist_file_location,items)
+    elif (request == "delete_library"):
+        deleteLibrary(plex,items)
+    elif (request == "create_library"):
+        for item in items:
+            if item == "movies":
+                createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
+            elif item == "tv shows":
+                createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
+            elif item == "music":
+                createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
+            else:
+                raise ValueError("Requested to create unsupported library: " + item)
 
     return
 
-    # parser = argparse.ArgumentParser(description='Plex helper')
-    # parser.add_argument('request', metavar='Request', type=str, nargs='?',
-    #                     help='Supported requests: (init, delete_playlist, create_playlist, create_library, delete_library)')
-    # parser.add_argument('-i', '--items', metavar='Items', type=str, nargs='?',
-    #                     help='Items to be passed for the request wrapped in double quotes and separated by comma i.e create_playlist --items "jazz classics,ambient"')
-    # parser.add_argument('-host', '--host', metavar='Host', type=str, nargs='?',
-    #                     help='Plex server host, default is localhost', default="localhost")
-    # parser.add_argument('-p','--port', metavar='Port', type=str, nargs='?',
-    #                     help='Plex server port, default is 32400', default="32400")
-    # parser.add_argument('-t', '--token', metavar='Token', type=str, nargs='?',
-    #                     help='To retreive token: Open server and click hamburger menu of any movie, then Get Info and View XML, token at the end of URL')
-    # parser.add_argument('-d','--drive_letter', metavar='Drive Letter', type=str, nargs='?',
-    #                     help='Drive letter, default is f', default="f")
-    # parser.add_argument('-music','--music_location', metavar='Music Location', type=str, nargs='?',
-    #                     help='Path to music folder without drive letter, default is media'+os.sep+"music", default="media"+os.sep+"music")
-    # parser.add_argument('-movies','--movies_location', metavar='Movies Location', type=str, nargs='?',
-    #                     help='Path to movies folder without drive letter, default is media'+os.sep+"movies", default="media"+os.sep+"movies")
-    # parser.add_argument('-tv','--tv_location', metavar='TV Location', type=str, nargs='?',
-    #                     help='Path to tv folder without drive letter, default is media'+os.sep+"tv", default="media"+os.sep+"tv")
-    # parser.add_argument('-music_playlist','--music_playlist_file_location', metavar='Music Playlist File Location', type=str, nargs='?',
-    #                     help='Path to music playlist file without drive letter, default is plexutil'+os.sep+"music-playlists.json", default="plexutil"+os.sep+"music-playlists.json")
-    #
-    # args = parser.parse_args()
-    #
     # if args.request is None:
     #     raise ValueError("Positional argument (request) expected but none supplied, see -h")
     #
@@ -231,42 +112,6 @@ def main():
     # tv_location = drive_letter+":"+os.sep+args.tv_location
     # music_playlist_file_location = drive_letter+":"+os.sep+args.music_playlist_file_location.replace("_",os.sep)
     #
-    # if not drive_letter_exists(drive_letter):
-    #     raise FileNotFoundError("Supplied drive letter: " + drive_letter + " - does not exist")
-    #
-    # #check if locations provided exist
-    # directories_to_check = [{"music":music_location},{"movies":movies_location},{"tv":tv_location},{"Music Playlists File":music_playlist_file_location}]
-    # for directories in directories_to_check:
-    #     for directory_name, location in directories.items():
-    #         if not os.path.exists(location):
-    #             raise FileNotFoundError(directory_name + " - path does not exist: "+ location)
-    #
-    # baseurl = 'http://% s:% s' % (host,port)
-    # plex = PlexServer(baseurl, token)
-    #
-    # if (request == "init"):
-    #     deleteLibrary(plex,deleteAll=True)
-    #     createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
-    #     createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
-    #     createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
-    #     deletePlaylist(plex, deleteAll=True)
-    #     createPlaylist(plex,music_location, music_playlist_file_location)
-    # elif (request == "delete_playlist"):
-    #     deletePlaylist(plex,items)
-    # elif (request == "create_playlist"):
-    #     createPlaylist(plex,music_location, music_playlist_file_location,items)
-    # elif (request == "delete_library"):
-    #     deleteLibrary(plex,items)
-    # elif (request == "create_library"):
-    #     for item in items:
-    #         if item == "movies":
-    #             createLibrary(plex, 'Movies', 'movie', "tv.plex.agents.movie","Plex Movie",movies_location)
-    #         elif item == "tv shows":
-    #             createLibrary(plex, 'TV Shows', 'show', "tv.plex.agents.series","Plex TV Series",tv_location)
-    #         elif item == "music":
-    #             createLibrary(plex, 'Music', 'music', "tv.plex.agents.music","Plex Music",music_location,music_playlist_file_location=music_playlist_file_location)
-    #         else:
-    #             raise ValueError("Requested to create unsupported library: " + item)
     #
 
 # def deleteLibrary(plex: PlexServer, libraryNames: [str] = [], deleteAll: bool = False) -> None:
