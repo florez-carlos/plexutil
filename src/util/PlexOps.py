@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 from typing import Dict, List
 from plexapi.server import PlexServer
@@ -7,7 +8,8 @@ from plexapi.video import Video
 from throws import throws
 from alive_progress import alive_bar
 
-from src.dto.ResourceLocationDTO import ResourceLocationDTO
+from src.dto.PlexConfigDTO import PlexConfigDTO
+from src.exception.PlexUtilConfigException import PlexUtilConfigException
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Agent import Agent
@@ -15,6 +17,7 @@ from src.enum.Scanner import Scanner
 from src.enum.Language import Language
 from src.exception.ExpectedLibraryCountException import ExpectedLibraryCountException
 from src.util.QueryBuilder import QueryBuilder
+from src.util.PathOps import PathOps
 
 
 class PlexOps():
@@ -23,12 +26,12 @@ class PlexOps():
     def __init__(self, plex_server: PlexServer,
                  library_type: LibraryType,
                  library_name: LibraryName,
-                 library_location: ResourceLocationDTO,
-                 music_playlist_file_location: ResourceLocationDTO,
-                 movie_library_prefs_file_location: ResourceLocationDTO,
-                 tv_library_prefs_file_location: ResourceLocationDTO,
-                 music_library_prefs_file_location: ResourceLocationDTO,
-                 tv_library_language_manifest_file_location: ResourceLocationDTO):
+                 library_location: Path,
+                 music_playlist_file_location: Path,
+                 movie_library_prefs_file_location: Path,
+                 tv_library_prefs_file_location: Path,
+                 music_library_prefs_file_location: Path,
+                 tv_library_language_manifest_file_location: Path):
         self.plex_server = plex_server
         self.library_type = library_type
         self.library_name = library_name
@@ -84,7 +87,8 @@ class PlexOps():
         part = ""
         prefs = {}
 
-        with open(self.music_library_prefs_file_location.build_uri(),encoding='utf-8') as file:
+        with self.music_library_prefs_file_location.open(encoding='utf-8') as file:
+
             file_dict = json.load(file)
             prefs = file_dict.get("prefs")
 
@@ -99,7 +103,7 @@ class PlexOps():
                 language = Language.ENGLISH_US.value,
                 importFromiTunes = "",
                 enableAutoPhotoTags="",
-                location=self.library_location.build_uri(),
+                location=str(self.library_location),
                 prefs=prefs)
 
             part = query_builder.build()
@@ -109,7 +113,8 @@ class PlexOps():
             self.plex_server.query(part,method=self.plex_server._session.post)
 
 
-        with open(self.music_playlist_file_location.build_uri(),encoding='utf-8') as file:
+        with self.music_playlist_file_location.open(encoding='utf-8') as file:
+            
             file_dict = json.load(file)
             track_count = file_dict.get("trackCount")
 
@@ -125,7 +130,7 @@ class PlexOps():
             type=self.library_type.value,
             agent=Agent.MOVIE.value,
             scanner=Scanner.MOVIE.value,
-            location=self.library_location.build_uri(),
+            location=str(self.library_location),
             language=Language.ENGLISH_US.value)
 
         #TODO: This line triggers something that refreshes that library, how can I remove this?
@@ -133,7 +138,8 @@ class PlexOps():
 
         prefs = {}
 
-        with open(self.movie_library_prefs_file_location.build_uri(),encoding='utf-8') as file:
+        with self.movie_library_prefs_file_location.open(encoding='utf-8') as file:
+            
             file_dict = json.load(file)
             prefs = file_dict.get("prefs")
 
@@ -148,7 +154,7 @@ class PlexOps():
             type=self.library_type.value,
             agent=Agent.TV.value,
             scanner=Scanner.TV.value,
-            location=self.library_location.build_uri(),
+            location=str(self.library_location),
             language=Language.ENGLISH_US.value)
 
         #TODO: This line triggers something that refreshes that library, how can I remove this?
@@ -156,7 +162,8 @@ class PlexOps():
 
         prefs = {}
 
-        with open(self.tv_library_prefs_file_location.build_uri(),encoding='utf-8') as file:
+        with self.tv_library_prefs_file_location.open(encoding='utf-8') as file:
+            
             file_dict = json.load(file)
             prefs = file_dict.get("prefs")
 
@@ -164,7 +171,8 @@ class PlexOps():
 
         tvdb_ids = {}
 
-        with open(self.tv_library_language_manifest_file_location.build_uri(),encoding='utf-8') as file:
+        with self.tv_library_language_manifest_file_location.open(encoding='utf-8') as file:
+            
             file_dict = json.load(file)
             languages = file_dict.get("languages")
             for language in languages:
