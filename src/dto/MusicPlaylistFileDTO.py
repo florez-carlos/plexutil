@@ -1,13 +1,15 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import List
-from MusicPlaylistDTO import MusicPlaylistDTO
+from src.dto.MusicPlaylistDTO import MusicPlaylistDTO
 
 @dataclass(frozen=True)
 class MusicPlaylistFileDTO():
 
-    location: str = ""
+    location: Path = Path()
     track_count: int = 0
-    playlists: List[MusicPlaylistDTO] =[]
+    playlists: List[MusicPlaylistDTO] = field(default_factory=lambda: [])
+
 
 def __eq__(self, other):
 

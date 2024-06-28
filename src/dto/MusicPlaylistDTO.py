@@ -1,12 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
-from SongDTO import SongDTO
+from src.dto.SongDTO import SongDTO
 
 @dataclass(frozen=True)
 class MusicPlaylistDTO():
 
     name: str = ""
-    songs: List[SongDTO] = []
+    songs: List[SongDTO] = field(default_factory=lambda: [])
 
 def __eq__(self, other):
 

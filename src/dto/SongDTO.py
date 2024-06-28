@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from enum.FileType import FileType
+from src.enum.FileType import FileType
 
 @dataclass(frozen=True)
 class SongDTO():
