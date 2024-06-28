@@ -1,4 +1,3 @@
-from html import escape
 import urllib.parse
 import typing
 
