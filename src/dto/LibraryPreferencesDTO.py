@@ -5,14 +5,16 @@ from typing import Dict
 @dataclass(frozen=True)
 class LibraryPreferencesDTO():
 
-    prefs: Dict
+    music: Dict
+    movie: Dict
+    tv: Dict
 
 def __eq__(self, other):
 
     if not isinstance(other, LibraryPreferencesDTO):
         return NotImplemented
 
-    return self.prefs == other.prefs 
+    return self.music == other.music and self.movie == other.movie and self.tv == other.tv 
     
 def __hash__(self):
     return hash((self.prefs))
