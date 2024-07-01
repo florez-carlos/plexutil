@@ -1,10 +1,10 @@
 {
   "prefs": {
-    "respectTags": True,
-    "augmentWithSharedContent": False,
-    "artistBios": False,
-    "albumReviews": False,
-    "popularTracks": False,
+    "respectTags": true,
+    "augmentWithSharedContent": false,
+    "artistBios": false,
+    "albumReviews": false,
+    "popularTracks": false,
     "genres": 2,
     "albumPosters": 3
   }

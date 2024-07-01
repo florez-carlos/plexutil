@@ -7,7 +7,7 @@
     },
     {"name": "en",
       "regions": [
-        {"name": "EN", "tvdbIds": []}
+        {"name": "US", "tvdbIds": []}
       ]
     }
 
