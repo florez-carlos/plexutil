@@ -1,12 +1,8 @@
-from pathlib import Path
 from src.dto.MusicPlaylistDTO import MusicPlaylistDTO
 from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
 from src.dto.SongDTO import SongDTO
 from src.enum.FileType import FileType
-from src.enum.LibraryType import LibraryType
-from src.dto.PlexConfigDTO import PlexConfigDTO
 from src.serializer.Serializer import Serializer
-from src.util.PathOps import PathOps
 
 
 class MusicPlaylistFileSerializer(Serializer):
