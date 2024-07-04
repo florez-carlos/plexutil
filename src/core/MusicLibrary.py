@@ -5,6 +5,7 @@ from plexapi.audio import Audio
 from plexapi.server import PlexServer
 from plexapi.utils import json
 from throws import throws
+from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
 from src.exception.ExpectedLibraryCountException import ExpectedLibraryCountException
 from src.exception.LibraryOpException import LibraryOpException
 from src.enum.Agent import Agent
@@ -20,18 +21,19 @@ import time
 
 from src.util.PlexOps import PlexOps
 
+from typing import Dict
+
 
 class MusicLibrary(Library):
 
     def __init__(self,
                  plex_server: PlexServer,
-                 name: LibraryName,
                  location:Path,
                  language: Language,
-                 prefs_file_location: Path,
+                 preferences: LibraryPreferencesDTO,
                  music_playlist_file_dto: MusicPlaylistFileDTO):
         
-        super().__init__(plex_server,name,LibraryType.MUSIC,Agent.MUSIC,Scanner.MUSIC,location,language,prefs_file_location)
+        super().__init__(plex_server,LibraryName.MUSIC,LibraryType.MUSIC,Agent.MUSIC,Scanner.MUSIC,location,language,preferences)
         self.music_playlist_file_dto = music_playlist_file_dto
         
 
@@ -42,26 +44,20 @@ class MusicLibrary(Library):
 
         try:
             part = ""
-            prefs = {}
+            
+            query_builder = QueryBuilder(
+                "/library/sections",
+                name=LibraryName.MUSIC.value,
+                the_type=LibraryType.MUSIC.value,
+                agent = Agent.MUSIC.value,
+                scanner = Scanner.MUSIC.value,
+                language = Language.ENGLISH_US.value,
+                importFromiTunes = "",
+                enableAutoPhotoTags="",
+                location=str(self.location),
+                prefs=self.preferences.music)
 
-            with self.prefs_file_location.open(encoding='utf-8') as file:
-
-                file_dict = json.load(file)
-                prefs = file_dict.get("prefs")
-
-                query_builder = QueryBuilder(
-                    "/library/sections",
-                    name=LibraryName.MUSIC.value,
-                    the_type=LibraryType.MUSIC.value,
-                    agent = Agent.MUSIC.value,
-                    scanner = Scanner.MUSIC.value,
-                    language = Language.ENGLISH_US.value,
-                    importFromiTunes = "",
-                    enableAutoPhotoTags="",
-                    location=str(self.location),
-                    prefs=prefs)
-
-                part = query_builder.build()
+            part = query_builder.build()
 
             #This posts a music library
             if part:
@@ -94,15 +90,4 @@ class MusicLibrary(Library):
             raise e
         except Exception as e:
             raise LibraryOpException("DELETE", original_exception=e)
-
-    @throws(LibraryOpException)
-    def query(self) -> List[Audio]:
-
-        try:
-            
-            return self.plex_server.library.section(self.name).searchTracks()
-            
-        except Exception as e:
-            
-                raise LibraryOpException("QUERY", original_exception=e)
 
