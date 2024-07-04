@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import List
 from src.serializer.Serializable import Serializable
 from src.dto.MusicPlaylistDTO import MusicPlaylistDTO
