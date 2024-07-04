@@ -70,6 +70,24 @@ class FileImporter(Static):
             raise ImporterException(original_exception=e)
 
     @staticmethod
+    def save_plex_config_dto(plex_config_file_location: Path, plex_config_dto: PlexConfigDTO, is_overwrite: bool = True) -> None:
+
+        try:
+
+            mode = "w"
+            if not is_overwrite:
+                mode = "x"
+
+            with plex_config_file_location.open(encoding='utf-8', mode=mode) as f:
+                serializer = PlexConfigSerializer()
+                json.dump(serializer.to_json(plex_config_dto), f, indent=4)
+
+        except ImporterException as e:
+            raise e
+        except Exception as e:
+            raise ImporterException(original_exception=e)
+
+    @staticmethod
     def get_music_playlist_file_dto(music_playlist_file_location: Path) -> MusicPlaylistFileDTO:
         
         try:
