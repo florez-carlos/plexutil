@@ -30,22 +30,21 @@ def main():
 
     baseurl = 'http://% s:% s' % (host,port)
     plex_server = PlexServer(baseurl, token)
-    current_path = pathlib.Path.cwd()
-
-    music_prefs_file_location = current_path / "config" / "MusicLibraryPrefs.json"
-    movie_prefs_file_location =  current_path / "config" / "MovieLibraryPrefs.json"
-    tv_prefs_file_location =  current_path / "config" / "TVLibraryPrefs.json"
-    music_playlist_file_location = current_path / "config" / "MusicPlaylists.json"
-    tv_language_manifest_file_location = current_path / "config" / "TVLanguageManifest.json"
-
-    preferences_dto = FileImporter.get_library_preferences_dto(music_prefs_file_location,movie_prefs_file_location,tv_prefs_file_location) 
-    music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(music_playlist_file_location)
-    tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(tv_language_manifest_file_location)
-
 
     music_location = instructions_dto.plex_config_dto.music_folder_path
     movie_location = instructions_dto.plex_config_dto.movie_folder_path
     tv_location = instructions_dto.plex_config_dto.tv_folder_path
+    plexutil_path = instructions_dto.plex_config_dto.plexutil_path
+
+    music_prefs_file_location = plexutil_path / "config" / "MusicLibraryPrefs.json"
+    movie_prefs_file_location =  plexutil_path / "config" / "MovieLibraryPrefs.json"
+    tv_prefs_file_location =  plexutil_path / "config" / "TVLibraryPrefs.json"
+    music_playlist_file_location = plexutil_path / "config" / "MusicPlaylists.json"
+    tv_language_manifest_file_location = plexutil_path / "config" / "TVLanguageManifest.json"
+
+    preferences_dto = FileImporter.get_library_preferences_dto(music_prefs_file_location,movie_prefs_file_location,tv_prefs_file_location) 
+    music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(music_playlist_file_location)
+    tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(tv_language_manifest_file_location)
 
     playlists =[]
 
