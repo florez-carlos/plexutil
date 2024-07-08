@@ -123,7 +123,7 @@ class Prompt(Static):
         music_folder_path = args.music_folder_path
         movie_folder_path = args.movie_folder_path
         tv_folder_path = args.tv_folder_path
-        plexutil_path = args.plexutil_path
+        plexutil_path = args.plexutil_folder_path
         # music_playlist_file_path = args.music_playlist_file_path
         plex_server_host = args.plex_server_host
         plex_server_port = args.plex_server_port
