@@ -94,7 +94,7 @@ class Prompt(Static):
                                    metavar='Plex Server Port',
                                    type=int,
                                    nargs="?",
-                                   help="Plex server port e.g. 3200",
+                                   help="Plex server port e.g. 32400",
                                    default=3200)
         
         parser.add_argument('-token','--plex_server_token',
