@@ -1,13 +1,13 @@
 from pathlib import Path
 from plexapi.audio import os
 from plexapi.server import PlexServer
-from dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from enum.Agent import Agent
-from enum.Language import Language
-from enum.LibraryName import LibraryName
-from enum.LibraryType import LibraryType
-from enum.Scanner import Scanner
+from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
+from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
+from src.enum.Agent import Agent
+from src.enum.Language import Language
+from src.enum.LibraryName import LibraryName
+from src.enum.LibraryType import LibraryType
+from src.enum.Scanner import Scanner
 from src.core.Library import Library
 
 
