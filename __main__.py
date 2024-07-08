@@ -47,12 +47,14 @@ def main():
     tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(tv_language_manifest_file_location)
 
     playlists =[]
+    music_playlist_file_dto_filtered = MusicPlaylistFileDTO()
 
-    for playlist in music_playlist_file_dto.playlists:
-        if playlist.name in items:
-            playlists.append(playlist)
+    if items:
+        for playlist in music_playlist_file_dto.playlists:
+            if playlist.name in items:
+                playlists.append(playlist)
 
-    music_playlist_file_dto_filtered = MusicPlaylistFileDTO(music_playlist_file_dto.track_count,playlists)
+        music_playlist_file_dto_filtered = MusicPlaylistFileDTO(music_playlist_file_dto.track_count,playlists)
 
     match request:
         # If config, we should already be done by now
