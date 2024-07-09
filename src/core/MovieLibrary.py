@@ -44,7 +44,7 @@ class MovieLibrary(Library):
             self.plex_server.library.sections()
 
 
-            self.plex_server.library.section(self.name).editAdvanced(**self.preferences.movie)
+            self.plex_server.library.section(self.name.value).editAdvanced(**self.preferences.movie)
 
         except LibraryOpException as e:
             raise e
@@ -60,7 +60,7 @@ class MovieLibrary(Library):
 
         try:
             
-            result = self.plex_server.library.section(self.name)
+            result = self.plex_server.library.section(self.name.value)
             
             if (result):
                 result.delete()
