@@ -66,7 +66,7 @@ class MusicLibrary(Library):
                 raise LibraryOpException("CREATE", "Query Builder has not built a part!")
 
             #Now we poll for library status
-            # PlexOps.poll(100,self.music_playlist_file_dto.track_count,10)
+            self.poll(100,self.music_playlist_file_dto.track_count,10)
 
         except LibraryOpException as e:
             raise e
@@ -79,7 +79,7 @@ class MusicLibrary(Library):
 
         try:
             
-            result = self.plex_server.library.section(self.name)
+            result = self.plex_server.library.section(self.name.value)
             
             if (result):
                 result.delete()
