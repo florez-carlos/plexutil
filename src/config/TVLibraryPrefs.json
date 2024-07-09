@@ -16,6 +16,8 @@
     "includeAdultContent": 0,
     "enableBIFGeneration": 1,
     "augmentWithProviderContent": 1,
-    "flattenSeasons": 0
+    "flattenSeasons": 0,
+    "enableIntroMarkerGeneration": 0,
+    "enableCreditsMarkerGeneration": 0
   }
 }
