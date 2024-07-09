@@ -30,6 +30,7 @@ class Playlist(Library):
         plex_track_dict = {}
         plex_playlist = []
 
+        print("Checking server track count meets expected count: " + str(self.music_playlist_file_dto.track_count))
         self.poll(10,self.music_playlist_file_dto.track_count,10)
 
         playlists = self.music_playlist_file_dto.playlists
