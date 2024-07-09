@@ -30,6 +30,8 @@ class Playlist(Library):
         plex_track_dict = {}
         plex_playlist = []
 
+        self.poll(10,self.music_playlist_file_dto.track_count,10)
+
         playlists = self.music_playlist_file_dto.playlists
 
         for track in tracks:
