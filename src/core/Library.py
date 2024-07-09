@@ -61,6 +61,8 @@ class Library(ABC):
         print("Current count: "+str(current_count)+". Expected: "+str(expected_count))
         print("Expected net change: "+str(offset))
 
+        display_count = 0
+
         with alive_bar(offset) as bar:
             
             attempts = -1
@@ -79,11 +81,19 @@ class Library(ABC):
 
                 offset = abs(updated_current_count - current_count)
 
+                if (updated_current_count == current_count):
+
+                    for j in range(abs(updated_current_count-display_count)):
+                        bar()
+                    break
+                    
+
                 if offset == 0:
                     continue
                 else:
                     current_count = updated_current_count
                     for j in range(offset):
+                        display_count = ++display_count
                         bar()
 
         return
