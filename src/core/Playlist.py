@@ -9,6 +9,7 @@ from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Scanner import Scanner
 from src.core.Library import Library
+from src.util.PathOps import PathOps
 
 
 class Playlist(Library):
@@ -25,7 +26,7 @@ class Playlist(Library):
 
     def create(self) -> None:
 
-        tracks = self.plex_server.library.section(self.name).searchTracks()
+        tracks = self.plex_server.library.section(self.name.value).searchTracks()
         plex_track_dict = {}
         plex_playlist = []
 
@@ -33,10 +34,11 @@ class Playlist(Library):
 
         for track in tracks:
             
-            plex_track_location = track.locations[0]
-            plex_track_name = plex_track_location.replace(str(self.location)+os.sep,"")
+            plex_track_absolute_location = track.locations[0]
+            plex_track_path = PathOps.get_path_from_str(plex_track_absolute_location)
+            plex_track_full_name = plex_track_path.name
+            plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
             plex_track_dict[plex_track_name] = track
-
 
         for playlist in playlists:
 
@@ -56,9 +58,6 @@ class Playlist(Library):
 
 
     def delete(self) -> None:
-        # if (deleteAll):
-        #     [x.delete() for x in plex.playlists(playlistType="audio")]
-        # else:
 
         playlist_names =  [x.name for x in self.music_playlist_file_dto.playlists]
         
