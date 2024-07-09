@@ -99,6 +99,16 @@ def main():
             music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
             music_library.create()
 
+        case UserRequest.CREATE_MOVIE_LIBRARY:
+
+            movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
+            movie_library.create()
+
+        case UserRequest.DELETE_MOVIE_LIBRARY:
+
+            movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
+            movie_library.delete()
+
 
             
 
