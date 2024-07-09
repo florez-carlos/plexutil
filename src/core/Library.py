@@ -97,10 +97,10 @@ class Library(ABC):
                     LibraryType.MUSIC.value +
                     " not compatible with tvdb ids but tvdb ids supplied: " +
                     str(tvdb_ids))
-            return self.plex_server.library.section(self.name).searchTracks()
+            return self.plex_server.library.section(self.name.value).searchTracks()
         elif (self.library_type is LibraryType.TV):
 
-            shows = self.plex_server.library.section(self.name).all()
+            shows = self.plex_server.library.section(self.name.value).all()
             shows_filtered = []
 
             if tvdb_ids:
