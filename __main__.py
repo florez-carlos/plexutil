@@ -14,6 +14,7 @@ from src.core.MusicLibrary import MusicLibrary
 from src.core.MovieLibrary import MovieLibrary
 from src.core.TVLibrary import TVLibrary
 from src.enum.Language import Language
+from src.util.PathOps import PathOps
 
 
 def main():
@@ -34,13 +35,12 @@ def main():
     music_location = instructions_dto.plex_config_dto.music_folder_path
     movie_location = instructions_dto.plex_config_dto.movie_folder_path
     tv_location = instructions_dto.plex_config_dto.tv_folder_path
-    plexutil_path = instructions_dto.plex_config_dto.plexutil_path
 
-    music_prefs_file_location = plexutil_path / "src" / "config" / "MusicLibraryPrefs.json"
-    movie_prefs_file_location =  plexutil_path / "src" / "config" / "MovieLibraryPrefs.json"
-    tv_prefs_file_location =  plexutil_path / "src" / "config" / "TVLibraryPrefs.json"
-    music_playlist_file_location = plexutil_path / "src" / "config" / "MusicPlaylists.json"
-    tv_language_manifest_file_location = plexutil_path / "src" / "config" / "TVLanguageManifest.json"
+    music_prefs_file_location = PathOps.get_project_root() / "src" / "config" / "MusicLibraryPrefs.json"
+    movie_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "MovieLibraryPrefs.json"
+    tv_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "TVLibraryPrefs.json"
+    music_playlist_file_location = PathOps.get_project_root() / "src" / "config" / "MusicPlaylists.json"
+    tv_language_manifest_file_location = PathOps.get_project_root() / "src" / "config" / "TVLanguageManifest.json"
 
     preferences_dto = FileImporter.get_library_preferences_dto(music_prefs_file_location,movie_prefs_file_location,tv_prefs_file_location) 
     music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(music_playlist_file_location)
