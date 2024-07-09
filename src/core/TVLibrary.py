@@ -42,15 +42,19 @@ class TVLibrary(Library):
             self.plex_server.library.sections()
 
 
-            self.plex_server.library.section(self.name).editAdvanced(**self.preferences.tv)
+            self.plex_server.library.section(self.name.value).editAdvanced(**self.preferences.tv)
 
             manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
+            
             for manifest_dto in manifests_dto:
+                
                 language = manifest_dto.language
                 ids = manifest_dto.ids
+                print("Checking server tv custom language meets expected count: " + str(len(ids)))
                 self.poll(100,len(ids),10,ids)
                 # shows = self.query(ids)
                 shows = []
+                
                 for show in shows:
                     show.editAdvanced(languageOverride=language.value)
                     
@@ -71,7 +75,7 @@ class TVLibrary(Library):
 
         try:
             
-            result = self.plex_server.library.section(self.name)
+            result = self.plex_server.library.section(self.name.value)
             
             if (result):
                 result.delete()
