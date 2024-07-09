@@ -16,7 +16,6 @@ class PlexConfigSerializer(Serializer):
                     "music_folder":str(serializable.music_folder_path),
                     "movie_folder":str(serializable.movie_folder_path),
                     "tv_folder":str(serializable.tv_folder_path),
-                    "plexutil_folder": str(serializable.plexutil_path),
                     # "music_playlist_file":str(serializable.music_playlist_file_path),
                 },
                 "plex": {
@@ -36,7 +35,6 @@ class PlexConfigSerializer(Serializer):
         music_folder_path = PathOps.get_path_from_str(paths["music_folder"],LibraryType.MUSIC.value,is_dir=True)
         movie_folder_path = PathOps.get_path_from_str(paths["movie_folder"],LibraryType.MOVIE.value,is_dir=True)
         tv_folder_path = PathOps.get_path_from_str(paths["tv_folder"],LibraryType.TV.value,is_dir=True)
-        plexutil_path = PathOps.get_path_from_str(paths["plexutil_folder"],"Plexutil folder location")
         # music_playlist_file_path = PathOps.get_path_from_str(paths["music_playlist_file"],"Music Playlist",is_file=True)
 
         plex = json_dict["config"]["plex"]
@@ -52,7 +50,6 @@ class PlexConfigSerializer(Serializer):
         return PlexConfigDTO(music_folder_path=music_folder_path,
                              movie_folder_path=movie_folder_path,
                              tv_folder_path=tv_folder_path,
-                             plexutil_path=plexutil_path,
                              # music_playlist_file_path=music_playlist_file_path,
                              host=plex_server_host,
                              port=plex_server_port,
