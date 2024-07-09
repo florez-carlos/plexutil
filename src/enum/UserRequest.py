@@ -5,6 +5,8 @@ class UserRequest(Enum):
     
     CONFIG = "config"
     INIT = "init"
+    CREATE_MOVIE_LIBRARY = "create_movie_library"
+    DELETE_MOVIE_LIBRARY = "create_movie_library"
     CREATE_MUSIC_LIBRARY = "create_music_library"
     DELETE_MUSIC_LIBRARY = "delete_music_library"
     CREATE_MUSIC_PLAYLIST = "create_music_playlist"
@@ -17,6 +19,8 @@ class UserRequest(Enum):
 
         return [UserRequest.CONFIG,
                 UserRequest.INIT,
+                UserRequest.CREATE_MOVIE_LIBRARY,
+                UserRequest.DELETE_MOVIE_LIBRARY,
                 UserRequest.CREATE_MUSIC_LIBRARY,
                 UserRequest.DELETE_MUSIC_LIBRARY,
                 UserRequest.CREATE_MUSIC_PLAYLIST,
