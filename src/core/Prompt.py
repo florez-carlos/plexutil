@@ -69,13 +69,6 @@ class Prompt(Static):
                                    help="Path to tv folder",
                                    default=pathlib.Path(""))
 
-        parser.add_argument('-plexutil','--plexutil_folder_path',
-                                   metavar='Plexutil Folder Path',
-                                   type=pathlib.Path,
-                                   nargs="?",
-                                   help="Path to the plexutil project folder",
-                                   default=pathlib.Path(""))
-        
         # parser.add_argument('-playlist','--music_playlist_file_path',
         #                            metavar='Music Playlist File Path',
         #                            type=pathlib.Path,
@@ -123,17 +116,15 @@ class Prompt(Static):
         music_folder_path = args.music_folder_path
         movie_folder_path = args.movie_folder_path
         tv_folder_path = args.tv_folder_path
-        plexutil_path = args.plexutil_folder_path
         # music_playlist_file_path = args.music_playlist_file_path
         plex_server_host = args.plex_server_host
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
 
-        config_file_path = plexutil_path / "config.json"
+        config_file_path = PathOps.get_project_root() / "config.json"
         plex_config_dto = PlexConfigDTO(music_folder_path=music_folder_path,
                              movie_folder_path=movie_folder_path,
                              tv_folder_path=tv_folder_path,
-                             plexutil_path=plexutil_path,
                              # music_playlist_file_path=music_playlist_file_path,
                              host=plex_server_host,
                              port=plex_server_port,
