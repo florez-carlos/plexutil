@@ -7,6 +7,8 @@ class UserRequest(Enum):
     INIT = "init"
     CREATE_MOVIE_LIBRARY = "create_movie_library"
     DELETE_MOVIE_LIBRARY = "delete_movie_library"
+    CREATE_TV_LIBRARY = "create_tv_library"
+    DELETE_TV_LIBRARY = "delete_tv_library"
     CREATE_MUSIC_LIBRARY = "create_music_library"
     DELETE_MUSIC_LIBRARY = "delete_music_library"
     CREATE_MUSIC_PLAYLIST = "create_music_playlist"
@@ -21,6 +23,8 @@ class UserRequest(Enum):
                 UserRequest.INIT,
                 UserRequest.CREATE_MOVIE_LIBRARY,
                 UserRequest.DELETE_MOVIE_LIBRARY,
+                UserRequest.CREATE_TV_LIBRARY,
+                UserRequest.DELETE_TV_LIBRARY,
                 UserRequest.CREATE_MUSIC_LIBRARY,
                 UserRequest.DELETE_MUSIC_LIBRARY,
                 UserRequest.CREATE_MUSIC_PLAYLIST,

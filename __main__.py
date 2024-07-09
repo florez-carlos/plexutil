@@ -109,6 +109,16 @@ def main():
             movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
             movie_library.delete()
 
+        case UserRequest.CREATE_TV_LIBRARY:
+
+            tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
+            tv_library.create()
+
+        case UserRequest.DELETE_TV_LIBRARY:
+
+            tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
+            tv_library.delete()
+
 
             
 
