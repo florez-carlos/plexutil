@@ -58,7 +58,7 @@ class TVLibrary(Library):
                 for show in shows:
                     show.editAdvanced(languageOverride=language.value)
                     
-                self.plex_server.library.section(self.name).refresh()
+                self.plex_server.library.section(self.name.value).refresh()
                 
 
         except LibraryOpException as e:
