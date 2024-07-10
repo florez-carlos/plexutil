@@ -58,7 +58,7 @@ class Library(ABC):
         print("Requested attempts: "+str(requested_attempts))
         print("Interval seconds: "+str(interval_seconds))
         print("Current count: "+str(current_count)+". Expected: "+str(expected_count))
-        print("Expected net change: "+str(offset))
+        print("Expected net change: "+str(init_offset))
 
         with alive_bar(init_offset) as bar:
             
