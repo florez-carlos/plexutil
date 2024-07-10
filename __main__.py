@@ -76,12 +76,11 @@ def main():
             music_library.delete()
             tv_library.delete()
             movie_library.delete()
+            # playlist_library.delete()
 
             music_library.create()
             tv_library.create()
             movie_library.create()
-
-            playlist_library.delete()
             playlist_library.create()
 
         case UserRequest.DELETE_MUSIC_PLAYLIST:
