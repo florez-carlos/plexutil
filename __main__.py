@@ -39,10 +39,11 @@ def main():
     music_prefs_file_location = PathOps.get_project_root() / "src" / "config" / "MusicLibraryPrefs.json"
     movie_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "MovieLibraryPrefs.json"
     tv_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "TVLibraryPrefs.json"
+    plex_server_setting_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "PlexServerSettingPrefs.json"
     music_playlist_file_location = PathOps.get_project_root() / "src" / "config" / "MusicPlaylists.json"
     tv_language_manifest_file_location = PathOps.get_project_root() / "src" / "config" / "TVLanguageManifest.json"
 
-    preferences_dto = FileImporter.get_library_preferences_dto(music_prefs_file_location,movie_prefs_file_location,tv_prefs_file_location) 
+    preferences_dto = FileImporter.get_library_preferences_dto(music_prefs_file_location,movie_prefs_file_location,tv_prefs_file_location, plex_server_setting_prefs_file_location) 
     music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(music_playlist_file_location)
     tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(tv_language_manifest_file_location)
 
@@ -61,6 +62,10 @@ def main():
         case UserRequest.CONFIG:
             return
         case UserRequest.INIT:
+
+            server_settings = preferences_dto.plex_server_settings
+            for id, value in server_settings.items():
+                plex_server.settings.get(id).set(value)
 
             music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
             tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
@@ -119,6 +124,11 @@ def main():
             tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
             tv_library.delete()
 
+        case UserRequest.SET_SERVER_SETTINGS:
+
+            server_settings = preferences_dto.plex_server_settings
+            for id, value in server_settings.items():
+                plex_server.settings.get(id).set(value)
 
             
 
