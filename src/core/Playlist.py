@@ -58,6 +58,7 @@ class Playlist(Library):
                 plex_playlist.append(plex_track_dict.get(song_name))
 
             self.plex_server.createPlaylist(title=playlist_name, items=plex_playlist)
+            plex_playlist = []
 
 
     def delete(self) -> None:
