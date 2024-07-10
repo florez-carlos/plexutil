@@ -56,6 +56,10 @@ def main():
 
         music_playlist_file_dto_filtered = MusicPlaylistFileDTO(music_playlist_file_dto.track_count,playlists)
 
+    if instructions_dto.is_all_items:
+
+        music_playlist_file_dto_filtered = music_playlist_file_dto
+
     match request:
         # If config, we should already be done by now
         case UserRequest.CONFIG:

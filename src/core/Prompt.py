@@ -38,16 +38,12 @@ class Prompt(Static):
                             nargs='?',
                             help='Items to be passed for the request wrapped in double quotes and separated by comma i.e create_playlist --items "jazz classics,ambient"')
 
+        parser.add_argument('-ai', '--all_items',
+                            metavar='All items',
+                            action='store_const',
+                            help='Indicates operation to be performed on all available items instead of specifying individual items')
 
-        #dest="subparser_name" allows reading if config has been invoked
-        # subparsers = parser.add_subparsers(dest="command",
-        #                                    title="Plex Util Configuration Menu",
-        #                                    description="Use this menu for the initial setup, the configuration is recorded in a config.json file",
-        #                                    help="Configure paths and plex server connection parameters")
-        # # ,help='Config Help')
-        # 
-        # parser_config = subparsers.add_parser('config', help='Plex Util Config Menu')
-        
+
         parser.add_argument('-music','--music_folder_path', 
                                    metavar='Music Folder Path', 
                                    type=pathlib.Path,
@@ -68,13 +64,6 @@ class Prompt(Static):
                                    nargs="?",
                                    help="Path to tv folder",
                                    default=pathlib.Path(""))
-
-        # parser.add_argument('-playlist','--music_playlist_file_path',
-        #                            metavar='Music Playlist File Path',
-        #                            type=pathlib.Path,
-        #                            nargs="?",
-        #                            help="Path to music playlist file",
-        #                            default=pathlib.Path(""))
         
         parser.add_argument('-host','--plex_server_host',
                                    metavar='Plex Server Host',
@@ -106,11 +95,16 @@ class Prompt(Static):
         request = UserRequest.get_user_request_from_str(request)
         is_config = request == UserRequest.CONFIG
         items = args.items
+        is_all_items = args.all_items
 
         if request is None:
             raise ValueError("Positional argument (request) expected but none supplied, see -h")
 
         if items is not None:
+            
+            if is_all_items:
+                raise ValueError("--all_items requested but --items also specified, only one can be used at a time")
+                
             items = [x for x in items.split(",")]
 
         music_folder_path = args.music_folder_path
@@ -136,5 +130,5 @@ class Prompt(Static):
             plex_config_dto = FileImporter.get_plex_config_dto(config_file_path)
 
 
-        return UserInstructionsDTO(request=request,items=items,plex_config_dto=plex_config_dto)
+        return UserInstructionsDTO(request=request,items=items,plex_config_dto=plex_config_dto,is_all_items=is_all_items)
 
