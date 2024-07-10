@@ -5,6 +5,7 @@ class UserRequest(Enum):
     
     CONFIG = "config"
     INIT = "init"
+    SET_SERVER_SETTINGS = "set_server_settings"
     CREATE_MOVIE_LIBRARY = "create_movie_library"
     DELETE_MOVIE_LIBRARY = "delete_movie_library"
     CREATE_TV_LIBRARY = "create_tv_library"
@@ -21,6 +22,7 @@ class UserRequest(Enum):
 
         return [UserRequest.CONFIG,
                 UserRequest.INIT,
+                UserRequest.SET_SERVER_SETTINGS,
                 UserRequest.CREATE_MOVIE_LIBRARY,
                 UserRequest.DELETE_MOVIE_LIBRARY,
                 UserRequest.CREATE_TV_LIBRARY,
