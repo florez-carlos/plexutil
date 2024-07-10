@@ -39,8 +39,7 @@ class Prompt(Static):
                             help='Items to be passed for the request wrapped in double quotes and separated by comma i.e create_playlist --items "jazz classics,ambient"')
 
         parser.add_argument('-ai', '--all_items',
-                            metavar='All items',
-                            action='store_const',
+                            action='store_true',
                             help='Indicates operation to be performed on all available items instead of specifying individual items')
 
 
