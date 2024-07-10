@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List
 from alive_progress import alive_bar
 from plexapi.audio import Audio
+from plexapi.exceptions import NotFound
 from plexapi.server import PlexServer
 from plexapi.utils import json
 from throws import throws
@@ -74,21 +75,11 @@ class MusicLibrary(Library):
         except Exception as e:
             raise LibraryOpException("CREATE", original_exception=e)
 
-        
+
     @throws(LibraryOpException)
     def delete(self) -> None:
+        return super().delete()
 
-        try:
-            
-            result = self.plex_server.library.section(self.name.value)
-            
-            if (result):
-                result.delete()
-            else:
-                raise LibraryOpException("DELETE", "Not found: " + self.name.value + " of library type: " + self.library_type.value)
-                
-        except LibraryOpException as e:
-            raise e
-        except Exception as e:
-            raise LibraryOpException("DELETE", original_exception=e)
-
+    @throws(LibraryOpException)
+    def exists(self) -> bool:
+        return super().exists()

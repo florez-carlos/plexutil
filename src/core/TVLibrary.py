@@ -1,4 +1,5 @@
 from pathlib import Path
+from plexapi.exceptions import NotFound
 from plexapi.server import PlexServer
 from throws import throws
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
@@ -69,22 +70,11 @@ class TVLibrary(Library):
 
         return
 
-
-        
     @throws(LibraryOpException)
     def delete(self) -> None:
+        return super().delete()
 
-        try:
-            
-            result = self.plex_server.library.section(self.name.value)
-            
-            if (result):
-                result.delete()
-            else:
-                raise LibraryOpException("DELETE", "Not found: " + self.name.value + " of library type: " + self.library_type.value)
-                
-        except LibraryOpException as e:
-            raise e
-        except Exception as e:
-            raise LibraryOpException("DELETE", original_exception=e)
+    @throws(LibraryOpException)
+    def exists(self) -> bool:
+        return super().exists()
 

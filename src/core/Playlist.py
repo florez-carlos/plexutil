@@ -1,6 +1,8 @@
 from pathlib import Path
 from plexapi.audio import os
 from plexapi.server import PlexServer
+from throws import throws
+from exception.LibraryOpException import LibraryOpException
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
 from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
 from src.enum.Agent import Agent
@@ -24,6 +26,7 @@ class Playlist(Library):
         self.music_playlist_file_dto = music_playlist_file_dto
 
 
+    @throws(LibraryOpException)
     def create(self) -> None:
 
         tracks = self.plex_server.library.section(self.name.value).searchTracks()
@@ -61,6 +64,7 @@ class Playlist(Library):
             plex_playlist = []
 
 
+    @throws(LibraryOpException)
     def delete(self) -> None:
 
         playlist_names =  [x.name for x in self.music_playlist_file_dto.playlists]
@@ -70,6 +74,20 @@ class Playlist(Library):
                 playlist.delete()
 
 
+    @throws(LibraryOpException)
+    def exists(self) -> bool:
+
+        playlist_names =  [x.name for x in self.music_playlist_file_dto.playlists]
+        playlists = self.plex_server.playlists(playlistType="audio") 
+
+        if not playlists or not playlist_names:
+            return False
+        
+        for playlist in playlists:
+            if (playlist.title not in playlist_names):
+                return False
+
+        return True
 
 
 

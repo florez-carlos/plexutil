@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict, List, overload
 from alive_progress import alive_bar
 from plexapi.audio import Audio
+from plexapi.exceptions import NotFound
 from plexapi.server import PlexServer
 from plexapi.video import Video
 from throws import throws
@@ -47,8 +48,41 @@ class Library(ABC):
     @abstractmethod
     @throws(LibraryOpException)
     def delete(self) -> None:
-        pass
 
+        try:
+            
+            result = self.plex_server.library.section(self.name.value)
+            
+            if (result):
+                result.delete()
+            else:
+                raise LibraryOpException("DELETE " + self.name.value + " LIBRARY | Nothing to delete")
+                
+        except LibraryOpException as e:
+            raise e
+        except NotFound as e:
+            raise LibraryOpException("DELETE " + self.name.value + " LIBRARY | Not found", original_exception=e)
+        except Exception as e:
+            raise LibraryOpException("DELETE " + self.name.value + " LIBRARY", original_exception=e)
+
+    @abstractmethod
+    @throws(LibraryOpException)
+    def exists(self) -> bool:
+
+        try:
+
+            result = self.plex_server.library.section(self.name.value)
+
+            if not result:
+                return False
+
+        except NotFound as e:
+            return False
+        except Exception as e:
+            raise LibraryOpException("EXISTS " + self.name.value + " LIBRARY", original_exception=e)
+
+
+        return True
 
     def poll(self, requested_attempts: int = 0, expected_count: int = 0,interval_seconds: int = 0, tvdb_ids: List[int] = []) -> None:
 
