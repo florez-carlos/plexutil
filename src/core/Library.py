@@ -52,51 +52,42 @@ class Library(ABC):
 
     def poll(self, requested_attempts: int = 0, expected_count: int = 0,interval_seconds: int = 0, tvdb_ids: List[int] = []) -> None:
 
-
-        current_count = len(self.query())
-
+        current_count = len(self.query(tvdb_ids))
         offset = abs(expected_count - current_count)
+
         print("Requested attempts: "+str(requested_attempts))
         print("Interval seconds: "+str(interval_seconds))
         print("Current count: "+str(current_count)+". Expected: "+str(expected_count))
         print("Expected net change: "+str(offset))
 
-        display_count = 0
-
         with alive_bar(offset) as bar:
             
-            attempts = -1
+            attempts = 0
+            display_count = 0
 
             while(attempts<requested_attempts):
 
+                updated_current_count = len(self.query(tvdb_ids))
+                offset = abs(updated_current_count - current_count)
+                current_count = updated_current_count
+
+                if (current_count == expected_count):
+
+                    for j in range(abs(current_count-display_count)):
+                        bar()
+                        
+                    break
+
+
+                for j in range(offset):
+                    display_count = ++display_count
+                    bar()
+
                 time.sleep(interval_seconds)
-                attempts = attempts+1
+                attempts = ++attempts
                 if attempts >= requested_attempts:
                     raise ExpectedLibraryCountException("TIMEOUT: Did not reach expected count")
 
-                if tvdb_ids:
-                    updated_current_count = len(self.query(tvdb_ids))
-                else:
-                    updated_current_count = len(self.query())
-
-                offset = abs(updated_current_count - current_count)
-
-                if (updated_current_count == current_count):
-
-                    for j in range(abs(updated_current_count-display_count)):
-                        bar()
-                    break
-                    
-
-                if offset == 0:
-                    continue
-                else:
-                    current_count = updated_current_count
-                    for j in range(offset):
-                        display_count = ++display_count
-                        bar()
-
-        return
 
 
     def query(self,tvdb_ids: List[int] = []) -> List[Audio] | List[Video]:
