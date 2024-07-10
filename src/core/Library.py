@@ -81,11 +81,11 @@ class Library(ABC):
 
 
                 for j in range(offset):
-                    display_count = ++display_count
+                    display_count = display_count+1
                     bar()
 
                 time.sleep(interval_seconds)
-                attempts = ++attempts
+                attempts = attempts+1
                 if attempts >= requested_attempts:
                     raise ExpectedLibraryCountException("TIMEOUT: Did not reach expected count")
 
