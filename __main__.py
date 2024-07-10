@@ -71,6 +71,7 @@ def main():
             music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
             tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
             movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
+            playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto)
 
             music_library.delete()
             tv_library.delete()
@@ -80,9 +81,7 @@ def main():
             tv_library.create()
             movie_library.create()
 
-            playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto)
             playlist_library.delete()
-            playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto_filtered)
             playlist_library.create()
 
         case UserRequest.DELETE_MUSIC_PLAYLIST:
