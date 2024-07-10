@@ -53,17 +53,18 @@ class Library(ABC):
     def poll(self, requested_attempts: int = 0, expected_count: int = 0,interval_seconds: int = 0, tvdb_ids: List[int] = []) -> None:
 
         current_count = len(self.query(tvdb_ids))
-        offset = abs(expected_count - current_count)
+        init_offset = abs(expected_count - current_count)
 
         print("Requested attempts: "+str(requested_attempts))
         print("Interval seconds: "+str(interval_seconds))
         print("Current count: "+str(current_count)+". Expected: "+str(expected_count))
         print("Expected net change: "+str(offset))
 
-        with alive_bar(offset) as bar:
+        with alive_bar(init_offset) as bar:
             
             attempts = 0
             display_count = 0
+            offset = init_offset
 
             while(attempts<requested_attempts):
 
