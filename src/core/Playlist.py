@@ -2,7 +2,7 @@ from pathlib import Path
 from plexapi.audio import os
 from plexapi.server import PlexServer
 from throws import throws
-from exception.LibraryOpException import LibraryOpException
+from src.exception.LibraryOpException import LibraryOpException
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
 from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
 from src.enum.Agent import Agent
