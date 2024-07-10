@@ -17,12 +17,14 @@ class FileImporter(Static):
     @staticmethod
     def get_library_preferences_dto(music_preferences_file_location: Path,
                                     movie_preferences_file_location: Path,
-                                    tv_preferences_file_location: Path
+                                    tv_preferences_file_location: Path,
+                                    plex_server_setting_prefs_file_location: Path
                                     ) -> LibraryPreferencesDTO:
 
         music_prefs = {}
         movie_prefs = {}
         tv_prefs = {}
+        plex_server_setting_prefs = {}
 
         try:
 
@@ -38,19 +40,25 @@ class FileImporter(Static):
                 file_dict = json.load(file)
                 tv_prefs = file_dict.get("prefs")
 
+            with plex_server_setting_prefs_file_location.open(encoding='utf-8') as file:
+                file_dict = json.load(file)
+                plex_server_setting_prefs = file_dict.get("prefs")
+
             if not music_prefs:
                 raise ImporterException("Could not import music preferences")
             elif not movie_prefs:
                 raise ImporterException("Could not import movie preferences")
             elif not tv_prefs:
                 raise ImporterException("Could not import tv preferences")
+            elif not plex_server_setting_prefs:
+                raise ImporterException("Could not import plex server setting preferences")
 
         except ImporterException as e:
             raise e
         except Exception as e:
             raise ImporterException(original_exception=e)
 
-        return LibraryPreferencesDTO(music_prefs, movie_prefs, tv_prefs)
+        return LibraryPreferencesDTO(music_prefs, movie_prefs, tv_prefs, plex_server_setting_prefs)
     
     @staticmethod
     def get_plex_config_dto(plex_config_file_location: Path) -> PlexConfigDTO:
