@@ -73,10 +73,12 @@ def main():
             movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
             playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto)
 
-            music_library.delete()
-            tv_library.delete()
-            movie_library.delete()
-            # playlist_library.delete()
+            if music_library.exists():
+                music_library.delete()
+            if tv_library.exists():
+                tv_library.delete()
+            if movie_library.exists():
+                movie_library.delete()
 
             music_library.create()
             tv_library.create()
@@ -86,7 +88,8 @@ def main():
         case UserRequest.DELETE_MUSIC_PLAYLIST:
 
             playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto_filtered)
-            playlist_library.delete()
+            if playlist_library.exists():
+                playlist_library.delete()
 
         case UserRequest.CREATE_MUSIC_PLAYLIST:
 
@@ -96,7 +99,8 @@ def main():
         case UserRequest.DELETE_MUSIC_LIBRARY:
 
             music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
-            music_library.delete()
+            if music_library.exists():
+                music_library.delete()
 
         case UserRequest.CREATE_MUSIC_LIBRARY:
 
@@ -111,7 +115,8 @@ def main():
         case UserRequest.DELETE_MOVIE_LIBRARY:
 
             movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
-            movie_library.delete()
+            if movie_library.exists():
+                movie_library.delete()
 
         case UserRequest.CREATE_TV_LIBRARY:
 
@@ -121,7 +126,8 @@ def main():
         case UserRequest.DELETE_TV_LIBRARY:
 
             tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
-            tv_library.delete()
+            if tv_library.exists():
+                tv_library.delete()
 
         case UserRequest.SET_SERVER_SETTINGS:
 
