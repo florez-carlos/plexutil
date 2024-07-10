@@ -41,7 +41,6 @@ class TVLibrary(Library):
             #This line triggers a refresh of the library
             self.plex_server.library.sections()
 
-
             self.plex_server.library.section(self.name.value).editAdvanced(**self.preferences.tv)
 
             manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
@@ -51,6 +50,7 @@ class TVLibrary(Library):
                 language = manifest_dto.language
                 ids = manifest_dto.ids
 
+                print("\n")
                 print("Checking server tv " + language.value + " language meets expected count: " + str(len(ids)))
                 self.poll(100,len(ids),10,ids)
 

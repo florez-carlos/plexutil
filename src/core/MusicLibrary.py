@@ -65,8 +65,9 @@ class MusicLibrary(Library):
             else:
                 raise LibraryOpException("CREATE", "Query Builder has not built a part!")
 
-            #Now we poll for library status
-            self.poll(100,self.music_playlist_file_dto.track_count,10)
+            print("\n")
+            print("Checking server music meets expected count: " + str(self.music_playlist_file_dto.track_count))
+            self.poll(200,self.music_playlist_file_dto.track_count,10)
 
         except LibraryOpException as e:
             raise e

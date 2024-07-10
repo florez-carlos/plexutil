@@ -20,7 +20,7 @@ class Playlist(Library):
                  language: Language,
                  music_playlist_file_dto: MusicPlaylistFileDTO):
         
-        super().__init__(plex_server,LibraryName.MUSIC,LibraryType.MUSIC,Agent.MUSIC,Scanner.MUSIC,location,language,LibraryPreferencesDTO({},{},{}))
+        super().__init__(plex_server,LibraryName.MUSIC,LibraryType.MUSIC,Agent.MUSIC,Scanner.MUSIC,location,language,LibraryPreferencesDTO({},{},{},{}))
         self.music_playlist_file_dto = music_playlist_file_dto
 
 
