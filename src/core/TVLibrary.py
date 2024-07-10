@@ -50,9 +50,10 @@ class TVLibrary(Library):
                 
                 language = manifest_dto.language
                 ids = manifest_dto.ids
-                print("Checking server tv custom language meets expected count: " + str(len(ids)))
+
+                print("Checking server tv " + language.value + " language meets expected count: " + str(len(ids)))
                 self.poll(100,len(ids),10,ids)
-                # shows = self.query(ids)
+
                 shows = []
                 
                 for show in shows:
