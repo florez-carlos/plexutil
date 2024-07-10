@@ -1,6 +1,4 @@
 # import requests
-import os
-import pathlib
 from plexapi.server import PlexServer
 
 from src.core.Playlist import Playlist
@@ -15,6 +13,7 @@ from src.core.MovieLibrary import MovieLibrary
 from src.core.TVLibrary import TVLibrary
 from src.enum.Language import Language
 from src.util.PathOps import PathOps
+from src.util.PlexOps import PlexOps
 
 
 def main():
@@ -63,9 +62,7 @@ def main():
             return
         case UserRequest.INIT:
 
-            server_settings = preferences_dto.plex_server_settings
-            for id, value in server_settings.items():
-                plex_server.settings.get(id).set(value)
+            PlexOps.set_server_settings(plex_server,preferences_dto)
 
             music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
             tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
@@ -126,11 +123,7 @@ def main():
 
         case UserRequest.SET_SERVER_SETTINGS:
 
-            server_settings = preferences_dto.plex_server_settings
-            for id, value in server_settings.items():
-                plex_server.settings.get(id).set(value)
-
-            
+            PlexOps.set_server_settings(plex_server,preferences_dto)
 
 
 
