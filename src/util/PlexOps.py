@@ -1,13 +1,14 @@
 from plexapi.server import PlexServer
 
-from src.Static import Static
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
+from src.Static import Static
 
 
 class PlexOps(Static):
     @staticmethod
     def set_server_settings(
-        plex_server: PlexServer, library_preferences_dto: LibraryPreferencesDTO
+        plex_server: PlexServer,
+        library_preferences_dto: LibraryPreferencesDTO,
     ) -> None:
         server_settings = library_preferences_dto.plex_server_settings
         for id, value in server_settings.items():

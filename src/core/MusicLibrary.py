@@ -1,15 +1,17 @@
 from pathlib import Path
+
 from plexapi.server import PlexServer
 from throws import throws
+
+from src.core.Library import Library
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.exception.LibraryOpException import LibraryOpException
+from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
 from src.enum.Agent import Agent
 from src.enum.Language import Language
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Scanner import Scanner
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from src.core.Library import Library
+from src.exception.LibraryOpException import LibraryOpException
 from src.util.QueryBuilder import QueryBuilder
 
 
@@ -57,17 +59,19 @@ class MusicLibrary(Library):
             # This posts a music library
             if part:
                 self.plex_server.query(
-                    part, method=self.plex_server._session.post
+                    part,
+                    method=self.plex_server._session.post,
                 )
             else:
                 raise LibraryOpException(
-                    "CREATE", "Query Builder has not built a part!"
+                    "CREATE",
+                    "Query Builder has not built a part!",
                 )
 
             print("\n")
             print(
                 "Checking server music meets expected count: "
-                + str(self.music_playlist_file_dto.track_count)
+                + str(self.music_playlist_file_dto.track_count),
             )
             self.poll(200, self.music_playlist_file_dto.track_count, 10)
 

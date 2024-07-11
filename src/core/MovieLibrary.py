@@ -1,14 +1,16 @@
 from pathlib import Path
+
 from plexapi.server import PlexServer
 from throws import throws
+
+from src.core.Library import Library
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.exception.LibraryOpException import LibraryOpException
 from src.enum.Agent import Agent
 from src.enum.Language import Language
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Scanner import Scanner
-from src.core.Library import Library
+from src.exception.LibraryOpException import LibraryOpException
 
 
 class MovieLibrary(Library):
@@ -46,15 +48,13 @@ class MovieLibrary(Library):
             self.plex_server.library.sections()
 
             self.plex_server.library.section(self.name.value).editAdvanced(
-                **self.preferences.movie
+                **self.preferences.movie,
             )
 
         except LibraryOpException as e:
             raise e
         except Exception as e:
             raise LibraryOpException("CREATE", original_exception=e)
-
-        return
 
     @throws(LibraryOpException)
     def delete(self) -> None:

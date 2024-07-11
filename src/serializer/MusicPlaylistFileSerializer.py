@@ -21,7 +21,7 @@ class MusicPlaylistFileSerializer(Serializer):
             songs = playlist.songs
             for song in songs:
                 songs_dict.append(
-                    {"fileName": song.name + "." + song.extension.value}
+                    {"fileName": song.name + "." + song.extension.value},
                 )
 
             playlists_dict.append({"playlistName": name, "songs": songs_dict})
@@ -47,7 +47,8 @@ class MusicPlaylistFileSerializer(Serializer):
                 song_extension = file_name[dot_position + 1 :]
 
                 song_dto = SongDTO(
-                    song_name, FileType.get_file_type_from_str(song_extension)
+                    song_name,
+                    FileType.get_file_type_from_str(song_extension),
                 )
                 playlist_songs.append(song_dto)
 

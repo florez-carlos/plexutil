@@ -1,7 +1,9 @@
 from pathlib import Path
+
 from plexapi.server import PlexServer
 from throws import throws
-from src.exception.LibraryOpException import LibraryOpException
+
+from src.core.Library import Library
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
 from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
 from src.enum.Agent import Agent
@@ -9,7 +11,7 @@ from src.enum.Language import Language
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Scanner import Scanner
-from src.core.Library import Library
+from src.exception.LibraryOpException import LibraryOpException
 from src.util.PathOps import PathOps
 
 
@@ -36,14 +38,14 @@ class Playlist(Library):
     @throws(LibraryOpException)
     def create(self) -> None:
         tracks = self.plex_server.library.section(
-            self.name.value
+            self.name.value,
         ).searchTracks()
         plex_track_dict = {}
         plex_playlist = []
 
         print(
             "Checking server track count meets expected count: "
-            + str(self.music_playlist_file_dto.track_count)
+            + str(self.music_playlist_file_dto.track_count),
         )
         self.poll(10, self.music_playlist_file_dto.track_count, 10)
 
@@ -52,7 +54,7 @@ class Playlist(Library):
         for track in tracks:
             plex_track_absolute_location = track.locations[0]
             plex_track_path = PathOps.get_path_from_str(
-                plex_track_absolute_location
+                plex_track_absolute_location,
             )
             plex_track_full_name = plex_track_path.name
             plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
@@ -69,13 +71,14 @@ class Playlist(Library):
                     raise ValueError(
                         "File in music playlist: '"
                         + song_name
-                        + "' does not exist in server"
+                        + "' does not exist in server",
                     )
 
                 plex_playlist.append(plex_track_dict.get(song_name))
 
             self.plex_server.createPlaylist(
-                title=playlist_name, items=plex_playlist
+                title=playlist_name,
+                items=plex_playlist,
             )
             plex_playlist = []
 

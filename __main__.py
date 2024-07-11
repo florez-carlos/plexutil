@@ -1,22 +1,19 @@
-# import requests
 from plexapi.server import PlexServer
 
+from src.core.MovieLibrary import MovieLibrary
+from src.core.MusicLibrary import MusicLibrary
 from src.core.Playlist import Playlist
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
 from src.core.Prompt import Prompt
+from src.core.TVLibrary import TVLibrary
+from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
+from src.enum.Language import Language
 from src.enum.UserRequest import UserRequest
 from src.util.FileImporter import FileImporter
-
-
-from src.core.MusicLibrary import MusicLibrary
-from src.core.MovieLibrary import MovieLibrary
-from src.core.TVLibrary import TVLibrary
-from src.enum.Language import Language
 from src.util.PathOps import PathOps
 from src.util.PlexOps import PlexOps
 
 
-def main():
+def main() -> None:
     instructions_dto = Prompt.get_user_instructions_dto()
 
     request = instructions_dto.request
@@ -27,7 +24,7 @@ def main():
     port = int(plex_config_dto.port)
     token = plex_config_dto.token
 
-    baseurl = "http://% s:% s" % (host, port)
+    baseurl = f"http://{host}:{port}"
     plex_server = PlexServer(baseurl, token)
 
     music_location = instructions_dto.plex_config_dto.music_folder_path
@@ -72,10 +69,10 @@ def main():
         plex_server_setting_prefs_file_location,
     )
     music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(
-        music_playlist_file_location
+        music_playlist_file_location,
     )
     tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(
-        tv_language_manifest_file_location
+        tv_language_manifest_file_location,
     )
 
     playlists = []
@@ -87,7 +84,8 @@ def main():
                 playlists.append(playlist)
 
         music_playlist_file_dto_filtered = MusicPlaylistFileDTO(
-            music_playlist_file_dto.track_count, playlists
+            music_playlist_file_dto.track_count,
+            playlists,
         )
 
     if instructions_dto.is_all_items:

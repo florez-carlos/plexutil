@@ -1,5 +1,5 @@
-import urllib.parse
 import typing
+import urllib.parse
 
 
 class QueryBuilder:

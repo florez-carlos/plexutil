@@ -1,19 +1,20 @@
 from pathlib import Path
 
 from plexapi.utils import json
+
+from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
+from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
+from src.dto.PlexConfigDTO import PlexConfigDTO
 from src.dto.TVLanguageManifestFileDTO import TVLanguageManifestFileDTO
+from src.exception.ImporterException import ImporterException
+from src.serializer.MusicPlaylistFileSerializer import (
+    MusicPlaylistFileSerializer,
+)
+from src.serializer.PlexConfigSerializer import PlexConfigSerializer
 from src.serializer.TVLanguageManifestSerializer import (
     TVLanguageManifestSerializer,
 )
 from src.Static import Static
-from src.exception.ImporterException import ImporterException
-from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.dto.PlexConfigDTO import PlexConfigDTO
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from src.serializer.PlexConfigSerializer import PlexConfigSerializer
-from src.serializer.MusicPlaylistFileSerializer import (
-    MusicPlaylistFileSerializer,
-)
 
 
 class FileImporter(Static):
@@ -31,13 +32,13 @@ class FileImporter(Static):
 
         try:
             with music_preferences_file_location.open(
-                encoding="utf-8"
+                encoding="utf-8",
             ) as file:
                 file_dict = json.load(file)
                 music_prefs = file_dict.get("prefs")
 
             with movie_preferences_file_location.open(
-                encoding="utf-8"
+                encoding="utf-8",
             ) as file:
                 file_dict = json.load(file)
                 movie_prefs = file_dict.get("prefs")
@@ -47,7 +48,7 @@ class FileImporter(Static):
                 tv_prefs = file_dict.get("prefs")
 
             with plex_server_setting_prefs_file_location.open(
-                encoding="utf-8"
+                encoding="utf-8",
             ) as file:
                 file_dict = json.load(file)
                 plex_server_setting_prefs = file_dict.get("prefs")
@@ -60,7 +61,7 @@ class FileImporter(Static):
                 raise ImporterException("Could not import tv preferences")
             elif not plex_server_setting_prefs:
                 raise ImporterException(
-                    "Could not import plex server setting preferences"
+                    "Could not import plex server setting preferences",
                 )
 
         except ImporterException as e:
@@ -69,7 +70,10 @@ class FileImporter(Static):
             raise ImporterException(original_exception=e)
 
         return LibraryPreferencesDTO(
-            music_prefs, movie_prefs, tv_prefs, plex_server_setting_prefs
+            music_prefs,
+            movie_prefs,
+            tv_prefs,
+            plex_server_setting_prefs,
         )
 
     @staticmethod
@@ -98,7 +102,8 @@ class FileImporter(Static):
                 mode = "x"
 
             with plex_config_file_location.open(
-                encoding="utf-8", mode=mode
+                encoding="utf-8",
+                mode=mode,
             ) as f:
                 serializer = PlexConfigSerializer()
                 json.dump(serializer.to_json(plex_config_dto), f, indent=4)

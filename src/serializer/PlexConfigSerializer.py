@@ -1,5 +1,5 @@
-from src.enum.LibraryType import LibraryType
 from src.dto.PlexConfigDTO import PlexConfigDTO
+from src.enum.LibraryType import LibraryType
 from src.serializer.Serializer import Serializer
 from src.util.PathOps import PathOps
 
@@ -19,7 +19,7 @@ class PlexConfigSerializer(Serializer):
                     "port": serializable.port,
                     "token": serializable.token,
                 },
-            }
+            },
         }
 
         return config
@@ -28,13 +28,19 @@ class PlexConfigSerializer(Serializer):
         paths = json_dict["config"]["paths"]
 
         music_folder_path = PathOps.get_path_from_str(
-            paths["music_folder"], LibraryType.MUSIC.value, is_dir=True
+            paths["music_folder"],
+            LibraryType.MUSIC.value,
+            is_dir=True,
         )
         movie_folder_path = PathOps.get_path_from_str(
-            paths["movie_folder"], LibraryType.MOVIE.value, is_dir=True
+            paths["movie_folder"],
+            LibraryType.MOVIE.value,
+            is_dir=True,
         )
         tv_folder_path = PathOps.get_path_from_str(
-            paths["tv_folder"], LibraryType.TV.value, is_dir=True
+            paths["tv_folder"],
+            LibraryType.TV.value,
+            is_dir=True,
         )
         # music_playlist_file_path = PathOps.get_path_from_str(paths["music_playlist_file"],"Music Playlist",is_file=True)
 
@@ -46,7 +52,7 @@ class PlexConfigSerializer(Serializer):
         if not isinstance(plex_server_port, int):
             raise ValueError(
                 "Expected plex server port to be an int but got a %s"
-                % (type(plex_server_port))
+                % (type(plex_server_port)),
             )
 
         plex_server_token = plex["token"]

@@ -1,24 +1,25 @@
 import time
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List
+
 from alive_progress import alive_bar
 from plexapi.audio import Audio
 from plexapi.exceptions import NotFound
 from plexapi.server import PlexServer
 from plexapi.video import Video
 from throws import throws
+
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
+from src.enum.Agent import Agent
+from src.enum.Language import Language
+from src.enum.LibraryName import LibraryName
+from src.enum.LibraryType import LibraryType
+from src.enum.Scanner import Scanner
 from src.exception.ExpectedLibraryCountException import (
     ExpectedLibraryCountException,
 )
 from src.exception.LibraryOpException import LibraryOpException
-from src.enum.Agent import Agent
-from src.enum.LibraryName import LibraryName
-from src.enum.Scanner import Scanner
-from src.enum.Language import Language
-from src.enum.LibraryType import LibraryType
-
-from abc import ABC, abstractmethod
 
 
 class Library(ABC):
@@ -59,7 +60,7 @@ class Library(ABC):
                 raise LibraryOpException(
                     "DELETE "
                     + self.name.value
-                    + " LIBRARY | Nothing to delete"
+                    + " LIBRARY | Nothing to delete",
                 )
 
         except LibraryOpException as e:
@@ -71,7 +72,8 @@ class Library(ABC):
             )
         except Exception as e:
             raise LibraryOpException(
-                "DELETE " + self.name.value + " LIBRARY", original_exception=e
+                "DELETE " + self.name.value + " LIBRARY",
+                original_exception=e,
             )
 
     @abstractmethod
@@ -87,7 +89,8 @@ class Library(ABC):
             return False
         except Exception as e:
             raise LibraryOpException(
-                "EXISTS " + self.name.value + " LIBRARY", original_exception=e
+                "EXISTS " + self.name.value + " LIBRARY",
+                original_exception=e,
             )
 
         return True
@@ -108,7 +111,7 @@ class Library(ABC):
             "Current count: "
             + str(current_count)
             + ". Expected: "
-            + str(expected_count)
+            + str(expected_count),
         )
         print("Expected net change: " + str(init_offset))
 
@@ -136,7 +139,7 @@ class Library(ABC):
                 attempts = attempts + 1
                 if attempts >= requested_attempts:
                     raise ExpectedLibraryCountException(
-                        "TIMEOUT: Did not reach expected count"
+                        "TIMEOUT: Did not reach expected count",
                     )
 
     def query(self, tvdb_ids: List[int] = []) -> List[Audio] | List[Video]:
@@ -146,10 +149,10 @@ class Library(ABC):
                     "Library type: "
                     + LibraryType.MUSIC.value
                     + " not compatible with tvdb ids but tvdb ids supplied: "
-                    + str(tvdb_ids)
+                    + str(tvdb_ids),
                 )
             return self.plex_server.library.section(
-                self.name.value
+                self.name.value,
             ).searchTracks()
         elif self.library_type is LibraryType.TV:
             shows = self.plex_server.library.section(self.name.value).all()
@@ -168,5 +171,5 @@ class Library(ABC):
 
         else:
             raise ExpectedLibraryCountException(
-                "Unsupported Library Type: " + self.library_type.value
+                "Unsupported Library Type: " + self.library_type.value,
             )

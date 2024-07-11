@@ -15,7 +15,7 @@ class PathOps(Static):
             if not path_candidate:
                 raise ValueError(
                     "Expected a path candidate for %s but none supplied"
-                    % (path_candidate_name)
+                    % (path_candidate_name),
                 )
 
             path = Path(path_candidate)
@@ -23,17 +23,17 @@ class PathOps(Static):
             if not path.exists():
                 raise ValueError(
                     "Path candidate for %s does not exist %s"
-                    % (path_candidate_name, path_candidate)
+                    % (path_candidate_name, path_candidate),
                 )
             elif is_dir and not path.is_dir():
                 raise ValueError(
                     "Expected a dir for %s but path candidate is not a dir %s"
-                    % (path_candidate_name, path_candidate)
+                    % (path_candidate_name, path_candidate),
                 )
             elif is_file and not path.is_file():
                 raise ValueError(
                     "Expected a file for %s but path candidate is not a file %s"
-                    % (path_candidate_name, path_candidate)
+                    % (path_candidate_name, path_candidate),
                 )
 
             return path

@@ -1,15 +1,17 @@
 from pathlib import Path
+
 from plexapi.server import PlexServer
 from throws import throws
+
+from src.core.Library import Library
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
 from src.dto.TVLanguageManifestFileDTO import TVLanguageManifestFileDTO
-from src.exception.LibraryOpException import LibraryOpException
 from src.enum.Agent import Agent
 from src.enum.Language import Language
 from src.enum.LibraryName import LibraryName
 from src.enum.LibraryType import LibraryType
 from src.enum.Scanner import Scanner
-from src.core.Library import Library
+from src.exception.LibraryOpException import LibraryOpException
 
 
 class TVLibrary(Library):
@@ -49,7 +51,7 @@ class TVLibrary(Library):
             self.plex_server.library.sections()
 
             self.plex_server.library.section(self.name.value).editAdvanced(
-                **self.preferences.tv
+                **self.preferences.tv,
             )
 
             manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
@@ -63,7 +65,7 @@ class TVLibrary(Library):
                     "Checking server tv "
                     + language.value
                     + " language meets expected count: "
-                    + str(len(ids))
+                    + str(len(ids)),
                 )
                 self.poll(100, len(ids), 10, ids)
 
@@ -78,8 +80,6 @@ class TVLibrary(Library):
             raise e
         except Exception as e:
             raise LibraryOpException("CREATE", original_exception=e)
-
-        return
 
     @throws(LibraryOpException)
     def delete(self) -> None:

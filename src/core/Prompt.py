@@ -1,12 +1,12 @@
 import argparse
 import pathlib
 
-from src.Static import Static
 from src.dto.PlexConfigDTO import PlexConfigDTO
 from src.dto.UserInstructionsDTO import UserInstructionsDTO
 from src.enum.UserRequest import UserRequest
-from src.util.PathOps import PathOps
+from src.Static import Static
 from src.util.FileImporter import FileImporter
+from src.util.PathOps import PathOps
 
 
 class Prompt(Static):
@@ -50,7 +50,7 @@ class Prompt(Static):
             type=pathlib.Path,
             nargs="?",
             help="Path to music folder",
-            default=pathlib.Path(""),
+            default=pathlib.Path(),
         )
 
         parser.add_argument(
@@ -60,7 +60,7 @@ class Prompt(Static):
             type=pathlib.Path,
             nargs="?",
             help="Path to movie folder",
-            default=pathlib.Path(""),
+            default=pathlib.Path(),
         )
 
         parser.add_argument(
@@ -70,7 +70,7 @@ class Prompt(Static):
             type=pathlib.Path,
             nargs="?",
             help="Path to tv folder",
-            default=pathlib.Path(""),
+            default=pathlib.Path(),
         )
 
         parser.add_argument(
@@ -113,13 +113,13 @@ class Prompt(Static):
 
         if request is None:
             raise ValueError(
-                "Positional argument (request) expected but none supplied, see -h"
+                "Positional argument (request) expected but none supplied, see -h",
             )
 
         if items is not None:
             if is_all_items:
                 raise ValueError(
-                    "--all_items requested but --items also specified, only one can be used at a time"
+                    "--all_items requested but --items also specified, only one can be used at a time",
                 )
 
             items = [x for x in items.split(",")]
@@ -145,11 +145,12 @@ class Prompt(Static):
 
         if is_config:
             FileImporter.save_plex_config_dto(
-                config_file_path, plex_config_dto
+                config_file_path,
+                plex_config_dto,
             )
         else:
             plex_config_dto = FileImporter.get_plex_config_dto(
-                config_file_path
+                config_file_path,
             )
 
         return UserInstructionsDTO(
