@@ -17,9 +17,8 @@ from src.util.PlexOps import PlexOps
 
 
 def main():
-
     instructions_dto = Prompt.get_user_instructions_dto()
-            
+
     request = instructions_dto.request
     items = instructions_dto.items
     plex_config_dto = instructions_dto.plex_config_dto
@@ -28,25 +27,58 @@ def main():
     port = int(plex_config_dto.port)
     token = plex_config_dto.token
 
-    baseurl = 'http://% s:% s' % (host,port)
+    baseurl = "http://% s:% s" % (host, port)
     plex_server = PlexServer(baseurl, token)
 
     music_location = instructions_dto.plex_config_dto.music_folder_path
     movie_location = instructions_dto.plex_config_dto.movie_folder_path
     tv_location = instructions_dto.plex_config_dto.tv_folder_path
 
-    music_prefs_file_location = PathOps.get_project_root() / "src" / "config" / "MusicLibraryPrefs.json"
-    movie_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "MovieLibraryPrefs.json"
-    tv_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "TVLibraryPrefs.json"
-    plex_server_setting_prefs_file_location =  PathOps.get_project_root() / "src" / "config" / "PlexServerSettingPrefs.json"
-    music_playlist_file_location = PathOps.get_project_root() / "src" / "config" / "MusicPlaylists.json"
-    tv_language_manifest_file_location = PathOps.get_project_root() / "src" / "config" / "TVLanguageManifest.json"
+    music_prefs_file_location = (
+        PathOps.get_project_root()
+        / "src"
+        / "config"
+        / "MusicLibraryPrefs.json"
+    )
+    movie_prefs_file_location = (
+        PathOps.get_project_root()
+        / "src"
+        / "config"
+        / "MovieLibraryPrefs.json"
+    )
+    tv_prefs_file_location = (
+        PathOps.get_project_root() / "src" / "config" / "TVLibraryPrefs.json"
+    )
+    plex_server_setting_prefs_file_location = (
+        PathOps.get_project_root()
+        / "src"
+        / "config"
+        / "PlexServerSettingPrefs.json"
+    )
+    music_playlist_file_location = (
+        PathOps.get_project_root() / "src" / "config" / "MusicPlaylists.json"
+    )
+    tv_language_manifest_file_location = (
+        PathOps.get_project_root()
+        / "src"
+        / "config"
+        / "TVLanguageManifest.json"
+    )
 
-    preferences_dto = FileImporter.get_library_preferences_dto(music_prefs_file_location,movie_prefs_file_location,tv_prefs_file_location, plex_server_setting_prefs_file_location) 
-    music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(music_playlist_file_location)
-    tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(tv_language_manifest_file_location)
+    preferences_dto = FileImporter.get_library_preferences_dto(
+        music_prefs_file_location,
+        movie_prefs_file_location,
+        tv_prefs_file_location,
+        plex_server_setting_prefs_file_location,
+    )
+    music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(
+        music_playlist_file_location
+    )
+    tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(
+        tv_language_manifest_file_location
+    )
 
-    playlists =[]
+    playlists = []
     music_playlist_file_dto_filtered = MusicPlaylistFileDTO()
 
     if items:
@@ -54,10 +86,11 @@ def main():
             if playlist.name in items:
                 playlists.append(playlist)
 
-        music_playlist_file_dto_filtered = MusicPlaylistFileDTO(music_playlist_file_dto.track_count,playlists)
+        music_playlist_file_dto_filtered = MusicPlaylistFileDTO(
+            music_playlist_file_dto.track_count, playlists
+        )
 
     if instructions_dto.is_all_items:
-
         music_playlist_file_dto_filtered = music_playlist_file_dto
 
     match request:
@@ -65,13 +98,34 @@ def main():
         case UserRequest.CONFIG:
             return
         case UserRequest.INIT:
+            PlexOps.set_server_settings(plex_server, preferences_dto)
 
-            PlexOps.set_server_settings(plex_server,preferences_dto)
-
-            music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
-            tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
-            movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
-            playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto)
+            music_library = MusicLibrary(
+                plex_server,
+                music_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+                music_playlist_file_dto,
+            )
+            tv_library = TVLibrary(
+                plex_server,
+                tv_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+                tv_language_manifest_file_dto,
+            )
+            movie_library = MovieLibrary(
+                plex_server,
+                movie_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+            )
+            playlist_library = Playlist(
+                plex_server,
+                music_location,
+                Language.ENGLISH_US,
+                music_playlist_file_dto,
+            )
 
             if music_library.exists():
                 music_library.delete()
@@ -86,54 +140,88 @@ def main():
             playlist_library.create()
 
         case UserRequest.DELETE_MUSIC_PLAYLIST:
-
-            playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto_filtered)
+            playlist_library = Playlist(
+                plex_server,
+                music_location,
+                Language.ENGLISH_US,
+                music_playlist_file_dto_filtered,
+            )
             if playlist_library.exists():
                 playlist_library.delete()
 
         case UserRequest.CREATE_MUSIC_PLAYLIST:
-
-            playlist_library = Playlist(plex_server,music_location,Language.ENGLISH_US,music_playlist_file_dto_filtered)
+            playlist_library = Playlist(
+                plex_server,
+                music_location,
+                Language.ENGLISH_US,
+                music_playlist_file_dto_filtered,
+            )
             playlist_library.create()
 
         case UserRequest.DELETE_MUSIC_LIBRARY:
-
-            music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
+            music_library = MusicLibrary(
+                plex_server,
+                music_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+                music_playlist_file_dto,
+            )
             if music_library.exists():
                 music_library.delete()
 
         case UserRequest.CREATE_MUSIC_LIBRARY:
-
-            music_library = MusicLibrary(plex_server,music_location,Language.ENGLISH_US,preferences_dto,music_playlist_file_dto)
+            music_library = MusicLibrary(
+                plex_server,
+                music_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+                music_playlist_file_dto,
+            )
             music_library.create()
 
         case UserRequest.CREATE_MOVIE_LIBRARY:
-
-            movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
+            movie_library = MovieLibrary(
+                plex_server,
+                movie_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+            )
             movie_library.create()
 
         case UserRequest.DELETE_MOVIE_LIBRARY:
-
-            movie_library = MovieLibrary(plex_server,movie_location,Language.ENGLISH_US,preferences_dto)
+            movie_library = MovieLibrary(
+                plex_server,
+                movie_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+            )
             if movie_library.exists():
                 movie_library.delete()
 
         case UserRequest.CREATE_TV_LIBRARY:
-
-            tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
+            tv_library = TVLibrary(
+                plex_server,
+                tv_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+                tv_language_manifest_file_dto,
+            )
             tv_library.create()
 
         case UserRequest.DELETE_TV_LIBRARY:
-
-            tv_library = TVLibrary(plex_server,tv_location,Language.ENGLISH_US,preferences_dto,tv_language_manifest_file_dto)
+            tv_library = TVLibrary(
+                plex_server,
+                tv_location,
+                Language.ENGLISH_US,
+                preferences_dto,
+                tv_language_manifest_file_dto,
+            )
             if tv_library.exists():
                 tv_library.delete()
 
         case UserRequest.SET_SERVER_SETTINGS:
-
-            PlexOps.set_server_settings(plex_server,preferences_dto)
-
+            PlexOps.set_server_settings(plex_server, preferences_dto)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

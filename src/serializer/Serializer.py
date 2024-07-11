@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 from src.serializer.Serializable import Serializable
 
-class Serializer(ABC):
 
+class Serializer(ABC):
     @abstractmethod
     def to_json(self, serializable) -> dict:
         pass
@@ -11,4 +11,3 @@ class Serializer(ABC):
     @abstractmethod
     def to_dto(self, json_dict: dict) -> Serializable:
         pass
-    

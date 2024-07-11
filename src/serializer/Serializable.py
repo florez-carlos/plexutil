@@ -1,3 +1,3 @@
-#Marker class
-class Serializable():
+# Marker class
+class Serializable:
     pass

@@ -11,24 +11,30 @@ from src.enum.LibraryType import LibraryType
 from src.enum.Scanner import Scanner
 from src.core.Library import Library
 
+
 class TVLibrary(Library):
-
-    def __init__(self,
-                 plex_server: PlexServer,
-                 location:Path,
-                 language: Language,
-                 preferences: LibraryPreferencesDTO,
-                 tv_language_manifest_file_dto: TVLanguageManifestFileDTO):
-        
-        super().__init__(plex_server,LibraryName.TV,LibraryType.TV,Agent.TV,Scanner.TV,location,language,preferences)
+    def __init__(
+        self,
+        plex_server: PlexServer,
+        location: Path,
+        language: Language,
+        preferences: LibraryPreferencesDTO,
+        tv_language_manifest_file_dto: TVLanguageManifestFileDTO,
+    ):
+        super().__init__(
+            plex_server,
+            LibraryName.TV,
+            LibraryType.TV,
+            Agent.TV,
+            Scanner.TV,
+            location,
+            language,
+            preferences,
+        )
         self.tv_language_manifest_file_dto = tv_language_manifest_file_dto
-        
-
-
 
     @throws(LibraryOpException)
     def create(self) -> None:
-        
         try:
             self.plex_server.library.add(
                 name=self.name.value,
@@ -36,31 +42,37 @@ class TVLibrary(Library):
                 agent=self.agent.value,
                 scanner=self.scanner.value,
                 location=str(self.location),
-                language=self.language.value)
+                language=self.language.value,
+            )
 
-            #This line triggers a refresh of the library
+            # This line triggers a refresh of the library
             self.plex_server.library.sections()
 
-            self.plex_server.library.section(self.name.value).editAdvanced(**self.preferences.tv)
+            self.plex_server.library.section(self.name.value).editAdvanced(
+                **self.preferences.tv
+            )
 
             manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
-            
+
             for manifest_dto in manifests_dto:
-                
                 language = manifest_dto.language
                 ids = manifest_dto.ids
 
                 print("\n")
-                print("Checking server tv " + language.value + " language meets expected count: " + str(len(ids)))
-                self.poll(100,len(ids),10,ids)
+                print(
+                    "Checking server tv "
+                    + language.value
+                    + " language meets expected count: "
+                    + str(len(ids))
+                )
+                self.poll(100, len(ids), 10, ids)
 
                 shows = []
-                
+
                 for show in shows:
                     show.editAdvanced(languageOverride=language.value)
-                    
+
                 self.plex_server.library.section(self.name.value).refresh()
-                
 
         except LibraryOpException as e:
             raise e
@@ -76,4 +88,3 @@ class TVLibrary(Library):
     @throws(LibraryOpException)
     def exists(self) -> bool:
         return super().exists()
-

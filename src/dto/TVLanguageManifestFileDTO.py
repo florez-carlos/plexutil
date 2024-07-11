@@ -7,15 +7,15 @@ from src.serializer.Serializable import Serializable
 
 @dataclass(frozen=True)
 class TVLanguageManifestFileDTO(Serializable):
-
     manifests_dto: List[TVLanguageManifestDTO]
 
-def __eq__(self, other):
 
+def __eq__(self, other):
     if not isinstance(other, TVLanguageManifestFileDTO):
         return NotImplemented
 
     return self.manifests_dto == other.manifests_dto
+
 
 def __hash__(self):
     return hash((self.language, self.ids))

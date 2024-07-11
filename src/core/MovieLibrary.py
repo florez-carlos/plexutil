@@ -11,38 +11,43 @@ from src.enum.Scanner import Scanner
 from src.core.Library import Library
 
 
-
 class MovieLibrary(Library):
-
-    def __init__(self,
-                 plex_server: PlexServer,
-                 location:Path,
-                 language: Language,
-                 preferences: LibraryPreferencesDTO):
-        
-        super().__init__(plex_server,LibraryName.MOVIE,LibraryType.MOVIE,Agent.MOVIE,Scanner.MOVIE,location,language,preferences)
-        
-
-
+    def __init__(
+        self,
+        plex_server: PlexServer,
+        location: Path,
+        language: Language,
+        preferences: LibraryPreferencesDTO,
+    ):
+        super().__init__(
+            plex_server,
+            LibraryName.MOVIE,
+            LibraryType.MOVIE,
+            Agent.MOVIE,
+            Scanner.MOVIE,
+            location,
+            language,
+            preferences,
+        )
 
     @throws(LibraryOpException)
     def create(self) -> None:
-        
         try:
-                
             self.plex_server.library.add(
                 name=self.name.value,
                 type=self.library_type.value,
                 agent=self.agent.value,
                 scanner=self.scanner.value,
                 location=str(self.location),
-                language=self.language.value)
+                language=self.language.value,
+            )
 
-            #This line triggers a refresh of the library
+            # This line triggers a refresh of the library
             self.plex_server.library.sections()
 
-
-            self.plex_server.library.section(self.name.value).editAdvanced(**self.preferences.movie)
+            self.plex_server.library.section(self.name.value).editAdvanced(
+                **self.preferences.movie
+            )
 
         except LibraryOpException as e:
             raise e

@@ -6,14 +6,10 @@ from src.serializer.Serializer import Serializer
 
 
 class MusicPlaylistFileSerializer(Serializer):
-
-
     def to_json(self, serializable: MusicPlaylistFileDTO) -> dict:
-
-
         music_playlist_file = {
-                "trackCount": serializable.track_count,
-                "playlists": []
+            "trackCount": serializable.track_count,
+            "playlists": [],
         }
 
         playlists_dict = []
@@ -24,18 +20,17 @@ class MusicPlaylistFileSerializer(Serializer):
             name = playlist.name
             songs = playlist.songs
             for song in songs:
-                songs_dict.append({"fileName": song.name+"."+song.extension.value})
+                songs_dict.append(
+                    {"fileName": song.name + "." + song.extension.value}
+                )
 
             playlists_dict.append({"playlistName": name, "songs": songs_dict})
 
-
-        music_playlist_file["playlists"] =  playlists_dict
+        music_playlist_file["playlists"] = playlists_dict
 
         return music_playlist_file
 
-
     def to_dto(self, json_dict: dict) -> MusicPlaylistFileDTO:
-
         track_count = json_dict["trackCount"]
         playlists = json_dict["playlists"]
         playlists_dto = []
@@ -45,19 +40,18 @@ class MusicPlaylistFileSerializer(Serializer):
             playlist_songs = []
             songs = playlist["songs"]
             for song in songs:
-
                 file_name = song["fileName"]
 
-                dot_position = file_name.rfind('.')
+                dot_position = file_name.rfind(".")
                 song_name = file_name[:dot_position]
-                song_extension = file_name[dot_position + 1:]
+                song_extension = file_name[dot_position + 1 :]
 
-                song_dto = SongDTO(song_name,FileType.get_file_type_from_str(song_extension))
+                song_dto = SongDTO(
+                    song_name, FileType.get_file_type_from_str(song_extension)
+                )
                 playlist_songs.append(song_dto)
 
-            playlist_dto = MusicPlaylistDTO(playlist_name,playlist_songs)
+            playlist_dto = MusicPlaylistDTO(playlist_name, playlist_songs)
             playlists_dto.append(playlist_dto)
 
-
-        return MusicPlaylistFileDTO(track_count,playlists_dto)
-
+        return MusicPlaylistFileDTO(track_count, playlists_dto)
