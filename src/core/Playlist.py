@@ -1,5 +1,4 @@
 from pathlib import Path
-from plexapi.audio import os
 from plexapi.server import PlexServer
 from throws import throws
 from src.exception.LibraryOpException import LibraryOpException

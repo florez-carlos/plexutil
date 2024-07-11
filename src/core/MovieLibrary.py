@@ -1,7 +1,4 @@
 from pathlib import Path
-from typing import List
-from plexapi.audio import Audio
-from plexapi.exceptions import NotFound
 from plexapi.server import PlexServer
 from throws import throws
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO

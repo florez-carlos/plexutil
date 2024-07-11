@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import Dict, List, overload
+from typing import List
 from alive_progress import alive_bar
 from plexapi.audio import Audio
 from plexapi.exceptions import NotFound
@@ -10,11 +10,9 @@ from throws import throws
 from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
 from src.exception.ExpectedLibraryCountException import ExpectedLibraryCountException
 from src.exception.LibraryOpException import LibraryOpException
-from src.dto.MusicPlaylistDTO import MusicPlaylistDTO
 from src.enum.Agent import Agent
 from src.enum.LibraryName import LibraryName
 from src.enum.Scanner import Scanner
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
 from src.enum.Language import Language
 from src.enum.LibraryType import LibraryType
 
@@ -76,7 +74,7 @@ class Library(ABC):
             if not result:
                 return False
 
-        except NotFound as e:
+        except NotFound:
             return False
         except Exception as e:
             raise LibraryOpException("EXISTS " + self.name.value + " LIBRARY", original_exception=e)

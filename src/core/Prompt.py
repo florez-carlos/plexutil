@@ -1,15 +1,10 @@
 import argparse
-import json
 import pathlib
-from typing import Dict
 
-from src.serializer.PlexConfigSerializer import PlexConfigSerializer
 from src.Static import Static
 from src.dto.PlexConfigDTO import PlexConfigDTO
 from src.dto.UserInstructionsDTO import UserInstructionsDTO
-from src.enum.LibraryType import LibraryType
 from src.enum.UserRequest import UserRequest
-from src.exception.PlexUtilConfigException import PlexUtilConfigException
 from src.util.PathOps import PathOps
 from src.util.FileImporter import FileImporter
 
