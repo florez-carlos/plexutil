@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.enum.Language import Language
+from src.enum.language import Language
 
 
 @dataclass(frozen=True)

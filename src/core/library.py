@@ -10,16 +10,16 @@ from plexapi.server import PlexServer
 from plexapi.video import Video
 from throws import throws
 
-from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.enum.Agent import Agent
-from src.enum.Language import Language
-from src.enum.LibraryName import LibraryName
-from src.enum.LibraryType import LibraryType
-from src.enum.Scanner import Scanner
-from src.exception.ExpectedLibraryCountException import (
-    ExpectedLibraryCountException,
+from src.dto.library_preferences_dto import LibraryPreferencesDTO
+from src.enum.agent import Agent
+from src.enum.language import Language
+from src.enum.library_name import LibraryName
+from src.enum.library_type import LibraryType
+from src.enum.scanner import Scanner
+from src.exception.expected_library_count_error import (
+    ExpectedLibraryCountError,
 )
-from src.exception.LibraryOpException import LibraryOpException
+from src.exception.library_op_error import LibraryOpError
 
 
 class Library(ABC):
@@ -44,12 +44,12 @@ class Library(ABC):
         self.preferences = preferences
 
     @abstractmethod
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def create(self) -> None:
         pass
 
     @abstractmethod
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def delete(self) -> None:
         try:
             result = self.plex_server.library.section(self.name.value)
@@ -57,27 +57,27 @@ class Library(ABC):
             if result:
                 result.delete()
             else:
-                raise LibraryOpException(
+                raise LibraryOpError(
                     "DELETE "
                     + self.name.value
                     + " LIBRARY | Nothing to delete",
                 )
 
-        except LibraryOpException as e:
+        except LibraryOpError as e:
             raise e
         except NotFound as e:
-            raise LibraryOpException(
+            raise LibraryOpError(
                 "DELETE " + self.name.value + " LIBRARY | Not found",
                 original_exception=e,
             )
         except Exception as e:
-            raise LibraryOpException(
+            raise LibraryOpError(
                 "DELETE " + self.name.value + " LIBRARY",
                 original_exception=e,
             )
 
     @abstractmethod
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def exists(self) -> bool:
         try:
             result = self.plex_server.library.section(self.name.value)
@@ -88,7 +88,7 @@ class Library(ABC):
         except NotFound:
             return False
         except Exception as e:
-            raise LibraryOpException(
+            raise LibraryOpError(
                 "EXISTS " + self.name.value + " LIBRARY",
                 original_exception=e,
             )
@@ -138,7 +138,7 @@ class Library(ABC):
                 time.sleep(interval_seconds)
                 attempts = attempts + 1
                 if attempts >= requested_attempts:
-                    raise ExpectedLibraryCountException(
+                    raise ExpectedLibraryCountError(
                         "TIMEOUT: Did not reach expected count",
                     )
 
@@ -170,6 +170,6 @@ class Library(ABC):
             return shows_filtered
 
         else:
-            raise ExpectedLibraryCountException(
+            raise ExpectedLibraryCountError(
                 "Unsupported Library Type: " + self.library_type.value,
             )

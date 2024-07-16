@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.dto.TVLanguageManifestDTO import TVLanguageManifestDTO
-from src.serializer.Serializable import Serializable
+from src.dto.tv_language_manifest_dto import TVLanguageManifestDTO
+from src.serializer.serializable import Serializable
 
 
 @dataclass(frozen=True)

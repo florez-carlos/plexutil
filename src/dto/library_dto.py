@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum.LibraryType import LibraryType
+from enum.library_type import LibraryType
 from pathlib import Path
 
 

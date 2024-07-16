@@ -3,16 +3,16 @@ from pathlib import Path
 from plexapi.server import PlexServer
 from throws import throws
 
-from src.core.Library import Library
-from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from src.enum.Agent import Agent
-from src.enum.Language import Language
-from src.enum.LibraryName import LibraryName
-from src.enum.LibraryType import LibraryType
-from src.enum.Scanner import Scanner
-from src.exception.LibraryOpException import LibraryOpException
-from src.util.PathOps import PathOps
+from src.core.library import Library
+from src.dto.library_preferences_dto import LibraryPreferencesDTO
+from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from src.enum.agent import Agent
+from src.enum.language import Language
+from src.enum.library_name import LibraryName
+from src.enum.library_type import LibraryType
+from src.enum.scanner import Scanner
+from src.exception.library_op_error import LibraryOpError
+from src.util.path_ops import PathOps
 
 
 class Playlist(Library):
@@ -35,7 +35,7 @@ class Playlist(Library):
         )
         self.music_playlist_file_dto = music_playlist_file_dto
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def create(self) -> None:
         tracks = self.plex_server.library.section(
             self.name.value,
@@ -82,7 +82,7 @@ class Playlist(Library):
             )
             plex_playlist = []
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def delete(self) -> None:
         playlist_names = [
             x.name for x in self.music_playlist_file_dto.playlists
@@ -92,7 +92,7 @@ class Playlist(Library):
             if playlist.title in playlist_names:
                 playlist.delete()
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def exists(self) -> bool:
         playlist_names = [
             x.name for x in self.music_playlist_file_dto.playlists

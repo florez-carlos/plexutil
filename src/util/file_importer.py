@@ -2,19 +2,19 @@ from pathlib import Path
 
 from plexapi.utils import json
 
-from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from src.dto.PlexConfigDTO import PlexConfigDTO
-from src.dto.TVLanguageManifestFileDTO import TVLanguageManifestFileDTO
-from src.exception.ImporterException import ImporterException
-from src.serializer.MusicPlaylistFileSerializer import (
+from src.dto.library_preferences_dto import LibraryPreferencesDTO
+from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from src.dto.plex_config_dto import PlexConfigDTO
+from src.dto.tv_language_manifest_file_dto import TVLanguageManifestFileDTO
+from src.exception.importer_error import ImporterError
+from src.serializer.music_playlist_file_serializer import (
     MusicPlaylistFileSerializer,
 )
-from src.serializer.PlexConfigSerializer import PlexConfigSerializer
-from src.serializer.TVLanguageManifestSerializer import (
+from src.serializer.plex_config_serializer import PlexConfigSerializer
+from src.serializer.tv_language_manifest_serializer import (
     TVLanguageManifestSerializer,
 )
-from src.Static import Static
+from src.static import Static
 
 
 class FileImporter(Static):
@@ -54,20 +54,20 @@ class FileImporter(Static):
                 plex_server_setting_prefs = file_dict.get("prefs")
 
             if not music_prefs:
-                raise ImporterException("Could not import music preferences")
+                raise ImporterError("Could not import music preferences")
             elif not movie_prefs:
-                raise ImporterException("Could not import movie preferences")
+                raise ImporterError("Could not import movie preferences")
             elif not tv_prefs:
-                raise ImporterException("Could not import tv preferences")
+                raise ImporterError("Could not import tv preferences")
             elif not plex_server_setting_prefs:
-                raise ImporterException(
+                raise ImporterError(
                     "Could not import plex server setting preferences",
                 )
 
-        except ImporterException as e:
+        except ImporterError as e:
             raise e
         except Exception as e:
-            raise ImporterException(original_exception=e)
+            raise ImporterError(original_exception=e)
 
         return LibraryPreferencesDTO(
             music_prefs,
@@ -85,10 +85,10 @@ class FileImporter(Static):
                 file_dict = json.load(file)
                 return serializer.to_dto(file_dict)
 
-        except ImporterException as e:
+        except ImporterError as e:
             raise e
         except Exception as e:
-            raise ImporterException(original_exception=e)
+            raise ImporterError(original_exception=e)
 
     @staticmethod
     def save_plex_config_dto(
@@ -108,10 +108,10 @@ class FileImporter(Static):
                 serializer = PlexConfigSerializer()
                 json.dump(serializer.to_json(plex_config_dto), f, indent=4)
 
-        except ImporterException as e:
+        except ImporterError as e:
             raise e
         except Exception as e:
-            raise ImporterException(original_exception=e)
+            raise ImporterError(original_exception=e)
 
     @staticmethod
     def get_music_playlist_file_dto(
@@ -124,10 +124,10 @@ class FileImporter(Static):
                 file_dict = json.load(file)
                 return serializer.to_dto(file_dict)
 
-        except ImporterException as e:
+        except ImporterError as e:
             raise e
         except Exception as e:
-            raise ImporterException(original_exception=e)
+            raise ImporterError(original_exception=e)
 
     @staticmethod
     def get_tv_language_manifest(
@@ -140,7 +140,7 @@ class FileImporter(Static):
                 file_dict = json.load(file)
                 return serializer.to_dto(file_dict)
 
-        except ImporterException as e:
+        except ImporterError as e:
             raise e
         except Exception as e:
-            raise ImporterException(original_exception=e)
+            raise ImporterError(original_exception=e)

@@ -3,16 +3,16 @@ from pathlib import Path
 from plexapi.server import PlexServer
 from throws import throws
 
-from src.core.Library import Library
-from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from src.enum.Agent import Agent
-from src.enum.Language import Language
-from src.enum.LibraryName import LibraryName
-from src.enum.LibraryType import LibraryType
-from src.enum.Scanner import Scanner
-from src.exception.LibraryOpException import LibraryOpException
-from src.util.QueryBuilder import QueryBuilder
+from src.core.library import Library
+from src.dto.library_preferences_dto import LibraryPreferencesDTO
+from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from src.enum.agent import Agent
+from src.enum.language import Language
+from src.enum.library_name import LibraryName
+from src.enum.library_type import LibraryType
+from src.enum.scanner import Scanner
+from src.exception.library_op_error import LibraryOpError
+from src.util.query_builder import QueryBuilder
 
 
 class MusicLibrary(Library):
@@ -36,7 +36,7 @@ class MusicLibrary(Library):
         )
         self.music_playlist_file_dto = music_playlist_file_dto
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def create(self) -> None:
         try:
             part = ""
@@ -63,7 +63,7 @@ class MusicLibrary(Library):
                     method=self.plex_server._session.post,
                 )
             else:
-                raise LibraryOpException(
+                raise LibraryOpError(
                     "CREATE",
                     "Query Builder has not built a part!",
                 )
@@ -75,15 +75,15 @@ class MusicLibrary(Library):
             )
             self.poll(200, self.music_playlist_file_dto.track_count, 10)
 
-        except LibraryOpException as e:
+        except LibraryOpError as e:
             raise e
         except Exception as e:
-            raise LibraryOpException("CREATE", original_exception=e)
+            raise LibraryOpError("CREATE", original_exception=e)
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def delete(self) -> None:
         return super().delete()
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def exists(self) -> bool:
         return super().exists()

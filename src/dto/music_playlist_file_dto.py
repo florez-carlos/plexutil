@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from src.dto.MusicPlaylistDTO import MusicPlaylistDTO
-from src.serializer.Serializable import Serializable
+from src.dto.music_playlist_dto import MusicPlaylistDTO
+from src.serializer.serializable import Serializable
 
 
 @dataclass(frozen=True)

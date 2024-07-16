@@ -3,14 +3,14 @@ from pathlib import Path
 from plexapi.server import PlexServer
 from throws import throws
 
-from src.core.Library import Library
-from src.dto.LibraryPreferencesDTO import LibraryPreferencesDTO
-from src.enum.Agent import Agent
-from src.enum.Language import Language
-from src.enum.LibraryName import LibraryName
-from src.enum.LibraryType import LibraryType
-from src.enum.Scanner import Scanner
-from src.exception.LibraryOpException import LibraryOpException
+from src.core.library import Library
+from src.dto.library_preferences_dto import LibraryPreferencesDTO
+from src.enum.agent import Agent
+from src.enum.language import Language
+from src.enum.library_name import LibraryName
+from src.enum.library_type import LibraryType
+from src.enum.scanner import Scanner
+from src.exception.library_op_error import LibraryOpError
 
 
 class MovieLibrary(Library):
@@ -32,7 +32,7 @@ class MovieLibrary(Library):
             preferences,
         )
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def create(self) -> None:
         try:
             self.plex_server.library.add(
@@ -51,15 +51,15 @@ class MovieLibrary(Library):
                 **self.preferences.movie,
             )
 
-        except LibraryOpException as e:
+        except LibraryOpError as e:
             raise e
         except Exception as e:
-            raise LibraryOpException("CREATE", original_exception=e)
+            raise LibraryOpError("CREATE", original_exception=e)
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def delete(self) -> None:
         return super().delete()
 
-    @throws(LibraryOpException)
+    @throws(LibraryOpError)
     def exists(self) -> bool:
         return super().exists()

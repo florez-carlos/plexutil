@@ -1,7 +1,7 @@
-from src.dto.PlexConfigDTO import PlexConfigDTO
-from src.enum.LibraryType import LibraryType
-from src.serializer.Serializer import Serializer
-from src.util.PathOps import PathOps
+from src.dto.plex_config_dto import PlexConfigDTO
+from src.enum.library_type import LibraryType
+from src.serializer.serializer import Serializer
+from src.util.path_ops import PathOps
 
 
 class PlexConfigSerializer(Serializer):

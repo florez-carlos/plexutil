@@ -1,2 +1,0 @@
-class ExpectedLibraryCountException(Exception):
-    pass

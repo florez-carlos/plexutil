@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from src.dto.SongDTO import SongDTO
+from src.dto.song_dto import SongDTO
 
 
 @dataclass(frozen=True)

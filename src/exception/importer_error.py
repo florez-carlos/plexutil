@@ -1,4 +1,4 @@
-class ImporterException(Exception):
+class ImporterError(Exception):
     def __init__(self, description: str = "", original_exception=None):
         self.original_exception = original_exception
 

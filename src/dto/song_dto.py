@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.enum.FileType import FileType
+from src.enum.file_type import FileType
 
 
 @dataclass(frozen=True)

@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.dto.PlexConfigDTO import PlexConfigDTO
-from src.enum.UserRequest import UserRequest
+from src.dto.plex_config_dto import PlexConfigDTO
+from src.enum.user_request import UserRequest
 
 
 @dataclass(frozen=True)

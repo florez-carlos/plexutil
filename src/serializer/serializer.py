@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.serializer.Serializable import Serializable
+from src.serializer.serializable import Serializable
 
 
 class Serializer(ABC):

@@ -1,8 +1,8 @@
-from src.dto.MusicPlaylistDTO import MusicPlaylistDTO
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from src.dto.SongDTO import SongDTO
-from src.enum.FileType import FileType
-from src.serializer.Serializer import Serializer
+from src.dto.music_playlist_dto import MusicPlaylistDTO
+from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from src.dto.song_dto import SongDTO
+from src.enum.file_type import FileType
+from src.serializer.serializer import Serializer
 
 
 class MusicPlaylistFileSerializer(Serializer):

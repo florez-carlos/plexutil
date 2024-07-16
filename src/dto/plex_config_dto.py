@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.serializer.Serializable import Serializable
+from src.serializer.serializable import Serializable
 
 
 @dataclass(frozen=True)

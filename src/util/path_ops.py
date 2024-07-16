@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.Static import Static
+from src.static import Static
 
 
 class PathOps(Static):

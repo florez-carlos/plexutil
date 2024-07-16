@@ -1,4 +1,4 @@
-class PlexUtilConfigException(Exception):
+class PlexUtilConfigError(Exception):
     def __init__(self, original_exception=None):
         self.original_exception = original_exception
 

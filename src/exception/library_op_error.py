@@ -1,4 +1,4 @@
-class LibraryOpException(Exception):
+class LibraryOpError(Exception):
     def __init__(
         self,
         op_type: str = "UNKNOWN",
