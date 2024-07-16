@@ -1,16 +1,16 @@
 from plexapi.server import PlexServer
 
-from src.core.MovieLibrary import MovieLibrary
-from src.core.MusicLibrary import MusicLibrary
-from src.core.Playlist import Playlist
-from src.core.Prompt import Prompt
-from src.core.TVLibrary import TVLibrary
-from src.dto.MusicPlaylistFileDTO import MusicPlaylistFileDTO
-from src.enum.Language import Language
-from src.enum.UserRequest import UserRequest
-from src.util.FileImporter import FileImporter
-from src.util.PathOps import PathOps
-from src.util.PlexOps import PlexOps
+from src.core.movie_library import MovieLibrary
+from src.core.music_library import MusicLibrary
+from src.core.playlist import Playlist
+from src.core.prompt import Prompt
+from src.core.tv_library import TVLibrary
+from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from src.enum.language import Language
+from src.enum.user_request import UserRequest
+from src.util.file_importer import FileImporter
+from src.util.path_ops import PathOps
+from src.util.plex_ops import PlexOps
 
 
 def main() -> None:
