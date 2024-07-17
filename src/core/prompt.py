@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import pathlib
 
@@ -122,12 +124,11 @@ class Prompt(Static):
                     "--all_items requested but --items also specified, only one can be used at a time",
                 )
 
-            items = [x for x in items.split(",")]
+            items = list(items.split(","))
 
         music_folder_path = args.music_folder_path
         movie_folder_path = args.movie_folder_path
         tv_folder_path = args.tv_folder_path
-        # music_playlist_file_path = args.music_playlist_file_path
         plex_server_host = args.plex_server_host
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
@@ -137,7 +138,6 @@ class Prompt(Static):
             music_folder_path=music_folder_path,
             movie_folder_path=movie_folder_path,
             tv_folder_path=tv_folder_path,
-            # music_playlist_file_path=music_playlist_file_path,
             host=plex_server_host,
             port=plex_server_port,
             token=plex_server_token,
