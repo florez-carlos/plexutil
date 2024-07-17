@@ -11,6 +11,6 @@ class PlexOps(Static):
         library_preferences_dto: LibraryPreferencesDTO,
     ) -> None:
         server_settings = library_preferences_dto.plex_server_settings
-        for id, value in server_settings.items():
-            plex_server.settings.get(id).set(value)
+        for setting_id, setting_value in server_settings.items():
+            plex_server.settings.get(setting_id).set(setting_value)
         plex_server.settings.save()
