@@ -24,15 +24,12 @@ class QueryBuilder:
 
     def __walk__(
         self,
-        path: dict[str, str]
-        | dict[str, bool]
-        | dict[str, int]
-        | None = None,
+        path: dict[str, str] | dict[str, bool] | dict[str, int] | None = None,
         nested_parent_name: str = "",
     ) -> str:
         result = ""
 
-        if (path is None):
+        if path is None:
             path = {}
 
         for k, v in path.items():
