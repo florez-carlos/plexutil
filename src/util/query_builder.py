@@ -1,4 +1,5 @@
-import typing
+from __future__ import annotations
+
 import urllib.parse
 
 
@@ -23,12 +24,16 @@ class QueryBuilder:
 
     def __walk__(
         self,
-        path: typing.Dict[str, str]
-        | typing.Dict[str, bool]
-        | typing.Dict[str, int] = {},
+        path: dict[str, str]
+        | dict[str, bool]
+        | dict[str, int]
+        | None = None,
         nested_parent_name: str = "",
     ) -> str:
         result = ""
+
+        if (path is None):
+            path = {}
 
         for k, v in path.items():
             if k == "the_type":

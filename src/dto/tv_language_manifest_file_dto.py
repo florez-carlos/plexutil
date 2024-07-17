@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List
 
 from src.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 from src.serializer.serializable import Serializable
@@ -7,13 +8,13 @@ from src.serializer.serializable import Serializable
 
 @dataclass(frozen=True)
 class TVLanguageManifestFileDTO(Serializable):
-    manifests_dto: List[TVLanguageManifestDTO]
+    manifests_dto: list[TVLanguageManifestDTO]
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, TVLanguageManifestFileDTO):
-            return NotImplemented
+            return False
 
         return self.manifests_dto == other.manifests_dto
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.manifests_dto)

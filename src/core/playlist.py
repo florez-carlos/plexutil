@@ -22,7 +22,7 @@ class Playlist(Library):
         location: Path,
         language: Language,
         music_playlist_file_dto: MusicPlaylistFileDTO,
-    ):
+    ) -> None:
         super().__init__(
             plex_server,
             LibraryName.MUSIC,

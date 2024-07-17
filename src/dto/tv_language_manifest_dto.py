@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List
 
 from src.enum.language import Language
 
@@ -7,13 +8,13 @@ from src.enum.language import Language
 @dataclass(frozen=True)
 class TVLanguageManifestDTO:
     language: Language
-    ids: List[int]
+    ids: list[int]
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, TVLanguageManifestDTO):
-            return NotImplemented
+            return False
 
         return self.language == other.language and self.ids == other.ids
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.language, self.ids))

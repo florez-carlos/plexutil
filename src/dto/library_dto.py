@@ -9,9 +9,9 @@ class LibraryDTO:
     library_location: Path
     library_name: str = ""
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, LibraryDTO):
-            return NotImplemented
+            return False
 
         return (
             self.library_type == other.library_type
@@ -19,7 +19,7 @@ class LibraryDTO:
             and self.library_name == other.library_name
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(
             (self.library_type, self.library_location, self.library_name)
         )

@@ -22,7 +22,7 @@ class TVLibrary(Library):
         language: Language,
         preferences: LibraryPreferencesDTO,
         tv_language_manifest_file_dto: TVLanguageManifestFileDTO,
-    ):
+    ) -> None:
         super().__init__(
             plex_server,
             LibraryName.TV,

@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from enum import Enum
-from typing import List
 
 
 class UserRequest(Enum):
@@ -17,7 +18,7 @@ class UserRequest(Enum):
 
     @staticmethod
     # Forward Reference used here in type hint
-    def get_all() -> List["UserRequest"]:
+    def get_all() -> list[UserRequest]:
         return [
             UserRequest.CONFIG,
             UserRequest.INIT,
@@ -35,7 +36,7 @@ class UserRequest(Enum):
     @staticmethod
     def get_user_request_from_str(
         user_request_candidate: str,
-    ) -> "UserRequest":
+    ) -> UserRequest:
         requests = UserRequest.get_all()
         user_request_candidate = user_request_candidate.lower()
 

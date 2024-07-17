@@ -6,7 +6,7 @@ from src.serializer.serializer import Serializer
 
 class TVLanguageManifestSerializer(Serializer):
     def to_json(self, serializable: TVLanguageManifestDTO) -> dict:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def to_dto(self, json_dict: dict) -> TVLanguageManifestFileDTO:
         tv_language_manifests_dto = []

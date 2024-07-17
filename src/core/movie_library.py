@@ -20,7 +20,7 @@ class MovieLibrary(Library):
         location: Path,
         language: Language,
         preferences: LibraryPreferencesDTO,
-    ):
+    ) -> None:
         super().__init__(
             plex_server,
             LibraryName.MOVIE,

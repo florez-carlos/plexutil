@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import List
 
 from src.dto.song_dto import SongDTO
 
@@ -7,13 +8,13 @@ from src.dto.song_dto import SongDTO
 @dataclass(frozen=True)
 class MusicPlaylistDTO:
     name: str = ""
-    songs: List[SongDTO] = field(default_factory=list)
+    songs: list[SongDTO] = field(default_factory=list)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, MusicPlaylistDTO):
-            return NotImplemented
+            return False
 
         return self.name == other.name and self.songs == other.songs
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name, self.songs))

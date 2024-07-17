@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from enum import Enum
-from typing import List
 
 
 class FileType(Enum):
@@ -12,7 +13,7 @@ class FileType(Enum):
 
     @staticmethod
     # Forward Reference used here in type hint
-    def get_all() -> List["FileType"]:
+    def get_all() -> list[FileType]:
         return [
             FileType.MP3,
             FileType.MP4,
@@ -23,7 +24,7 @@ class FileType(Enum):
         ]
 
     @staticmethod
-    def get_file_type_from_str(file_type_candidate: str) -> "FileType":
+    def get_file_type_from_str(file_type_candidate: str) -> FileType:
         file_types = FileType.get_all()
         file_type_candidate = file_type_candidate.lower()
 

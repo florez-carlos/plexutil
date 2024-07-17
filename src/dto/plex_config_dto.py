@@ -14,9 +14,9 @@ class PlexConfigDTO(Serializable):
     port: int = 32000
     token: str = ""
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, PlexConfigDTO):
-            return NotImplemented
+            return False
 
         return (
             self.music_folder_path == other.music_folder_path
@@ -27,7 +27,7 @@ class PlexConfigDTO(Serializable):
             and self.token == other.token
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(
             (
                 self.music_folder_path,

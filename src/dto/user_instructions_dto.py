@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List
 
 from src.dto.plex_config_dto import PlexConfigDTO
 from src.enum.user_request import UserRequest
@@ -8,13 +9,13 @@ from src.enum.user_request import UserRequest
 @dataclass(frozen=True)
 class UserInstructionsDTO:
     request: UserRequest
-    items: List[str]
+    items: list[str]
     plex_config_dto: PlexConfigDTO
     is_all_items: bool = False
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, UserInstructionsDTO):
-            return NotImplemented
+            return False
 
         return (
             self.request == other.request
@@ -23,7 +24,7 @@ class UserInstructionsDTO:
             and self.is_all_items == other.is_all_items
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(
             (
                 self.request,

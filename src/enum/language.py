@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from enum import Enum
-from typing import List
 
 
 class Language(Enum):
@@ -10,7 +11,7 @@ class Language(Enum):
 
     @staticmethod
     # Forward Reference used here in type hint
-    def get_all() -> List["Language"]:
+    def get_all() -> list[Language]:
         return [
             Language.ENGLISH,
             Language.ENGLISH_US,
@@ -19,7 +20,7 @@ class Language(Enum):
         ]
 
     @staticmethod
-    def get_language_from_str(language_candidate: str) -> "Language":
+    def get_language_from_str(language_candidate: str) -> Language:
         languages = Language.get_all()
         language_candidate = language_candidate.lower()
 

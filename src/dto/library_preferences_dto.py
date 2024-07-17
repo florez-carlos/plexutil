@@ -1,17 +1,16 @@
 from dataclasses import dataclass
-from typing import Dict
 
 
 @dataclass(frozen=True)
 class LibraryPreferencesDTO:
-    music: Dict
-    movie: Dict
-    tv: Dict
-    plex_server_settings: Dict
+    music: dict
+    movie: dict
+    tv: dict
+    plex_server_settings: dict
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, LibraryPreferencesDTO):
-            return NotImplemented
+            return False
 
         return (
             self.music == other.music
@@ -20,7 +19,7 @@ class LibraryPreferencesDTO:
             and self.plex_server_settings == other.plex_server_settings
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(
             (self.music, self.movie, self.tv, self.plex_server_settings)
         )
