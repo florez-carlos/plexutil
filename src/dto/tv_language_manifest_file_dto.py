@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from src.dto.tv_language_manifest_dto import TVLanguageManifestDTO
+if TYPE_CHECKING:
+    from src.dto.tv_language_manifest_dto import TVLanguageManifestDTO
+
 from src.serializer.serializable import Serializable
 
 

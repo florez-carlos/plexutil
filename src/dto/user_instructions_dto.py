@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from src.dto.plex_config_dto import PlexConfigDTO
-from src.enum.user_request import UserRequest
+if TYPE_CHECKING:
+    from src.dto.plex_config_dto import PlexConfigDTO
+    from src.enum.user_request import UserRequest
 
 
 @dataclass(frozen=True)

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from src.dto.music_playlist_dto import MusicPlaylistDTO
+if TYPE_CHECKING:
+    from src.dto.music_playlist_dto import MusicPlaylistDTO
+
 from src.serializer.serializable import Serializable
 
 

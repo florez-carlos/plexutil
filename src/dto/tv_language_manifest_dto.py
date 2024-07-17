@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from src.enum.language import Language
+if TYPE_CHECKING:
+    from src.enum.language import Language
 
 
 @dataclass(frozen=True)

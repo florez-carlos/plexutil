@@ -9,7 +9,6 @@ class PlexConfigDTO(Serializable):
     music_folder_path: Path = Path()
     movie_folder_path: Path = Path()
     tv_folder_path: Path = Path()
-    # music_playlist_file_path: Path = Path()
     host: str = "localhost"
     port: int = 32000
     token: str = ""
