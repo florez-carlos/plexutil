@@ -102,8 +102,4 @@ class Playlist(Library):
         if not playlists or not playlist_names:
             return False
 
-        for playlist in playlists:
-            if playlist.title not in playlist_names:
-                return False
-
-        return True
+        return all(playlist.title in playlist_names for playlist in playlists)
