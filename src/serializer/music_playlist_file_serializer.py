@@ -1,20 +1,27 @@
+from typing import cast
+
 from src.dto.music_playlist_dto import MusicPlaylistDTO
 from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from src.dto.song_dto import SongDTO
 from src.enum.file_type import FileType
+from src.serializer.serializable import Serializable
 from src.serializer.serializer import Serializer
 
 
 class MusicPlaylistFileSerializer(Serializer):
-    def to_json(self, serializable: MusicPlaylistFileDTO) -> dict:
+    def to_json(self, serializable: Serializable) -> dict:
+        if not isinstance(serializable, MusicPlaylistFileDTO):
+            description = "Expected MusicPlaylistFileDTO"
+            raise TypeError(description)
+        music_playlist_file_dto = cast(MusicPlaylistFileDTO, serializable)
         music_playlist_file = {
-            "trackCount": serializable.track_count,
+            "trackCount": music_playlist_file_dto.track_count,
             "playlists": [],
         }
 
         playlists_dict = []
         songs_dict = []
-        playlists = serializable.playlists
+        playlists = music_playlist_file_dto.playlists
 
         for playlist in playlists:
             name = playlist.name

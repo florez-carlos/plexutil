@@ -1,28 +1,32 @@
+from typing import cast
+
 from src.dto.plex_config_dto import PlexConfigDTO
 from src.enum.library_type import LibraryType
+from src.serializer.serializable import Serializable
 from src.serializer.serializer import Serializer
 from src.util.path_ops import PathOps
 
 
 class PlexConfigSerializer(Serializer):
-    def to_json(self, serializable: PlexConfigDTO) -> dict:
-        config = {
+    def to_json(self, serializable: Serializable) -> dict:
+        if not isinstance(serializable, PlexConfigDTO):
+            description = "Expected PlexConfigDTO"
+            raise TypeError(description)
+        plex_config_dto = cast(PlexConfigDTO, serializable)
+        return {
             "config": {
                 "paths": {
-                    "music_folder": str(serializable.music_folder_path),
-                    "movie_folder": str(serializable.movie_folder_path),
-                    "tv_folder": str(serializable.tv_folder_path),
-                    # "music_playlist_file":str(serializable.music_playlist_file_path),
+                    "music_folder": str(plex_config_dto.music_folder_path),
+                    "movie_folder": str(plex_config_dto.movie_folder_path),
+                    "tv_folder": str(plex_config_dto.tv_folder_path),
                 },
                 "plex": {
-                    "host": serializable.host,
-                    "port": serializable.port,
-                    "token": serializable.token,
+                    "host": plex_config_dto.host,
+                    "port": plex_config_dto.port,
+                    "token": plex_config_dto.token,
                 },
             },
         }
-
-        return config
 
     def to_dto(self, json_dict: dict) -> PlexConfigDTO:
         paths = json_dict["config"]["paths"]
@@ -42,7 +46,6 @@ class PlexConfigSerializer(Serializer):
             LibraryType.TV.value,
             is_dir=True,
         )
-        # music_playlist_file_path = PathOps.get_path_from_str(paths["music_playlist_file"],"Music Playlist",is_file=True)
 
         plex = json_dict["config"]["plex"]
 
