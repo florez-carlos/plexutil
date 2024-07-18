@@ -32,34 +32,26 @@ class MovieLibrary(Library):
             preferences,
         )
 
-    @throws(LibraryOpError)
     def create(self) -> None:
-        try:
-            self.plex_server.library.add(
-                name=self.name.value,
-                type=self.library_type.value,
-                agent=self.agent.value,
-                scanner=self.scanner.value,
-                location=str(self.location),
-                language=self.language.value,
-            )
+        self.plex_server.library.add(
+            name=self.name.value,
+            type=self.library_type.value,
+            agent=self.agent.value,
+            scanner=self.scanner.value,
+            location=str(self.location),
+            language=self.language.value,
+        )
 
-            # This line triggers a refresh of the library
-            self.plex_server.library.sections()
+        # This line triggers a refresh of the library
+        self.plex_server.library.sections()
 
-            self.plex_server.library.section(self.name.value).editAdvanced(
-                **self.preferences.movie,
-            )
-
-        except LibraryOpError as e:
-            raise e
-        except Exception as e:
-            raise LibraryOpError("CREATE", original_exception=e)
+        self.plex_server.library.section(self.name.value).editAdvanced(
+            **self.preferences.movie,
+        )
 
     @throws(LibraryOpError)
     def delete(self) -> None:
         return super().delete()
 
-    @throws(LibraryOpError)
     def exists(self) -> bool:
         return super().exists()

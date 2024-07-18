@@ -12,6 +12,8 @@ from src.enum.library_name import LibraryName
 from src.enum.library_type import LibraryType
 from src.enum.scanner import Scanner
 from src.exception.library_op_error import LibraryOpError
+from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
+from src.exception.library_unsupported_error import LibraryUnsupportedError
 
 
 class TVLibrary(Library):
@@ -35,56 +37,49 @@ class TVLibrary(Library):
         )
         self.tv_language_manifest_file_dto = tv_language_manifest_file_dto
 
-    @throws(LibraryOpError)
+    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def create(self) -> None:
-        try:
-            self.plex_server.library.add(
-                name=self.name.value,
-                type=self.library_type.value,
-                agent=self.agent.value,
-                scanner=self.scanner.value,
-                location=str(self.location),
-                language=self.language.value,
+        self.plex_server.library.add(
+            name=self.name.value,
+            type=self.library_type.value,
+            agent=self.agent.value,
+            scanner=self.scanner.value,
+            location=str(self.location),
+            language=self.language.value,
+        )
+
+        # This line triggers a refresh of the library
+        self.plex_server.library.sections()
+
+        self.plex_server.library.section(self.name.value).editAdvanced(
+            **self.preferences.tv,
+        )
+
+        manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
+
+        for manifest_dto in manifests_dto:
+            language = manifest_dto.language
+            ids = manifest_dto.ids
+
+            print("\n")
+            print(
+                "Checking server tv "
+                + language.value
+                + " language meets expected count: "
+                + str(len(ids)),
             )
+            self.poll(100, len(ids), 10, ids)
 
-            # This line triggers a refresh of the library
-            self.plex_server.library.sections()
+            shows = []
 
-            self.plex_server.library.section(self.name.value).editAdvanced(
-                **self.preferences.tv,
-            )
+            for show in shows:
+                show.editAdvanced(languageOverride=language.value)
 
-            manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
-
-            for manifest_dto in manifests_dto:
-                language = manifest_dto.language
-                ids = manifest_dto.ids
-
-                print("\n")
-                print(
-                    "Checking server tv "
-                    + language.value
-                    + " language meets expected count: "
-                    + str(len(ids)),
-                )
-                self.poll(100, len(ids), 10, ids)
-
-                shows = []
-
-                for show in shows:
-                    show.editAdvanced(languageOverride=language.value)
-
-                self.plex_server.library.section(self.name.value).refresh()
-
-        except LibraryOpError as e:
-            raise e
-        except Exception as e:
-            raise LibraryOpError("CREATE", original_exception=e)
+            self.plex_server.library.section(self.name.value).refresh()
 
     @throws(LibraryOpError)
     def delete(self) -> None:
         return super().delete()
 
-    @throws(LibraryOpError)
     def exists(self) -> bool:
         return super().exists()

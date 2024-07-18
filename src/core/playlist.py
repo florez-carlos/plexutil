@@ -12,6 +12,8 @@ from src.enum.library_name import LibraryName
 from src.enum.library_type import LibraryType
 from src.enum.scanner import Scanner
 from src.exception.library_op_error import LibraryOpError
+from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
+from src.exception.library_unsupported_error import LibraryUnsupportedError
 from src.util.path_ops import PathOps
 
 
@@ -35,8 +37,9 @@ class Playlist(Library):
         )
         self.music_playlist_file_dto = music_playlist_file_dto
 
-    @throws(LibraryOpError)
+    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def create(self) -> None:
+        op_type = "CREATE"
         tracks = self.plex_server.library.section(
             self.name.value,
         ).searchTracks()
@@ -68,10 +71,15 @@ class Playlist(Library):
                 song_name = song.name
 
                 if plex_track_dict.get(song_name) is None:
-                    raise ValueError(
+                    description = (
                         "File in music playlist: '"
                         + song_name
-                        + "' does not exist in server",
+                        + "' does not exist in server"
+                    )
+                    raise LibraryOpError(
+                        op_type=op_type,
+                        library_type=self.library_type,
+                        description=description,
                     )
 
                 plex_playlist.append(plex_track_dict.get(song_name))
@@ -82,7 +90,6 @@ class Playlist(Library):
             )
             plex_playlist = []
 
-    @throws(LibraryOpError)
     def delete(self) -> None:
         playlist_names = [
             x.name for x in self.music_playlist_file_dto.playlists
@@ -92,7 +99,6 @@ class Playlist(Library):
             if playlist.title in playlist_names:
                 playlist.delete()
 
-    @throws(LibraryOpError)
     def exists(self) -> bool:
         playlist_names = [
             x.name for x in self.music_playlist_file_dto.playlists

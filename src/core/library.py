@@ -4,6 +4,8 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -22,10 +24,8 @@ from plexapi.exceptions import NotFound
 from throws import throws
 
 from src.enum.library_type import LibraryType
-from src.exception.expected_library_count_error import (
-    ExpectedLibraryCountError,
-)
 from src.exception.library_op_error import LibraryOpError
+from src.exception.library_unsupported_error import LibraryUnsupportedError
 
 
 class Library(ABC):
@@ -50,40 +50,35 @@ class Library(ABC):
         self.preferences = preferences
 
     @abstractmethod
-    @throws(LibraryOpError)
+    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def create(self) -> None:
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     @throws(LibraryOpError)
     def delete(self) -> None:
+        op_type = "DELETE"
+
         try:
             result = self.plex_server.library.section(self.name.value)
 
             if result:
                 result.delete()
             else:
+                description = "Nothing found"
                 raise LibraryOpError(
-                    "DELETE "
-                    + self.name.value
-                    + " LIBRARY | Nothing to delete",
+                    op_type=op_type,
+                    description=description,
+                    library_type=self.library_type,
                 )
 
-        except LibraryOpError as e:
-            raise e
-        except NotFound as e:
+        except NotFound:
             raise LibraryOpError(
-                "DELETE " + self.name.value + " LIBRARY | Not found",
-                original_exception=e,
-            )
-        except Exception as e:
-            raise LibraryOpError(
-                "DELETE " + self.name.value + " LIBRARY",
-                original_exception=e,
-            )
+                op_type=op_type,
+                library_type=self.library_type,
+            ) from NotFound
 
     @abstractmethod
-    @throws(LibraryOpError)
     def exists(self) -> bool:
         try:
             result = self.plex_server.library.section(self.name.value)
@@ -93,14 +88,10 @@ class Library(ABC):
 
         except NotFound:
             return False
-        except Exception as e:
-            raise LibraryOpError(
-                "EXISTS " + self.name.value + " LIBRARY",
-                original_exception=e,
-            )
 
         return True
 
+    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def poll(
         self,
         requested_attempts: int = 0,
@@ -108,8 +99,6 @@ class Library(ABC):
         interval_seconds: int = 0,
         tvdb_ids: list[int] | None = None,
     ) -> None:
-        if tvdb_ids is None:
-            tvdb_ids = []
         current_count = len(self.query(tvdb_ids))
         init_offset = abs(expected_count - current_count)
 
@@ -119,9 +108,10 @@ class Library(ABC):
             "Current count: "
             + str(current_count)
             + ". Expected: "
-            + str(expected_count),
+            + str(expected_count)
+            + ". Net change: "
+            + str(init_offset),
         )
-        print("Expected net change: " + str(init_offset))
 
         with alive_bar(init_offset) as bar:
             attempts = 0
@@ -146,26 +136,23 @@ class Library(ABC):
                 time.sleep(interval_seconds)
                 attempts = attempts + 1
                 if attempts >= requested_attempts:
-                    raise ExpectedLibraryCountError(
-                        "TIMEOUT: Did not reach expected count",
-                    )
+                    raise LibraryPollTimeoutError
 
+    @throws(LibraryOpError, LibraryUnsupportedError)
     def query(
-        self, tvdb_ids: list[int] | None = None
+        self,
+        tvdb_ids: list[int] | None = None,
     ) -> list[Audio] | list[Video]:
+        op_type = "QUERY"
+
         if tvdb_ids is None:
             tvdb_ids = []
+
         if self.library_type is LibraryType.MUSIC:
-            if tvdb_ids:
-                raise ValueError(
-                    "Library type: "
-                    + LibraryType.MUSIC.value
-                    + " not compatible with tvdb ids but tvdb ids supplied: "
-                    + str(tvdb_ids),
-                )
             return self.plex_server.library.section(
                 self.name.value,
             ).searchTracks()
+
         elif self.library_type is LibraryType.TV:
             shows = self.plex_server.library.section(self.name.value).all()
             shows_filtered = []
@@ -173,15 +160,29 @@ class Library(ABC):
             if tvdb_ids:
                 for show in shows:
                     guids = show.guids
+                    tvdb_prefix = "tvdb://"
                     for guid in guids:
-                        if "tvdb://" in guid.id:
-                            tvdb = guid.id.replace("tvdb://", "")
+                        if tvdb_prefix in guid.id:
+                            tvdb = guid.id.replace(tvdb_prefix, "")
                             if int(tvdb) in tvdb_ids:
                                 shows_filtered.append(show)
+                        else:
+                            description = (
+                                "Expected ("
+                                + tvdb_prefix
+                                + ") but show does not have any: "
+                                + guid.id
+                            )
+                            LibraryOpError(
+                                op_type=op_type,
+                                library_type=self.library_type,
+                                description=description,
+                            )
 
             return shows_filtered
 
         else:
-            raise ExpectedLibraryCountError(
-                "Unsupported Library Type: " + self.library_type.value,
+            raise LibraryUnsupportedError(
+                op_type=op_type,
+                library_type=self.library_type,
             )
