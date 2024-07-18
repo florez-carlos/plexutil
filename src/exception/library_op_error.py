@@ -1,19 +1,28 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.enum.library_type import LibraryType
+
+
 class LibraryOpError(Exception):
     def __init__(
         self,
-        op_type: str = "UNKNOWN",
+        op_type: str,
+        library_type: LibraryType,
         description: str = "",
-        original_exception=None,
-    ):
-        self.original_exception = original_exception
+    ) -> None:
+        self.op_type = op_type
+        self.library_type = library_type
+        self.description = description
 
-        if self.original_exception:
-            message = "LIBRARY %s EXCEPTION | %s" % (
-                op_type,
-                self.original_exception.args[0],
-            )
-            self.__cause__ = original_exception
-        else:
-            message = "LIBRARY %s EXCEPTION | %s" % (op_type, description)
+        message = (
+            self.op_type
+            + ": "
+            + self.library_type.value
+            + " | "
+            + self.description
+        )
 
         super().__init__(message)
