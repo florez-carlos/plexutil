@@ -53,10 +53,9 @@ class PlexConfigSerializer(Serializer):
         plex_server_port = plex["port"]
 
         if not isinstance(plex_server_port, int):
-            raise ValueError(
-                "Expected plex server port to be an int but got a %s"
-                % (type(plex_server_port)),
-            )
+            description = f"""Expected plex server port to be an int
+            but got a {type(plex_server_port)}"""
+            raise ValueError(description)
 
         plex_server_token = plex["token"]
 
@@ -64,7 +63,6 @@ class PlexConfigSerializer(Serializer):
             music_folder_path=music_folder_path,
             movie_folder_path=movie_folder_path,
             tv_folder_path=tv_folder_path,
-            # music_playlist_file_path=music_playlist_file_path,
             host=plex_server_host,
             port=plex_server_port,
             token=plex_server_token,

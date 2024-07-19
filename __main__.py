@@ -79,9 +79,11 @@ def main() -> None:
     music_playlist_file_dto_filtered = MusicPlaylistFileDTO()
 
     if items:
-        for playlist in music_playlist_file_dto.playlists:
-            if playlist.name in items:
-                playlists.append(playlist)
+        playlists = [
+            playlist
+            for playlist in music_playlist_file_dto.playlists
+            if playlist.name in items
+        ]
 
         music_playlist_file_dto_filtered = MusicPlaylistFileDTO(
             music_playlist_file_dto.track_count,

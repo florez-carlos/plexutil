@@ -15,28 +15,32 @@ class PathOps(Static):
         is_file: bool = False,
     ) -> Path:
         if not path_candidate:
-            raise ValueError(
-                "Expected a path candidate for %s but none supplied"
-                % (path_candidate_name),
+            description = (
+                "Expected a path candidate "
+                f"for {path_candidate_name} but none supplied"
             )
+            raise ValueError(description)
 
         path = Path(path_candidate)
 
         if not path.exists():
-            raise ValueError(
-                "Path candidate for %s does not exist %s"
-                % (path_candidate_name, path_candidate),
+            description = (
+                f"Path candidate for {path_candidate_name} does "
+                f"not exist {path_candidate}"
             )
+            raise ValueError(description)
         elif is_dir and not path.is_dir():
-            raise ValueError(
-                "Expected a dir for %s but path candidate is not a dir %s"
-                % (path_candidate_name, path_candidate),
+            description = (
+                f"Expected a dir for {path_candidate_name} but path candidate "
+                f"is not a dir {path_candidate}"
             )
+            raise ValueError(description)
         elif is_file and not path.is_file():
-            raise ValueError(
-                "Expected a file for %s but path candidate is not a file %s"
-                % (path_candidate_name, path_candidate),
+            description = (
+                f"Expected a file for {path_candidate_name} but path "
+                f"candidate is not a file {path_candidate}"
             )
+            raise ValueError(description)
 
         return path
 

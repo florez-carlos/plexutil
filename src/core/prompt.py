@@ -35,14 +35,21 @@ class Prompt(Static):
             metavar="Items",
             type=str,
             nargs="?",
-            help='Items to be passed for the request wrapped in double quotes and separated by comma i.e create_playlist --items "jazz classics,ambient"',
+            help=(
+                "Items to be passed for the request wrapped"
+                "in double quotes and separated by comma"
+                'i.e create_playlist --items "jazz classics,ambient"'
+            ),
         )
 
         parser.add_argument(
             "-ai",
             "--all_items",
             action="store_true",
-            help="Indicates operation to be performed on all available items instead of specifying individual items",
+            help=(
+                "Indicates operation to be performed on all available items"
+                "instead of specifying individual items"
+            ),
         )
 
         parser.add_argument(
@@ -101,7 +108,10 @@ class Prompt(Static):
             metavar="Plex Server Token",
             type=str,
             nargs="?",
-            help="Fetch the token by listening for an (X-Plex-Token) query parameter",
+            help=(
+                "Fetch the token by listening for an"
+                "(X-Plex-Token) query parameter"
+            ),
             default="",
         )
 
@@ -114,15 +124,23 @@ class Prompt(Static):
         is_all_items = args.all_items
 
         if request is None:
-            raise ValueError(
-                "Positional argument (request) expected but none supplied, see -h",
+            description = (
+                (
+                    "Positional argument (request)"
+                    "expected but none supplied, see -h"
+                ),
             )
+            raise ValueError(description)
 
         if items is not None:
             if is_all_items:
-                raise ValueError(
-                    "--all_items requested but --items also specified, only one can be used at a time",
+                description = (
+                    (
+                        "--all_items requested but --items also specified,"
+                        "only one can be used at a time"
+                    ),
                 )
+                raise ValueError(description)
 
             items = list(items.split(","))
 

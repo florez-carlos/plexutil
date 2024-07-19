@@ -27,7 +27,7 @@ class MusicPlaylistFileSerializer(Serializer):
             name = playlist.name
             songs = playlist.songs
             for song in songs:
-                songs_dict.append(
+                songs_dict.append(  # noqa: PERF401
                     {"fileName": song.name + "." + song.extension.value},
                 )
 

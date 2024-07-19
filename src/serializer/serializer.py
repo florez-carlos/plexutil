@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from src.serializer.serializable import Serializable
+if TYPE_CHECKING:
+    from src.serializer.serializable import Serializable
 
 
 class Serializer(ABC):

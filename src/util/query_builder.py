@@ -4,7 +4,7 @@ import urllib.parse
 
 
 class QueryBuilder:
-    def __init__(self, path: str = "", **kwargs):
+    def __init__(self, path: str = "", **kwargs) -> None:  # noqa: ANN003
         self.path = path
         self.query_parameters = kwargs
 
@@ -34,22 +34,19 @@ class QueryBuilder:
 
         for k, v in path.items():
             if k == "the_type":
-                k = "type"
+                k = "type"  # noqa: PLW2901
 
             if isinstance(v, bool):
-                if v:
-                    v = "1"
-                else:
-                    v = "0"
+                v = "1" if v else "0"  # noqa: PLW2901
 
             if isinstance(v, int):
-                v = str(v)
+                v = str(v)  # noqa: PLW2901
 
             if isinstance(v, dict):
                 result += self.__walk__(v, k)
                 continue
 
-            v = urllib.parse.quote(v)
+            v = urllib.parse.quote(v)  # noqa: PLW2901
 
             if nested_parent_name:
                 bracket_open = urllib.parse.quote("[")
