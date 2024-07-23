@@ -7,6 +7,7 @@ from pathlib import Path
 from src.dto.plex_config_dto import PlexConfigDTO
 from src.dto.user_instructions_dto import UserInstructionsDTO
 from src.enum.user_request import UserRequest
+from src.plex_util_logger import PlexUtilLogger
 from src.static import Static
 from src.util.file_importer import FileImporter
 
@@ -16,6 +17,8 @@ class Prompt(Static):
     def get_user_instructions_dto(
         config_file_path: Path,
     ) -> UserInstructionsDTO:
+        logger = PlexUtilLogger.get_logger()
+        
         parser = argparse.ArgumentParser(description="Plex Util")
 
         request_help_str = "Supported Requests: \n"
@@ -171,6 +174,15 @@ class Prompt(Static):
             plex_config_dto = FileImporter.get_plex_config_dto(
                 config_file_path,
             )
+
+        debug = (
+            "Received a User Request:\n"
+            f"Request: {request.value}\n"
+            f"items: {items or []}\n"
+            f"Host: {plex_server_host}\n"
+            f"Port: {plex_server_port}\n"
+        )
+        logger.debug(debug)
 
         return UserInstructionsDTO(
             request=request,

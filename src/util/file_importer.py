@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from plexapi.utils import json
+import json
+import yaml
 
 from src.dto.library_preferences_dto import LibraryPreferencesDTO
 from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
@@ -47,7 +48,7 @@ class FileImporter(Static):
             tv_prefs = json.load(file)
 
         with plex_server_setting_prefs_file_location.open(
-            encoding="utf-8",
+            encoding=FileImporter.encoding,
         ) as file:
             plex_server_setting_prefs = json.load(file)
 
@@ -106,3 +107,11 @@ class FileImporter(Static):
         ) as file:
             file_dict = json.load(file)
             return serializer.to_dto(file_dict)
+    
+    @staticmethod
+    def get_logging_config(logging_config_path: Path) -> dict:
+        with logging_config_path.open(
+            'r', errors='strict', encoding=FileImporter.encoding
+        ) as file:
+            return yaml.load(file, Loader=yaml.FullLoader)
+        

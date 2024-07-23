@@ -1,0 +1,55 @@
+---
+version: 1
+disable_existing_loggers: False
+
+formatters:
+    console:
+        format: '%(message)s'
+        datefmt: '%Y-%m-%dT%H:%M:%SZ'
+            
+    simple:
+        format: '%(asctime)s %(levelname)-8s  %(message)s'
+        datefmt: '%Y-%m-%dT%H:%M:%SZ'
+        
+    detailed:
+        format: '%(asctime)s | %(process)d | %(levelname)s | %(filename)s | %(lineno)d | %(funcName)s | %(message)s'
+        datefmt: '%Y-%m-%dT%H:%M:%SZ'
+        
+handlers:
+    console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: console
+        stream: ext://sys.stdout
+    
+    exception_file_handler:
+        filename: 'fallback_exception.log'
+        class: logging.FileHandler
+        level: ERROR
+        formatter: detailed
+        encoding: utf8
+
+    regular_file_handler:
+        filename: 'fallback_regular.log'
+        class: logging.FileHandler
+        level: DEBUG
+        formatter: detailed
+        encoding: utf8
+
+    debug_file_handler:
+        filename: 'fallback_debug.log'
+        class: logging.FileHandler
+        level: DEBUG
+        formatter: detailed
+        encoding: utf8
+
+loggers:
+    exception:
+        level: ERROR
+        handlers: [console, exception_file_handler]
+    regular:
+        level: DEBUG
+        handlers: [console, regular_file_handler]
+    debug:
+        level: DEBUG
+        handlers: [debug_file_handler]
