@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import pathlib
-
 from pathlib import Path
 
 from src.dto.plex_config_dto import PlexConfigDTO
@@ -10,12 +9,13 @@ from src.dto.user_instructions_dto import UserInstructionsDTO
 from src.enum.user_request import UserRequest
 from src.static import Static
 from src.util.file_importer import FileImporter
-from src.util.path_ops import PathOps
 
 
 class Prompt(Static):
     @staticmethod
-    def get_user_instructions_dto(config_file_path: Path) -> UserInstructionsDTO:
+    def get_user_instructions_dto(
+        config_file_path: Path,
+    ) -> UserInstructionsDTO:
         parser = argparse.ArgumentParser(description="Plex Util")
 
         request_help_str = "Supported Requests: \n"

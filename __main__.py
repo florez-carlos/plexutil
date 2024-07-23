@@ -1,6 +1,7 @@
 import os
-from pathlib import Path
 import platform
+from pathlib import Path
+
 from plexapi.server import PlexServer
 
 from src.core.movie_library import MovieLibrary
@@ -12,12 +13,10 @@ from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from src.enum.language import Language
 from src.enum.user_request import UserRequest
 from src.util.file_importer import FileImporter
-from src.util.path_ops import PathOps
 from src.util.plex_ops import PlexOps
 
 
 def main() -> None:
-
     home_folder = Path()
     plex_util_dir = Path()
     config_dir = Path()
@@ -57,29 +56,15 @@ def main() -> None:
     movie_location = instructions_dto.plex_config_dto.movie_folder_path
     tv_location = instructions_dto.plex_config_dto.tv_folder_path
 
-    music_prefs_file_location = (
-        config_dir
-        / "music_library_preferences.json"
-    )
-    movie_prefs_file_location = (
-        config_dir
-        / "movie_library_preferences.json"
-    )
-    tv_prefs_file_location = (
-        config_dir 
-        / "tv_library_preferences.json"
-    )
+    music_prefs_file_location = config_dir / "music_library_preferences.json"
+    movie_prefs_file_location = config_dir / "movie_library_preferences.json"
+    tv_prefs_file_location = config_dir / "tv_library_preferences.json"
     plex_server_setting_prefs_file_location = (
-        config_dir
-        / "plex_server_setting_preferences.json"
+        config_dir / "plex_server_setting_preferences.json"
     )
-    music_playlist_file_location = (
-        config_dir 
-        / "music_playlists.json"
-    )
+    music_playlist_file_location = config_dir / "music_playlists.json"
     tv_language_manifest_file_location = (
-        config_dir
-        / "tv_language_manifest.json"
+        config_dir / "tv_language_manifest.json"
     )
 
     preferences_dto = FileImporter.get_library_preferences_dto(
