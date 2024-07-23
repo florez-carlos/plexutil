@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+import platform
 from plexapi.server import PlexServer
 
 from src.core.movie_library import MovieLibrary
@@ -14,7 +17,30 @@ from src.util.plex_ops import PlexOps
 
 
 def main() -> None:
-    instructions_dto = Prompt.get_user_instructions_dto()
+
+    home_folder = Path()
+    plex_util_dir = Path()
+    config_dir = Path()
+    log_dir = Path()
+    system = platform.system()
+    if system == "Windows":
+        home_folder = os.getenv("DOCS_PATH") or ""
+    elif system == "Linux":
+        home_folder = os.getenv("HOME") or ""
+    else:
+        description = f"Unsupported OS: {system}"
+        raise ValueError(description)
+
+    plex_util_dir = Path(home_folder) / "plexutil"
+    config_dir = plex_util_dir / "config"
+    log_dir = plex_util_dir / "log"
+
+    plex_util_dir.mkdir(exist_ok=True)
+    config_dir.mkdir(exist_ok=True)
+    log_dir.mkdir(exist_ok=True)
+
+    config_file_path = config_dir / "config.json"
+    instructions_dto = Prompt.get_user_instructions_dto(config_file_path)
 
     request = instructions_dto.request
     items = instructions_dto.items
@@ -32,34 +58,28 @@ def main() -> None:
     tv_location = instructions_dto.plex_config_dto.tv_folder_path
 
     music_prefs_file_location = (
-        PathOps.get_project_root()
-        / "src"
-        / "config"
-        / "MusicLibraryPrefs.json"
+        config_dir
+        / "music_library_preferences.json"
     )
     movie_prefs_file_location = (
-        PathOps.get_project_root()
-        / "src"
-        / "config"
-        / "MovieLibraryPrefs.json"
+        config_dir
+        / "movie_library_preferences.json"
     )
     tv_prefs_file_location = (
-        PathOps.get_project_root() / "src" / "config" / "TVLibraryPrefs.json"
+        config_dir 
+        / "tv_library_preferences.json"
     )
     plex_server_setting_prefs_file_location = (
-        PathOps.get_project_root()
-        / "src"
-        / "config"
-        / "PlexServerSettingPrefs.json"
+        config_dir
+        / "plex_server_setting_preferences.json"
     )
     music_playlist_file_location = (
-        PathOps.get_project_root() / "src" / "config" / "MusicPlaylists.json"
+        config_dir 
+        / "music_playlists.json"
     )
     tv_language_manifest_file_location = (
-        PathOps.get_project_root()
-        / "src"
-        / "config"
-        / "TVLanguageManifest.json"
+        config_dir
+        / "tv_language_manifest.json"
     )
 
     preferences_dto = FileImporter.get_library_preferences_dto(
