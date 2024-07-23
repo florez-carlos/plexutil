@@ -3,6 +3,8 @@ from __future__ import annotations
 import argparse
 import pathlib
 
+from pathlib import Path
+
 from src.dto.plex_config_dto import PlexConfigDTO
 from src.dto.user_instructions_dto import UserInstructionsDTO
 from src.enum.user_request import UserRequest
@@ -13,7 +15,7 @@ from src.util.path_ops import PathOps
 
 class Prompt(Static):
     @staticmethod
-    def get_user_instructions_dto() -> UserInstructionsDTO:
+    def get_user_instructions_dto(config_file_path: Path) -> UserInstructionsDTO:
         parser = argparse.ArgumentParser(description="Plex Util")
 
         request_help_str = "Supported Requests: \n"
@@ -151,7 +153,6 @@ class Prompt(Static):
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
 
-        config_file_path = PathOps.get_project_root() / "config.json"
         plex_config_dto = PlexConfigDTO(
             music_folder_path=music_folder_path,
             movie_folder_path=movie_folder_path,
