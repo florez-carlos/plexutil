@@ -1,9 +1,0 @@
-{
-  "prefs": {
-    "ButlerStartHour": 23,
-    "ButlerEndHour": 6,
-    "GenerateIntroMarkerBehavior": "scheduled",
-    "GenerateCreditsMarkerBehavior": "scheduled",
-    "allowedNetworks": "192.168.1.0/24"
-  }
-}
