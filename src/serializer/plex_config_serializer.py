@@ -14,7 +14,6 @@ class PlexConfigSerializer(Serializer):
             raise TypeError(description)
         plex_config_dto = cast(PlexConfigDTO, serializable)
         return {
-            "config": {
                 "paths": {
                     "music_folder": str(plex_config_dto.music_folder_path),
                     "movie_folder": str(plex_config_dto.movie_folder_path),
@@ -25,11 +24,10 @@ class PlexConfigSerializer(Serializer):
                     "port": plex_config_dto.port,
                     "token": plex_config_dto.token,
                 },
-            },
         }
 
     def to_dto(self, json_dict: dict) -> PlexConfigDTO:
-        paths = json_dict["config"]["paths"]
+        paths = json_dict["paths"]
 
         music_folder_path = PathOps.get_path_from_str(
             paths["music_folder"],
@@ -47,7 +45,7 @@ class PlexConfigSerializer(Serializer):
             is_dir=True,
         )
 
-        plex = json_dict["config"]["plex"]
+        plex = json_dict["plex"]
 
         plex_server_host = plex["host"]
         plex_server_port = plex["port"]

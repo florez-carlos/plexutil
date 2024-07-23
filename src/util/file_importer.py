@@ -34,26 +34,22 @@ class FileImporter(Static):
         with music_preferences_file_location.open(
             encoding=FileImporter.encoding,
         ) as file:
-            file_dict = json.load(file)
-            music_prefs = file_dict.get("prefs")
+            music_prefs = json.load(file)
 
         with movie_preferences_file_location.open(
             encoding=FileImporter.encoding,
         ) as file:
-            file_dict = json.load(file)
-            movie_prefs = file_dict.get("prefs")
+            movie_prefs = json.load(file)
 
         with tv_preferences_file_location.open(
             encoding=FileImporter.encoding
         ) as file:
-            file_dict = json.load(file)
-            tv_prefs = file_dict.get("prefs")
+            tv_prefs = json.load(file)
 
         with plex_server_setting_prefs_file_location.open(
             encoding="utf-8",
         ) as file:
-            file_dict = json.load(file)
-            plex_server_setting_prefs = file_dict.get("prefs")
+            plex_server_setting_prefs = json.load(file)
 
         return LibraryPreferencesDTO(
             music_prefs,
