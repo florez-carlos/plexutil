@@ -119,7 +119,7 @@ class Playlist(Library):
         server_playlists = self.plex_server.playlists(playlistType="audio")
 
         debug = f"Playlists available in server: {server_playlists}"
-        PlexUtilLogger.get_logger().info(debug)
+        PlexUtilLogger.get_logger().debug(debug)
 
         for playlist in server_playlists:
             if playlist.title in playlist_names:
