@@ -136,16 +136,18 @@ class Playlist(Library):
             f"Requested: {playlist_names}\n"
             f"In server: {playlists}\n"
         )
-        PlexUtilLogger.get_logger().info(debug)
+        PlexUtilLogger.get_logger().debug(debug)
 
         if not playlists or not playlist_names:
             return False
 
-        all_exist = all(
-            playlist.title in playlist_names for playlist in playlists
-        )
+        all_exist = True
+        for playlist_name in playlist_names:
+            if playlist_name in [x.title for x in playlists]:
+                continue
+            all_exist = False
 
         debug = f"All exist: {all_exist}"
-        PlexUtilLogger.get_logger().info(debug)
+        PlexUtilLogger.get_logger().debug(debug)
 
         return all_exist
