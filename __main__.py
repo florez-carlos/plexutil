@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import logging.config
+import ctypes.wintypes
 import os
 import platform
 from pathlib import Path
@@ -28,12 +29,26 @@ def main() -> None:
     log_dir = Path()
     system = platform.system()
     if system == "Windows":
-        home_folder = os.getenv("DOCS_PATH") or ""
+        CSIDL_PERSONAL = 5
+        SHGFP_TYPE_CURRENT = 0
+
+        buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        ctypes.windll.shell32.SHGetFolderPathW(  # pyright: ignore
+            None,
+            CSIDL_PERSONAL,
+            None,
+            SHGFP_TYPE_CURRENT,
+            buf
+        )        
+        home_folder = buf.value or ""
+        if not home_folder:
+            description = "Could not locate Documents folder"
+            raise FileNotFoundError(description)
     elif system == "Linux":
         home_folder = os.getenv("HOME") or ""
     else:
         description = f"Unsupported OS: {system}"
-        raise ValueError(description)
+        raise OSError(description)
 
     plex_util_dir = Path(home_folder) / "plexutil"
     config_dir = plex_util_dir / "config"
