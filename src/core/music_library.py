@@ -86,6 +86,9 @@ class MusicLibrary(Library):
                 description=description,
             )
 
+        # This triggers a refresh of the library
+        self.plex_server.library.sections()
+
         info = (
             "Checking server music "
             "meets expected "
