@@ -1,6 +1,6 @@
+import json
 from pathlib import Path
 
-import json
 import yaml
 
 from src.dto.library_preferences_dto import LibraryPreferencesDTO
@@ -107,11 +107,10 @@ class FileImporter(Static):
         ) as file:
             file_dict = json.load(file)
             return serializer.to_dto(file_dict)
-    
+
     @staticmethod
     def get_logging_config(logging_config_path: Path) -> dict:
         with logging_config_path.open(
-            'r', errors='strict', encoding=FileImporter.encoding
+            "r", errors="strict", encoding=FileImporter.encoding
         ) as file:
-            return yaml.load(file, Loader=yaml.FullLoader)
-        
+            return yaml.safe_load(file)
