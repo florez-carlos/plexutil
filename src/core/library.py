@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
+from src.plex_util_logger import PlexUtilLogger
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -59,6 +60,18 @@ class Library(ABC):
     def delete(self) -> None:
         op_type = "DELETE"
 
+        info = (
+            "Deleting library: \n"
+            f"Name: {self.name.value}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Location: {self.location!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Preferences: {self.preferences.music}\n"
+        )
+        PlexUtilLogger.get_logger().info(info)
+
         try:
             result = self.plex_server.library.section(self.name.value)
 
@@ -80,15 +93,30 @@ class Library(ABC):
 
     @abstractmethod
     def exists(self) -> bool:
+        debug = (
+            "Checking library exists: \n"
+            f"Name: {self.name.value}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Location: {self.location!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Preferences: {self.preferences.movie}\n"
+        )
         try:
             result = self.plex_server.library.section(self.name.value)
 
             if not result:
+                debug = debug + "-Not found-"
+                PlexUtilLogger.get_logger().debug(debug)
                 return False
 
         except NotFound:
+            debug = debug + "-Not found-"
+            PlexUtilLogger.get_logger().debug(debug)
             return False
 
+        PlexUtilLogger.get_logger().debug(debug)
         return True
 
     @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
@@ -102,16 +130,15 @@ class Library(ABC):
         current_count = len(self.query(tvdb_ids))
         init_offset = abs(expected_count - current_count)
 
-        print("Requested attempts: " + str(requested_attempts))
-        print("Interval seconds: " + str(interval_seconds))
-        print(
-            "Current count: "
-            + str(current_count)
-            + ". Expected: "
-            + str(expected_count)
-            + ". Net change: "
-            + str(init_offset),
+        debug = (
+            f"Requested attempts: {requested_attempts!s}\n"
+            f"Interval seconds: {interval_seconds!s}\n"
+            f"Current count: {current_count!s}\n"
+            f"Expected count: {expected_count!s}\n"
+            f"Net change: {init_offset!s}\n"
         )
+
+        PlexUtilLogger.get_logger().debug(debug)
 
         with alive_bar(init_offset) as bar:
             attempts = 0
@@ -147,6 +174,14 @@ class Library(ABC):
 
         if tvdb_ids is None:
             tvdb_ids = []
+
+        debug = (
+            "Performing query:\n"
+            f"Name: {self.name.value}"
+            f"Library Type: {self.library_type.value}\n"
+            f"TVDB Ids: {tvdb_ids}\n"
+        )
+        PlexUtilLogger.get_logger().debug(debug)
 
         if self.library_type is LibraryType.MUSIC:
             return self.plex_server.library.section(

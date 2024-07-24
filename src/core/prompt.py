@@ -17,8 +17,6 @@ class Prompt(Static):
     def get_user_instructions_dto(
         config_file_path: Path,
     ) -> UserInstructionsDTO:
-        logger = PlexUtilLogger.get_logger()
-        
         parser = argparse.ArgumentParser(description="Plex Util")
 
         request_help_str = "Supported Requests: \n"
@@ -183,7 +181,7 @@ class Prompt(Static):
             f"Host: {plex_server_host}\n"
             f"Port: {plex_server_port}\n"
         )
-        logger.debug(debug)
+        PlexUtilLogger.get_logger().debug(debug)
 
         return UserInstructionsDTO(
             request=request,

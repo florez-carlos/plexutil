@@ -14,6 +14,7 @@ from src.enum.scanner import Scanner
 from src.exception.library_op_error import LibraryOpError
 from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
 from src.exception.library_unsupported_error import LibraryUnsupportedError
+from src.plex_util_logger import PlexUtilLogger
 from src.util.query_builder import QueryBuilder
 
 
@@ -59,6 +60,22 @@ class MusicLibrary(Library):
 
         part = query_builder.build()
 
+        info = (
+            "Creating music library: \n"
+            f"Name: {self.name.value}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Location: {self.location!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Preferences: {self.preferences.music}\n"
+        )
+
+        debug = f"Query: {part}\n"
+
+        PlexUtilLogger.get_logger().info(info)
+        PlexUtilLogger.get_logger().debug(debug)
+
         # This posts a music library
         if part:
             self.plex_server.query(
@@ -73,11 +90,12 @@ class MusicLibrary(Library):
                 description=description,
             )
 
-        print("\n")
-        print(
-            "Checking server music meets expected count: "
-            + str(self.music_playlist_file_dto.track_count),
+        info = (
+            "Checking server music "
+            f"meets expected count: {self.music_playlist_file_dto}\n"
         )
+        PlexUtilLogger.get_logger().info(info)
+
         self.poll(200, self.music_playlist_file_dto.track_count, 10)
 
     @throws(LibraryOpError)

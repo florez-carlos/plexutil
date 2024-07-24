@@ -34,6 +34,19 @@ class MovieLibrary(Library):
         )
 
     def create(self) -> None:
+        info = (
+            "Creating movie library: \n"
+            f"Name: {self.name.value}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Location: {self.location!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Preferences: {self.preferences.movie}\n"
+        )
+
+        PlexUtilLogger.get_logger().info(info)
+
         self.plex_server.library.add(
             name=self.name.value,
             type=self.library_type.value,
@@ -49,17 +62,6 @@ class MovieLibrary(Library):
         self.plex_server.library.section(self.name.value).editAdvanced(
             **self.preferences.movie,
         )
-        info = (
-            "Creating movie library: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {str(self.location)}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
 
     @throws(LibraryOpError)
     def delete(self) -> None:

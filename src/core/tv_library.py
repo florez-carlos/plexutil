@@ -14,6 +14,7 @@ from src.enum.scanner import Scanner
 from src.exception.library_op_error import LibraryOpError
 from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
 from src.exception.library_unsupported_error import LibraryUnsupportedError
+from src.plex_util_logger import PlexUtilLogger
 
 
 class TVLibrary(Library):
@@ -57,17 +58,29 @@ class TVLibrary(Library):
 
         manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
 
+        info = (
+            "Creating tv library: \n"
+            f"Name: {self.name.value}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Location: {self.location!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Preferences: {self.preferences.tv}\n"
+            f"Manifests: {manifests_dto}\n"
+        )
+
+        PlexUtilLogger.get_logger().info(info)
+
         for manifest_dto in manifests_dto:
             language = manifest_dto.language
             ids = manifest_dto.ids
 
-            print("\n")
-            print(
-                "Checking server tv "
-                + language.value
-                + " language meets expected count: "
-                + str(len(ids)),
+            info = (
+                f"Checking server tv {language.value} language meets "
+                f"expected count {len(ids)!s}\n"
             )
+            PlexUtilLogger.get_logger().info(info)
             self.poll(100, len(ids), 10, ids)
 
             shows = []
