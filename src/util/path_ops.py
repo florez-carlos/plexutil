@@ -1,13 +1,10 @@
 from pathlib import Path
 
-from throws import throws
-
 from src.static import Static
 
 
 class PathOps(Static):
     @staticmethod
-    @throws(ValueError)
     def get_path_from_str(
         path_candidate: str,
         path_candidate_name: str = "",

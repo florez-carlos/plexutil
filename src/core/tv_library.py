@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from plexapi.server import PlexServer
-from throws import throws
 
 from src.core.library import Library
 from src.dto.library_preferences_dto import LibraryPreferencesDTO
@@ -11,9 +10,6 @@ from src.enum.language import Language
 from src.enum.library_name import LibraryName
 from src.enum.library_type import LibraryType
 from src.enum.scanner import Scanner
-from src.exception.library_op_error import LibraryOpError
-from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
-from src.exception.library_unsupported_error import LibraryUnsupportedError
 from src.plex_util_logger import PlexUtilLogger
 
 
@@ -38,7 +34,6 @@ class TVLibrary(Library):
         )
         self.tv_language_manifest_file_dto = tv_language_manifest_file_dto
 
-    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def create(self) -> None:
         self.plex_server.library.add(
             name=self.name.value,
@@ -90,7 +85,6 @@ class TVLibrary(Library):
 
             self.plex_server.library.section(self.name.value).refresh()
 
-    @throws(LibraryOpError)
     def delete(self) -> None:
         return super().delete()
 

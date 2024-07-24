@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
 from alive_progress import alive_bar
 from plexapi.exceptions import NotFound
-from throws import throws
 
 from src.enum.library_type import LibraryType
 from src.exception.library_op_error import LibraryOpError
@@ -51,12 +50,10 @@ class Library(ABC):
         self.preferences = preferences
 
     @abstractmethod
-    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def create(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    @throws(LibraryOpError)
     def delete(self) -> None:
         op_type = "DELETE"
 
@@ -119,7 +116,6 @@ class Library(ABC):
         PlexUtilLogger.get_logger().debug(debug)
         return True
 
-    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def poll(
         self,
         requested_attempts: int = 0,
@@ -165,7 +161,6 @@ class Library(ABC):
                 if attempts >= requested_attempts:
                     raise LibraryPollTimeoutError
 
-    @throws(LibraryOpError, LibraryUnsupportedError)
     def query(
         self,
         tvdb_ids: list[int] | None = None,

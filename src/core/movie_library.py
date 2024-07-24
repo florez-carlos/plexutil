@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from plexapi.server import PlexServer
-from throws import throws
 
 from src.core.library import Library
 from src.dto.library_preferences_dto import LibraryPreferencesDTO
@@ -10,7 +9,6 @@ from src.enum.language import Language
 from src.enum.library_name import LibraryName
 from src.enum.library_type import LibraryType
 from src.enum.scanner import Scanner
-from src.exception.library_op_error import LibraryOpError
 from src.plex_util_logger import PlexUtilLogger
 
 
@@ -63,7 +61,6 @@ class MovieLibrary(Library):
             **self.preferences.movie,
         )
 
-    @throws(LibraryOpError)
     def delete(self) -> None:
         return super().delete()
 

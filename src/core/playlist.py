@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from plexapi.server import PlexServer
-from throws import throws
 
 from src.core.library import Library
 from src.dto.library_preferences_dto import LibraryPreferencesDTO
@@ -12,8 +11,6 @@ from src.enum.library_name import LibraryName
 from src.enum.library_type import LibraryType
 from src.enum.scanner import Scanner
 from src.exception.library_op_error import LibraryOpError
-from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
-from src.exception.library_unsupported_error import LibraryUnsupportedError
 from src.plex_util_logger import PlexUtilLogger
 from src.util.path_ops import PathOps
 
@@ -38,7 +35,6 @@ class Playlist(Library):
         )
         self.music_playlist_file_dto = music_playlist_file_dto
 
-    @throws(LibraryPollTimeoutError, LibraryOpError, LibraryUnsupportedError)
     def create(self) -> None:
         op_type = "CREATE"
         tracks = self.plex_server.library.section(
@@ -51,10 +47,7 @@ class Playlist(Library):
             x.name for x in self.music_playlist_file_dto.playlists
         ]
 
-        info = (
-            "Creating playlist library: \n"
-            f"Playlists: {playlist_names}\n" 
-        )
+        info = "Creating playlist library: \n" f"Playlists: {playlist_names}\n"
 
         PlexUtilLogger.get_logger().info(info)
 
