@@ -177,7 +177,7 @@ class Library(ABC):
 
         debug = (
             "Performing query:\n"
-            f"Name: {self.name.value}"
+            f"Name: {self.name.value}\n"
             f"Library Type: {self.library_type.value}\n"
             f"TVDB Ids: {tvdb_ids}\n"
         )
