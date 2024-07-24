@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-import logging.config
 import ctypes.wintypes
 import os
 import platform
@@ -29,17 +27,13 @@ def main() -> None:
     log_dir = Path()
     system = platform.system()
     if system == "Windows":
-        CSIDL_PERSONAL = 5
-        SHGFP_TYPE_CURRENT = 0
+        csidl_personal = 5
+        shgfp_type_current = 0
 
-        buf= ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-        ctypes.windll.shell32.SHGetFolderPathW(  # pyright: ignore
-            None,
-            CSIDL_PERSONAL,
-            None,
-            SHGFP_TYPE_CURRENT,
-            buf
-        )        
+        buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        ctypes.windll.shell32.SHGetFolderPathW(  # pyright: ignore # noqa: PGH003
+            None, csidl_personal, None, shgfp_type_current, buf
+        )
         home_folder = buf.value or ""
         if not home_folder:
             description = "Could not locate Documents folder"
@@ -57,11 +51,10 @@ def main() -> None:
     plex_util_dir.mkdir(exist_ok=True)
     config_dir.mkdir(exist_ok=True)
     log_dir.mkdir(exist_ok=True)
-    
-    logger = PlexUtilLogger(log_dir)
+
+    PlexUtilLogger(log_dir)
 
     try:
-
         config_file_path = config_dir / "config.json"
         instructions_dto = Prompt.get_user_instructions_dto(config_file_path)
 
@@ -80,8 +73,12 @@ def main() -> None:
         movie_location = instructions_dto.plex_config_dto.movie_folder_path
         tv_location = instructions_dto.plex_config_dto.tv_folder_path
 
-        music_prefs_file_location = config_dir / "music_library_preferences.json"
-        movie_prefs_file_location = config_dir / "movie_library_preferences.json"
+        music_prefs_file_location = (
+            config_dir / "music_library_preferences.json"
+        )
+        movie_prefs_file_location = (
+            config_dir / "movie_library_preferences.json"
+        )
         tv_prefs_file_location = config_dir / "tv_library_preferences.json"
         plex_server_setting_prefs_file_location = (
             config_dir / "plex_server_setting_preferences.json"
@@ -250,9 +247,20 @@ def main() -> None:
 
             case UserRequest.SET_SERVER_SETTINGS:
                 PlexOps.set_server_settings(plex_server, preferences_dto)
-    except:
+    except SystemExit as e:
+        if e.code == 0:
+            description = "Successful System Exit"
+            PlexUtilLogger.get_logger().debug(description)
+        else:
+            description = "Unexpected error:"
+            PlexUtilLogger.get_logger().exception(description)
+            raise
 
+    except:
+        description = "Unexpected error:"
+        PlexUtilLogger.get_logger().exception(description)
         raise
+
 
 if __name__ == "__main__":
     main()
