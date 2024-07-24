@@ -178,41 +178,47 @@ class Library(ABC):
         )
         PlexUtilLogger.get_logger().debug(debug)
 
-        if self.library_type is LibraryType.MUSIC:
-            return self.plex_server.library.section(
-                self.name.value,
-            ).searchTracks()
+        try:
+            if self.library_type is LibraryType.MUSIC:
+                return self.plex_server.library.section(
+                    self.name.value,
+                ).searchTracks()
 
-        elif self.library_type is LibraryType.TV:
-            shows = self.plex_server.library.section(self.name.value).all()
-            shows_filtered = []
+            elif self.library_type is LibraryType.TV:
+                shows = self.plex_server.library.section(self.name.value).all()
+                shows_filtered = []
 
-            if tvdb_ids:
-                for show in shows:
-                    guids = show.guids
-                    tvdb_prefix = "tvdb://"
-                    for guid in guids:
-                        if tvdb_prefix in guid.id:
-                            tvdb = guid.id.replace(tvdb_prefix, "")
-                            if int(tvdb) in tvdb_ids:
-                                shows_filtered.append(show)
-                        else:
-                            description = (
-                                "Expected ("
-                                + tvdb_prefix
-                                + ") but show does not have any: "
-                                + guid.id
-                            )
-                            LibraryOpError(
-                                op_type=op_type,
-                                library_type=self.library_type,
-                                description=description,
-                            )
+                if tvdb_ids:
+                    for show in shows:
+                        guids = show.guids
+                        tvdb_prefix = "tvdb://"
+                        for guid in guids:
+                            if tvdb_prefix in guid.id:
+                                tvdb = guid.id.replace(tvdb_prefix, "")
+                                if int(tvdb) in tvdb_ids:
+                                    shows_filtered.append(show)
+                            else:
+                                description = (
+                                    "Expected ("
+                                    + tvdb_prefix
+                                    + ") but show does not have any: "
+                                    + guid.id
+                                )
+                                LibraryOpError(
+                                    op_type=op_type,
+                                    library_type=self.library_type,
+                                    description=description,
+                                )
 
-            return shows_filtered
+                return shows_filtered
 
-        else:
-            raise LibraryUnsupportedError(
-                op_type=op_type,
-                library_type=self.library_type,
-            )
+            else:
+                raise LibraryUnsupportedError(
+                    op_type=op_type,
+                    library_type=self.library_type,
+                )
+
+        except NotFound:
+            debug = "Received Not Found on a Query operation"
+            PlexUtilLogger.get_logger().debug(debug)
+            return []
