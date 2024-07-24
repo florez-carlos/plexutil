@@ -179,6 +179,7 @@ class Prompt(Static):
             "Received a User Request:\n"
             f"Request: {request.value}\n"
             f"items: {items or []}\n"
+            f"is_all_items: {is_all_items or False}\n"
             f"Host: {plex_server_host}\n"
             f"Port: {plex_server_port}\n"
         )
