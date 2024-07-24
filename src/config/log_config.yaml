@@ -22,13 +22,6 @@ handlers:
         formatter: console
         stream: ext://sys.stdout
     
-    exception_file_handler:
-        filename: 'fallback_exception.log'
-        class: logging.FileHandler
-        level: ERROR
-        formatter: detailed
-        encoding: utf8
-
     regular_file_handler:
         filename: 'fallback_regular.log'
         class: logging.FileHandler
@@ -36,20 +29,7 @@ handlers:
         formatter: detailed
         encoding: utf8
 
-    debug_file_handler:
-        filename: 'fallback_debug.log'
-        class: logging.FileHandler
-        level: DEBUG
-        formatter: detailed
-        encoding: utf8
-
 loggers:
-    exception:
-        level: ERROR
-        handlers: [console, exception_file_handler]
     regular:
         level: DEBUG
         handlers: [console, regular_file_handler]
-    debug:
-        level: DEBUG
-        handlers: [debug_file_handler]
