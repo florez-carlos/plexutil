@@ -47,14 +47,13 @@ class Playlist(Library):
         plex_track_dict = {}
         plex_playlist = []
 
+        playlist_names = [
+            x.name for x in self.music_playlist_file_dto.playlists
+        ]
+
         info = (
             "Creating playlist library: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
+            f"Playlists: {playlist_names}\n" 
         )
 
         PlexUtilLogger.get_logger().info(info)
