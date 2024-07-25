@@ -1,4 +1,4 @@
-#!/usr/bin/zsh -i
+#!/bin/bash
 
 color_red=$(tput setaf 1)
 color_green=$(tput setaf 2)
@@ -15,6 +15,9 @@ if [ $UID -eq 0 ]; then
     printf "%s\n" "${color_red}ERROR:${color_normal}Please DO NOT run this script with sudo"
     exit 1
 fi
+
+cp git-hooks/commit-msg ./.git/hooks 
+cp git-hooks/pre-commit ./.git/hooks
 
 current_python_version=$(python -V | sed 's/Python //;s/+//')
 if ! dpkg --compare-versions "$current_python_version" eq "$required_python_version";then
@@ -41,9 +44,8 @@ printf "%s\n" ""
 printf "%s\n" "Attempting Azure login"
 printf "%s\n" ""
 sleep 1
-az login --service-principal --username $AZ_LOGIN_APP_ID --tenant $AZ_LOGIN_TENANT_ID --password $AZ_LOGIN_CERT_PATH
+if ! az login --service-principal --username "$AZ_LOGIN_APP_ID" --tenant "$AZ_LOGIN_TENANT_ID" --password "$AZ_LOGIN_CERT_PATH"; then
 
-if [ $? -ne 0 ]; then
     printf "%s\n" ""
     printf "%s\n" "${color_red}FAIL${color_normal}: Could not login to AZ"
     printf "%s\n" ""
@@ -63,8 +65,8 @@ file_names=(
 printf "%s\n" ""
 printf "%s\n" "Checking config files exist in $HOME/plexutil/config"
 printf "%s\n" ""
-mkdir -p $HOME/plexutil/config
-mkdir -p $HOME/plexutil/log
+mkdir -p "$HOME"/plexutil/config
+mkdir -p "$HOME"/plexutil/log
 for file_name in "${file_names[@]}"; do
     if [ -e "$HOME/plexutil/config/$file_name" ]; then
         printf "%s\n" ""
@@ -80,14 +82,12 @@ for file_name in "${file_names[@]}"; do
         printf "%s\n" "Fetching missing file: $file_name"
         printf "%s\n" ""
         sleep 1
-        az storage blob download \
+        if ! az storage blob download \
         --account-name plexutilblobs \
         --container-name files \
-        --name $file_name \
-        --file $HOME/plexutil/config/$file_name \
-        --auth-mode login
-
-        if [ $? -ne 0 ]; then
+        --name "$file_name" \
+        --file "$HOME"/plexutil/config/"$file_name" \
+        --auth-mode login; then
             printf "%s\n" ""
             printf "%s\n" "${color_red}FAIL${color_normal}: Could not fetch missing file $file_name"
             printf "%s\n" ""
