@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=62.6"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plexutil"
+version = "1.0.0"
+requires-python = ">=3.11.6"
+authors = [
+  {name = "Carlos Florez", email = "carlos@florez.co.uk"}
+]
+maintainers = [
+  {name = "Carlos Florez", email = "carlos@florez.co.uk"}
+]
+description = ""
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Programming Language :: Python :: 3.11",
+]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+Repository = "https://github.com/florez-carlos/plexutil"
