@@ -15,6 +15,7 @@ from plexutil.enums.language import Language
 from plexutil.enums.user_request import UserRequest
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
+from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 logger = None
@@ -52,7 +53,11 @@ def main() -> None:
     config_dir.mkdir(exist_ok=True)
     log_dir.mkdir(exist_ok=True)
 
-    PlexUtilLogger(log_dir)
+    log_config_file_path = (
+        PathOps.get_project_root() / "plexutil" / "config" / "log_config.yaml"
+    )
+
+    PlexUtilLogger(log_dir, log_config_file_path)
 
     try:
         config_file_path = config_dir / "config.json"

@@ -4,7 +4,9 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from plexutil.exception.library_poll_timeout_error import LibraryPollTimeoutError
+from plexutil.exception.library_poll_timeout_error import (
+    LibraryPollTimeoutError,
+)
 from plexutil.plex_util_logger import PlexUtilLogger
 
 if TYPE_CHECKING:
@@ -25,7 +27,9 @@ from plexapi.exceptions import NotFound
 
 from plexutil.enums.library_type import LibraryType
 from plexutil.exception.library_op_error import LibraryOpError
-from plexutil.exception.library_unsupported_error import LibraryUnsupportedError
+from plexutil.exception.library_unsupported_error import (
+    LibraryUnsupportedError,
+)
 
 
 class Library(ABC):

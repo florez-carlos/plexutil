@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from plexutil.enums.library_type import LibraryType
 from pathlib import Path
+
+from plexutil.enums.library_type import LibraryType
 
 
 @dataclass(frozen=True)

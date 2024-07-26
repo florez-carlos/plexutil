@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from plexutil.util.file_importer import FileImporter
-from plexutil.util.path_ops import PathOps
 
 
 class SingletonMeta(type):
@@ -19,7 +18,7 @@ class SingletonMeta(type):
 
 
 class PlexUtilLogger(metaclass=SingletonMeta):
-    def __init__(self, log_dir: Path) -> None:
+    def __init__(self, log_dir: Path, log_config_file_path: Path) -> None:
         if not hasattr(self, "initialized"):  # Avoid reinitialization
             # Time data in UTC required by date named log files
             day = str(datetime.now(timezone.utc).day)
@@ -27,16 +26,9 @@ class PlexUtilLogger(metaclass=SingletonMeta):
             year = str(datetime.now(timezone.utc).year)
 
             log_file_name = f"{month}-{day}-{year}.log"
-            logging_config_path = (
-                PathOps.get_project_root()
-                / "src"
-                / "plexutil"
-                / "config"
-                / "log_config.yaml"
-            )
             # Load YAML config
             logging_config = FileImporter.get_logging_config(
-                logging_config_path
+                log_config_file_path
             )
             # Rewrite contents of YAML config to accomodate
             # for date based log file names

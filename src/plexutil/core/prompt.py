@@ -121,15 +121,13 @@ class Prompt(Static):
         args = parser.parse_args()
 
         request = args.request
-        request = UserRequest.get_user_request_from_str(request)
-        is_config = request == UserRequest.CONFIG
         items = args.items
         is_all_items = args.all_items
 
         if request is None:
             description = (
                 (
-                    "Positional argument (request)"
+                    "Positional argument (request) "
                     "expected but none supplied, see -h"
                 ),
             )
@@ -147,6 +145,9 @@ class Prompt(Static):
 
             items = list(items.split(","))
 
+        request = UserRequest.get_user_request_from_str(request)
+        is_config = request == UserRequest.CONFIG
+        
         music_folder_path = args.music_folder_path
         movie_folder_path = args.movie_folder_path
         tv_folder_path = args.tv_folder_path
