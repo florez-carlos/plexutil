@@ -1,4 +1,4 @@
-from src.enum.library_type import LibraryType
+from plexutil.enums.library_type import LibraryType
 
 
 class LibraryUnsupportedError(Exception):

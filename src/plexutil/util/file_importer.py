@@ -3,18 +3,18 @@ from pathlib import Path
 
 import yaml
 
-from src.dto.library_preferences_dto import LibraryPreferencesDTO
-from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
-from src.dto.plex_config_dto import PlexConfigDTO
-from src.dto.tv_language_manifest_file_dto import TVLanguageManifestFileDTO
-from src.serializer.music_playlist_file_serializer import (
+from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from plexutil.dto.plex_config_dto import PlexConfigDTO
+from plexutil.dto.tv_language_manifest_file_dto import TVLanguageManifestFileDTO
+from plexutil.serializer.music_playlist_file_serializer import (
     MusicPlaylistFileSerializer,
 )
-from src.serializer.plex_config_serializer import PlexConfigSerializer
-from src.serializer.tv_language_manifest_serializer import (
+from plexutil.serializer.plex_config_serializer import PlexConfigSerializer
+from plexutil.serializer.tv_language_manifest_serializer import (
     TVLanguageManifestSerializer,
 )
-from src.static import Static
+from plexutil.static import Static
 
 
 class FileImporter(Static):

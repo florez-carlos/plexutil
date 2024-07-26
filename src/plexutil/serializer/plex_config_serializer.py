@@ -1,10 +1,10 @@
 from typing import cast
 
-from src.dto.plex_config_dto import PlexConfigDTO
-from src.enum.library_type import LibraryType
-from src.serializer.serializable import Serializable
-from src.serializer.serializer import Serializer
-from src.util.path_ops import PathOps
+from plexutil.dto.plex_config_dto import PlexConfigDTO
+from plexutil.enums.library_type import LibraryType
+from plexutil.serializer.serializable import Serializable
+from plexutil.serializer.serializer import Serializer
+from plexutil.util.path_ops import PathOps
 
 
 class PlexConfigSerializer(Serializer):

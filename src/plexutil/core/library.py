@@ -4,8 +4,8 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from src.exception.library_poll_timeout_error import LibraryPollTimeoutError
-from src.plex_util_logger import PlexUtilLogger
+from plexutil.exception.library_poll_timeout_error import LibraryPollTimeoutError
+from plexutil.plex_util_logger import PlexUtilLogger
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -14,18 +14,18 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
     from plexapi.video import Video
 
-    from src.dto.library_preferences_dto import LibraryPreferencesDTO
-    from src.enum.agent import Agent
-    from src.enum.language import Language
-    from src.enum.library_name import LibraryName
-    from src.enum.scanner import Scanner
+    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+    from plexutil.enums.agent import Agent
+    from plexutil.enums.language import Language
+    from plexutil.enums.library_name import LibraryName
+    from plexutil.enums.scanner import Scanner
 
 from alive_progress import alive_bar
 from plexapi.exceptions import NotFound
 
-from src.enum.library_type import LibraryType
-from src.exception.library_op_error import LibraryOpError
-from src.exception.library_unsupported_error import LibraryUnsupportedError
+from plexutil.enums.library_type import LibraryType
+from plexutil.exception.library_op_error import LibraryOpError
+from plexutil.exception.library_unsupported_error import LibraryUnsupportedError
 
 
 class Library(ABC):

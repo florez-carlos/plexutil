@@ -1,7 +1,7 @@
 from plexapi.server import PlexServer
 
-from src.dto.library_preferences_dto import LibraryPreferencesDTO
-from src.static import Static
+from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+from plexutil.static import Static
 
 
 class PlexOps(Static):

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.dto.song_dto import SongDTO
+    from plexutil.dto.song_dto import SongDTO
 
 
 @dataclass(frozen=True)

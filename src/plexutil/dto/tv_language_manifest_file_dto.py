@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.dto.tv_language_manifest_dto import TVLanguageManifestDTO
+    from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 
-from src.serializer.serializable import Serializable
+from serializer.serializable import Serializable
 
 
 @dataclass(frozen=True)

@@ -1,8 +1,8 @@
-from src.dto.tv_language_manifest_dto import TVLanguageManifestDTO
-from src.dto.tv_language_manifest_file_dto import TVLanguageManifestFileDTO
-from src.enum.language import Language
-from src.serializer.serializable import Serializable
-from src.serializer.serializer import Serializer
+from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
+from plexutil.dto.tv_language_manifest_file_dto import TVLanguageManifestFileDTO
+from plexutil.enums.language import Language
+from plexutil.serializer.serializable import Serializable
+from plexutil.serializer.serializer import Serializer
 
 
 class TVLanguageManifestSerializer(Serializer):

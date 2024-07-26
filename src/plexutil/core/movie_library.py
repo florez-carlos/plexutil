@@ -2,14 +2,14 @@ from pathlib import Path
 
 from plexapi.server import PlexServer
 
-from src.core.library import Library
-from src.dto.library_preferences_dto import LibraryPreferencesDTO
-from src.enum.agent import Agent
-from src.enum.language import Language
-from src.enum.library_name import LibraryName
-from src.enum.library_type import LibraryType
-from src.enum.scanner import Scanner
-from src.plex_util_logger import PlexUtilLogger
+from plexutil.core.library import Library
+from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+from plexutil.enums.agent import Agent
+from plexutil.enums.language import Language
+from plexutil.enums.library_name import LibraryName
+from plexutil.enums.library_type import LibraryType
+from plexutil.enums.scanner import Scanner
+from plexutil.plex_util_logger import PlexUtilLogger
 
 
 class MovieLibrary(Library):

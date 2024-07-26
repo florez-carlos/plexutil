@@ -2,17 +2,17 @@ from pathlib import Path
 
 from plexapi.server import PlexServer
 
-from src.core.library import Library
-from src.dto.library_preferences_dto import LibraryPreferencesDTO
-from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
-from src.enum.agent import Agent
-from src.enum.language import Language
-from src.enum.library_name import LibraryName
-from src.enum.library_type import LibraryType
-from src.enum.scanner import Scanner
-from src.exception.library_op_error import LibraryOpError
-from src.plex_util_logger import PlexUtilLogger
-from src.util.path_ops import PathOps
+from plexutil.core.library import Library
+from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from plexutil.enums.agent import Agent
+from plexutil.enums.language import Language
+from plexutil.enums.library_name import LibraryName
+from plexutil.enums.library_type import LibraryType
+from plexutil.enums.scanner import Scanner
+from plexutil.exception.library_op_error import LibraryOpError
+from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.path_ops import PathOps
 
 
 class Playlist(Library):

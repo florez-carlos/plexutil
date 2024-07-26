@@ -1,11 +1,11 @@
 from typing import cast
 
-from src.dto.music_playlist_dto import MusicPlaylistDTO
-from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
-from src.dto.song_dto import SongDTO
-from src.enum.file_type import FileType
-from src.serializer.serializable import Serializable
-from src.serializer.serializer import Serializer
+from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
+from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from plexutil.dto.song_dto import SongDTO
+from plexutil.enums.file_type import FileType
+from plexutil.serializer.serializable import Serializable
+from plexutil.serializer.serializer import Serializer
 
 
 class MusicPlaylistFileSerializer(Serializer):

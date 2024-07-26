@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.enum.library_type import LibraryType
+    from plexutil.enums.library_type import LibraryType
 
 
 class LibraryOpError(Exception):

@@ -5,8 +5,8 @@ import logging.config
 from datetime import datetime, timezone
 from pathlib import Path
 
-from src.util.file_importer import FileImporter
-from src.util.path_ops import PathOps
+from plexutil.util.file_importer import FileImporter
+from plexutil.util.path_ops import PathOps
 
 
 class SingletonMeta(type):
@@ -30,6 +30,7 @@ class PlexUtilLogger(metaclass=SingletonMeta):
             logging_config_path = (
                 PathOps.get_project_root()
                 / "src"
+                / "plexutil"
                 / "config"
                 / "log_config.yaml"
             )

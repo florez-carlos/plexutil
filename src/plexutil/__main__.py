@@ -5,17 +5,17 @@ from pathlib import Path
 
 from plexapi.server import PlexServer
 
-from src.core.movie_library import MovieLibrary
-from src.core.music_library import MusicLibrary
-from src.core.playlist import Playlist
-from src.core.prompt import Prompt
-from src.core.tv_library import TVLibrary
-from src.dto.music_playlist_file_dto import MusicPlaylistFileDTO
-from src.enum.language import Language
-from src.enum.user_request import UserRequest
-from src.plex_util_logger import PlexUtilLogger
-from src.util.file_importer import FileImporter
-from src.util.plex_ops import PlexOps
+from plexutil.core.movie_library import MovieLibrary
+from plexutil.core.music_library import MusicLibrary
+from plexutil.core.playlist import Playlist
+from plexutil.core.prompt import Prompt
+from plexutil.core.tv_library import TVLibrary
+from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from plexutil.enums.language import Language
+from plexutil.enums.user_request import UserRequest
+from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.file_importer import FileImporter
+from plexutil.util.plex_ops import PlexOps
 
 logger = None
 

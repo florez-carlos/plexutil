@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum.library_type import LibraryType
+from plexutil.enums.library_type import LibraryType
 from pathlib import Path
 
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.enum.file_type import FileType
+from plexutil.enums.file_type import FileType
 
 
 @dataclass(frozen=True)

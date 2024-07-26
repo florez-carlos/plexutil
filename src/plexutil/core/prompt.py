@@ -4,12 +4,12 @@ import argparse
 import pathlib
 from pathlib import Path
 
-from src.dto.plex_config_dto import PlexConfigDTO
-from src.dto.user_instructions_dto import UserInstructionsDTO
-from src.enum.user_request import UserRequest
-from src.plex_util_logger import PlexUtilLogger
-from src.static import Static
-from src.util.file_importer import FileImporter
+from plexutil.dto.plex_config_dto import PlexConfigDTO
+from plexutil.dto.user_instructions_dto import UserInstructionsDTO
+from plexutil.enums.user_request import UserRequest
+from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.static import Static
+from plexutil.util.file_importer import FileImporter
 
 
 class Prompt(Static):

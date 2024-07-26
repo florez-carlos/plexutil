@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.enum.language import Language
+    from plexutil.enums.language import Language
 
 
 @dataclass(frozen=True)

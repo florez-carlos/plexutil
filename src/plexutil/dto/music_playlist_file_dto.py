@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.dto.music_playlist_dto import MusicPlaylistDTO
+    from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 
-from src.serializer.serializable import Serializable
+from serializer.serializable import Serializable
 
 
 @dataclass(frozen=True)

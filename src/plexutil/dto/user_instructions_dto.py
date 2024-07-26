@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.dto.plex_config_dto import PlexConfigDTO
-    from src.enum.user_request import UserRequest
+    from plexutil.dto.plex_config_dto import PlexConfigDTO
+    from plexutil.enums.user_request import UserRequest
 
 
 @dataclass(frozen=True)
