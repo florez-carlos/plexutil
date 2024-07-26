@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 
-from serializer.serializable import Serializable
+from plexutil.serializer.serializable import Serializable
 
 
 @dataclass(frozen=True)
