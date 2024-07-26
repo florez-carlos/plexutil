@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plexutil"
-version = "1.0.5"
+version = "1.0.6"
 requires-python = ">=3.11.6"
 authors = [
   {name = "Carlos Florez", email = "carlos@florez.co.uk"}
@@ -26,6 +26,9 @@ dependencies = [
 
 
 ]
+
+[project.scripts]
+plexutil = "plexutil.__main__:main"
 
 [project.urls]
 Repository = "https://github.com/florez-carlos/plexutil"
