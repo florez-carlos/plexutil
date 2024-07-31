@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -11,7 +11,7 @@ from plexutil.serializer.serializable import Serializable
 
 @dataclass(frozen=True)
 class TVLanguageManifestFileDTO(Serializable):
-    manifests_dto: list[TVLanguageManifestDTO]
+    manifests_dto: list[TVLanguageManifestDTO] = field(default_factory=list)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TVLanguageManifestFileDTO):

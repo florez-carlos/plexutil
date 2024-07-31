@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
 
-if TYPE_CHECKING:
-    from plexutil.enums.language import Language
+from plexutil.enums.language import Language
 
 
 @dataclass(frozen=True)
 class TVLanguageManifestDTO:
-    language: Language
-    ids: list[int]
+    language: Language = Language.ENGLISH_US
+    ids: list[int] = field(default_factory=list)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TVLanguageManifestDTO):
