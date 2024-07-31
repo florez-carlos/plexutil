@@ -147,7 +147,7 @@ class Prompt(Static):
 
         request = UserRequest.get_user_request_from_str(request)
         is_config = request == UserRequest.CONFIG
-        
+
         music_folder_path = args.music_folder_path
         movie_folder_path = args.movie_folder_path
         tv_folder_path = args.tv_folder_path
