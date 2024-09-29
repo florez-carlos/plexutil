@@ -1,8 +1,8 @@
 import ctypes.wintypes
 import json
+import logging
 import os
 import platform
-import logging
 import time
 from pathlib import Path
 
@@ -285,7 +285,7 @@ class FileImporter(Static):
                     strings=[""],
                 )
             elif platform.system == "Linux":
-                logging.error("")
+                logging.exception("")
             if e.args and len(e.args) >= 0:
                 raise BootstrapError(e.args[0]) from e
 
