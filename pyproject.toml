@@ -22,7 +22,7 @@ classifiers = [
 dependencies = [
   "PlexAPI==4.15.7",
   "alive-progress==3.1.5",
-  "pyyaml==6.0.1"
+  "pyyaml==6.0.1",
   "pywin32==306;sys_platform == 'win32'"
 
 
