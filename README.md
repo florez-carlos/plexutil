@@ -43,9 +43,21 @@ mkdir C:\Users\%USERNAME%\Documents\plexutil\config
 mkdir -p $HOME/plexutil/config
 ```
 
-### Add the configuration files to the plexutil/config directory
-test
+### Add the sample Configuration files to the plexutil/config directory
+- Download the sample Preferences files located in ./samples/preferences and place in the plexutil config directory
+- Download the sample Manifests files located in ./samples/mainfests and place in the plexutil config directory
+- Download the sample Playlists files located in ./samples/playlists and place in the plexutil config directory
 
+The plexutil config directory should hold the folllowing
+
+```bash
+plexutil/config/music_playlist.json
+plexutil/config/tv_language_manifest.json
+plexutil/config/movie_library_preferences.json
+plexutil/config/tv_library_preferences.json
+plexutil/config/music_library_preferences.json
+plexutil/config/plex_server_setting_preferences.json
+```
 
 
 
