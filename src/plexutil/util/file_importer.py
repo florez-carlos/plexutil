@@ -229,7 +229,6 @@ class FileImporter(Static):
         try:
             home_folder = Path()
             system = platform.system()
-            system = "Darwin"
 
             if system == "Windows":
                 csidl_personal = 5
