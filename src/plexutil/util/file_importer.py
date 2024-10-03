@@ -209,14 +209,14 @@ class FileImporter(Static):
             description = f"Supplied location: {music_playlist_file_location}"
             PlexUtilLogger.get_logger().debug(description)
             time.sleep(2)
-        except ValidationError:
+        except ValidationError as e:
             description = (
                 "Music playlist is not valid. " "Please refer to schema\n"
             )
             PlexUtilLogger.get_logger().exception(description)
             description = f"Supplied location: {music_playlist_file_location}"
             PlexUtilLogger.get_logger().debug(description)
-            raise SystemExit(1) from ValidationError
+            raise SystemExit(1) from e
 
         return MusicPlaylistFileDTO()
 
