@@ -172,6 +172,7 @@ class FileImporter(Static):
         music_playlist_file_location = config_dir / "music_playlists.json"
         music_playlist_schema_location = (
             PathOps.get_project_root()
+            / "plexutil"
             / "schemas"
             / "v1"
             / "music_playlists_schema.json"
@@ -196,6 +197,9 @@ class FileImporter(Static):
             ) as file:
                 file_dict = json.load(file)
                 validate(instance=file_dict, schema=music_playlist_schema)
+                description = "Music Playlist exists and schema is valid!\n"
+                PlexUtilLogger.get_logger().info(description)
+                time.sleep(2)
                 return serializer.to_dto(file_dict)
         except FileNotFoundError:
             description = (
