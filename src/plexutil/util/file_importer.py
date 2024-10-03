@@ -214,9 +214,6 @@ class FileImporter(Static):
             description = (
                 "Music playlist is not valid. " "Please refer to schema\n"
             )
-            PlexUtilLogger.get_logger().exception(description)
-            description = f"Supplied location: {music_playlist_file_location}"
-            PlexUtilLogger.get_logger().debug(description)
             raise InvalidSchemaError(description) from e
 
         return MusicPlaylistFileDTO()
