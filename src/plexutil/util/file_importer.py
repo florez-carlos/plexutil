@@ -198,8 +198,7 @@ class FileImporter(Static):
                 file_dict = json.load(file)
                 validate(instance=file_dict, schema=music_playlist_schema)
                 description = "Music Playlist exists and schema is valid!\n"
-                PlexUtilLogger.get_logger().info(description)
-                time.sleep(2)
+                PlexUtilLogger.get_logger().debug(description)
                 return serializer.to_dto(file_dict)
         except FileNotFoundError:
             description = (
