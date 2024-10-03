@@ -9,6 +9,7 @@ from pathlib import Path
 from jsonschema import ValidationError, validate
 
 from plexutil.exception.bootstrap_error import BootstrapError
+from plexutil.exception.invalid_schema_error import InvalidSchemaError
 
 if platform.system() == "Windows":
     import win32evtlog  # pyright: ignore # noqa: PGH003
@@ -216,7 +217,7 @@ class FileImporter(Static):
             PlexUtilLogger.get_logger().exception(description)
             description = f"Supplied location: {music_playlist_file_location}"
             PlexUtilLogger.get_logger().debug(description)
-            raise SystemExit(1) from e
+            raise InvalidSchemaError(description) from e
 
         return MusicPlaylistFileDTO()
 

@@ -11,6 +11,7 @@ from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from plexutil.enums.language import Language
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
+from plexutil.exception.invalid_schema_error import InvalidSchemaError
 from plexutil.exception.plex_util_config_error import PlexUtilConfigError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
@@ -213,6 +214,10 @@ def main() -> None:
 
     except PlexUtilConfigError:
         description = "Plexutil configuration error"
+        PlexUtilLogger.get_logger().exception(description)
+
+    except InvalidSchemaError as e:
+        description = "\n\n=====Invalid schema error=====\n\n" f"{e!s}"
         PlexUtilLogger.get_logger().exception(description)
 
     # No regular logger can be expected to be initialized
