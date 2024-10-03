@@ -216,6 +216,7 @@ class FileImporter(Static):
             PlexUtilLogger.get_logger().exception(description)
             description = f"Supplied location: {music_playlist_file_location}"
             PlexUtilLogger.get_logger().debug(description)
+            raise SystemExit(1) from ValidationError
 
         return MusicPlaylistFileDTO()
 
