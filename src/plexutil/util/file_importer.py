@@ -6,6 +6,8 @@ import platform
 import time
 from pathlib import Path
 
+from jsonschema import ValidationError, validate
+
 from plexutil.exception.bootstrap_error import BootstrapError
 
 if platform.system() == "Windows":
@@ -168,12 +170,32 @@ class FileImporter(Static):
         serializer = MusicPlaylistFileSerializer()
 
         music_playlist_file_location = config_dir / "music_playlists.json"
+        music_playlist_schema_location = (
+            PathOps.get_project_root()
+            / "schemas"
+            / "v1"
+            / "music_playlists_schema.json"
+        )
+        music_playlist_schema = {}
+
+        try:
+            with music_playlist_schema_location.open(
+                encoding=FileImporter.encoding
+            ) as file:
+                music_playlist_schema = json.load(file)
+        except FileNotFoundError:
+            description = "Music Playlists Schema not found.\n"
+            PlexUtilLogger.get_logger().exception(description)
+            description = f"Supplied location: {music_playlist_file_location}"
+            PlexUtilLogger.get_logger().debug(description)
+            raise SystemExit(1) from FileNotFoundError
 
         try:
             with music_playlist_file_location.open(
                 encoding=FileImporter.encoding
             ) as file:
                 file_dict = json.load(file)
+                validate(instance=file_dict, schema=music_playlist_schema)
                 return serializer.to_dto(file_dict)
         except FileNotFoundError:
             description = (
@@ -184,6 +206,13 @@ class FileImporter(Static):
             description = f"Supplied location: {music_playlist_file_location}"
             PlexUtilLogger.get_logger().debug(description)
             time.sleep(2)
+        except ValidationError:
+            description = (
+                "Music playlist is not valid. " "Please refer to schema\n"
+            )
+            PlexUtilLogger.get_logger().exception(description)
+            description = f"Supplied location: {music_playlist_file_location}"
+            PlexUtilLogger.get_logger().debug(description)
 
         return MusicPlaylistFileDTO()
 
