@@ -12,7 +12,7 @@ required_python_version="3.11.6"
 
 if [ $UID -eq 0 ]; then
     printf "%s\n" "${color_red}ERROR:${color_normal}Please DO NOT run this script with sudo"
-    exit 1
+    return 1
 fi
 
 cp git-hooks/commit-msg ./.git/hooks 
@@ -23,7 +23,7 @@ if ! dpkg --compare-versions "$current_python_version" eq "$required_python_vers
     printf "%s\n" ""
     printf "%s\n" "${color_red}ERROR${color_normal}: Current Python is $current_python_version but $required_python_version required"
     printf "%s\n" ""
-    exit 1
+    return 1
 fi
 
 python -m venv "$HOME"/venv/plexutil
@@ -33,7 +33,7 @@ if [ "$VIRTUAL_ENV" != "$HOME"/venv/plexutil ]; then
     printf "%s\n" ""
     printf "%s\n" "${color_red}ERROR${color_normal}: Attempted to set venv to: $HOME/venv/plexutl but current venv is $VIRTUAL_ENV"
     printf "%s\n" ""
-    exit 1
+    return 1
 fi
 pip install -r requirements.txt
 
