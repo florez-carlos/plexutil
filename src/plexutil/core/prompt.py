@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+from argparse import RawTextHelpFormatter
 from pathlib import Path
 
 from plexutil.dto.plex_config_dto import PlexConfigDTO
@@ -17,7 +18,9 @@ class Prompt(Static):
     def get_user_instructions_dto(
         config_file_path: Path,
     ) -> UserInstructionsDTO:
-        parser = argparse.ArgumentParser(description="Plex Util")
+        parser = argparse.ArgumentParser(
+            description="Plexutil", formatter_class=RawTextHelpFormatter
+        )
 
         request_help_str = "Supported Requests: \n"
 

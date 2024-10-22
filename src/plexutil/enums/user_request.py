@@ -15,6 +15,7 @@ class UserRequest(Enum):
     DELETE_MUSIC_LIBRARY = "delete_music_library"
     CREATE_MUSIC_PLAYLIST = "create_music_playlist"
     DELETE_MUSIC_PLAYLIST = "delete_music_playlist"
+    EXPORT_MUSIC_PLAYLIST = "export_music_playlist"
 
     @staticmethod
     # Forward Reference used here in type hint
@@ -31,6 +32,7 @@ class UserRequest(Enum):
             UserRequest.DELETE_MUSIC_LIBRARY,
             UserRequest.CREATE_MUSIC_PLAYLIST,
             UserRequest.DELETE_MUSIC_PLAYLIST,
+            UserRequest.EXPORT_MUSIC_PLAYLIST,
         ]
 
     @staticmethod

@@ -4,8 +4,11 @@ from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.agent import Agent
+from plexutil.enums.file_type import FileType
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
@@ -143,3 +146,32 @@ class Playlist(Library):
         PlexUtilLogger.get_logger().debug(debug)
 
         return all_exist
+
+    def export_music_playlists(self) -> MusicPlaylistFileDTO:
+        tracks = self.plex_server.library.section(
+            self.name.value,
+        ).searchTracks()
+        plex_playlists = self.plex_server.playlists(playlistType="audio")
+        music_playlist_file_dto = MusicPlaylistFileDTO(len(tracks), [])
+
+        for plex_playlist in plex_playlists:
+            songs = []
+            for track in plex_playlist.items():
+                plex_track_absolute_location = track.locations[0]
+                plex_track_path = PathOps.get_path_from_str(
+                    plex_track_absolute_location,
+                )
+                plex_track_full_name = plex_track_path.name
+                plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
+                plex_track_ext = plex_track_full_name.rsplit(".", 1)[1]
+                song_dto = SongDTO(
+                    plex_track_name,
+                    FileType.get_file_type_from_str(plex_track_ext),
+                )
+                songs.append(song_dto)
+
+            music_playlist_file_dto.playlists.append(
+                MusicPlaylistDTO(plex_playlist.name, songs),
+            )
+
+        return music_playlist_file_dto

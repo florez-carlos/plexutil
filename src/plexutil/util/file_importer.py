@@ -249,6 +249,19 @@ class FileImporter(Static):
         return TVLanguageManifestFileDTO()
 
     @staticmethod
+    def export_music_playlist_file_dto(
+        music_playlist_file_dto: MusicPlaylistFileDTO,
+    ) -> None:
+        cwd = Path()
+        serializer = MusicPlaylistFileSerializer()
+        with cwd.open(FileImporter.encoding) as file:
+            json.dump(
+                serializer.to_json(music_playlist_file_dto),
+                file,
+                indent=4,
+            )
+
+    @staticmethod
     def get_logging_config(logging_config_path: Path) -> dict:
         with logging_config_path.open(
             "r", errors="strict", encoding=FileImporter.encoding

@@ -203,6 +203,23 @@ def main() -> None:
 
             case UserRequest.SET_SERVER_SETTINGS:
                 PlexOps.set_server_settings(plex_server, preferences_dto)
+
+            case UserRequest.EXPORT_MUSIC_PLAYLIST:
+                playlist_library = Playlist(
+                    plex_server,
+                    music_location,
+                    Language.ENGLISH_US,
+                    music_playlist_file_dto,
+                )
+                music_playlist_file_dto = (
+                    playlist_library.export_music_playlists()
+                )
+                FileImporter.export_music_playlist_file_dto(
+                    music_playlist_file_dto
+                )
+                description = "A Music Playlists file has been exported"
+                PlexUtilLogger.get_logger().debug(description)
+
     except SystemExit as e:
         if e.code == 0:
             description = "Successful System Exit"
