@@ -252,9 +252,9 @@ class FileImporter(Static):
     def export_music_playlist_file_dto(
         music_playlist_file_dto: MusicPlaylistFileDTO,
     ) -> None:
-        cwd = Path()
+        cwd = Path() / "music_playlists.json"
         serializer = MusicPlaylistFileSerializer()
-        with cwd.open(FileImporter.encoding) as file:
+        with cwd.open(encoding=FileImporter.encoding, mode="w") as file:
             json.dump(
                 serializer.to_json(music_playlist_file_dto),
                 file,
