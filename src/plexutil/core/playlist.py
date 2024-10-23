@@ -171,7 +171,7 @@ class Playlist(Library):
                 songs.append(song_dto)
 
             music_playlist_file_dto.playlists.append(
-                MusicPlaylistDTO(plex_playlist.name, songs),
+                MusicPlaylistDTO(plex_playlist.title, songs),
             )
 
         return music_playlist_file_dto
