@@ -6,9 +6,7 @@ from plexapi.server import PlexServer
 from plexutil.core.library import Library
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
-from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.file_type import FileType
 from plexutil.enums.language import Language
@@ -153,10 +151,8 @@ class Playlist(Library):
         return all_exist
 
     def export_music_playlists(
-            self, 
-            bootstrap_paths_dto: BootstrapPathsDTO
-        ) -> None:
-
+        self, bootstrap_paths_dto: BootstrapPathsDTO
+    ) -> None:
         db = SqliteDatabase(bootstrap_paths_dto.config_dir / "playlists.db")
         db.connect()
         db.create_tables([SongEntity], safe=True)
@@ -173,7 +169,7 @@ class Playlist(Library):
             )
             plex_track_full_name = plex_track_path.name
             plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
-            plex_track_ext =  FileType.get_file_type_from_str(
+            plex_track_ext = FileType.get_file_type_from_str(
                 plex_track_full_name.rsplit(".", 1)[1],
             )
             SongEntity(
@@ -183,7 +179,6 @@ class Playlist(Library):
         plex_playlists = self.plex_server.playlists(playlistType="audio")
 
         for plex_playlist in plex_playlists:
-
             music_playlist_id = MusicPlaylistEntity(
                 name=plex_playlist.title,
             ).save(force_insert=True)
@@ -195,17 +190,20 @@ class Playlist(Library):
                 )
                 plex_track_full_name = plex_track_path.name
                 plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
-                plex_track_ext =  FileType.get_file_type_from_str(
+                plex_track_ext = FileType.get_file_type_from_str(
                     plex_track_full_name.rsplit(".", 1)[1],
                 )
 
-                song_entity = SongEntity.select().where(
-                    (SongEntity.name == plex_track_name)
-                    & (SongEntity.extension == plex_track_ext)
-                ).get()
+                song_entity = (
+                    SongEntity.select()
+                    .where(
+                        (SongEntity.name == plex_track_name)
+                        & (SongEntity.extension == plex_track_ext)
+                    )
+                    .get()
+                )
 
                 SongMusicPlaylistEntity(
                     playlist=music_playlist_id, song=song_entity.id
                 ).save(force_insert=True)
         db.close()
-
