@@ -185,7 +185,7 @@ class Playlist(Library):
 
         bulk = []
         for plex_playlist in plex_playlists:
-            bulk.append(plex_playlist.title)
+            bulk.append((plex_playlist.title,))
 
         query = MusicPlaylistEntity.insert_many(
             bulk,
