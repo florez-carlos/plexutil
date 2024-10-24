@@ -162,6 +162,7 @@ class Playlist(Library):
         tracks = self.plex_server.library.section(
             self.name.value,
         ).searchTracks()
+        bulk = []
         for track in tracks:
             plex_track_absolute_location = track.locations[0]
             plex_track_path = PathOps.get_path_from_str(
@@ -172,16 +173,35 @@ class Playlist(Library):
             plex_track_ext = FileType.get_file_type_from_str(
                 plex_track_full_name.rsplit(".", 1)[1],
             )
-            SongEntity(
-                name=plex_track_name, extension=plex_track_ext.value
-            ).save(force_insert=True)
+            bulk.append((plex_track_name, plex_track_ext.value))
+
+        query = SongEntity.insert_many(
+            bulk,
+            fields=[SongEntity.name, SongEntity.extension],
+        )
+        query.execute()
 
         plex_playlists = self.plex_server.playlists(playlistType="audio")
 
+        bulk = []
         for plex_playlist in plex_playlists:
-            music_playlist_id = MusicPlaylistEntity(
-                name=plex_playlist.title,
-            ).save(force_insert=True)
+            bulk.append(plex_playlist.title)
+
+        query = MusicPlaylistEntity.insert_many(
+            bulk,
+            fields=[MusicPlaylistEntity.name],
+        )
+        query.execute()
+
+        bulk = []
+        for plex_playlist in plex_playlists:
+            music_playlist_id = (
+                MusicPlaylistEntity.select()
+                .where(
+                    MusicPlaylistEntity.name == plex_playlist.title,
+                )
+                .get()
+            )
 
             for track in plex_playlist.items():
                 plex_track_absolute_location = track.locations[0]
@@ -202,8 +222,14 @@ class Playlist(Library):
                     )
                     .get()
                 )
+                bulk.append((music_playlist_id, song_entity.id))
+        query = SongMusicPlaylistEntity.insert_many(
+            bulk,
+            fields=[
+                SongMusicPlaylistEntity.playlist,
+                SongMusicPlaylistEntity.song,
+            ],
+        )
+        query.execute()
 
-                SongMusicPlaylistEntity(
-                    playlist=music_playlist_id, song=song_entity.id
-                ).save(force_insert=True)
         db.close()
