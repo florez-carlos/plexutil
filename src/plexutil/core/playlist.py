@@ -198,7 +198,7 @@ class Playlist(Library):
                     SongEntity.select()
                     .where(
                         (SongEntity.name == plex_track_name)
-                        & (SongEntity.extension == plex_track_ext)
+                        & (SongEntity.extension == plex_track_ext.value)
                     )
                     .get()
                 )
