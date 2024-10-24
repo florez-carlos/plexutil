@@ -1,8 +1,10 @@
 from pathlib import Path
 
+from peewee import SqliteDatabase
 from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
+from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
@@ -14,6 +16,9 @@ from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_op_error import LibraryOpError
+from plexutil.model.music_playlist_entity import MusicPlaylistEntity
+from plexutil.model.song_entity import SongEntity
+from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.path_ops import PathOps
 
@@ -147,15 +152,42 @@ class Playlist(Library):
 
         return all_exist
 
-    def export_music_playlists(self) -> MusicPlaylistFileDTO:
+    def export_music_playlists(
+            self, 
+            bootstrap_paths_dto: BootstrapPathsDTO
+        ) -> None:
+
+        db = SqliteDatabase(bootstrap_paths_dto.config_dir / "playlists.db")
+        db.connect()
+        db.create_tables([SongEntity], safe=True)
+        db.create_tables([MusicPlaylistEntity], safe=True)
+        db.create_tables([SongMusicPlaylistEntity], safe=True)
+
         tracks = self.plex_server.library.section(
             self.name.value,
         ).searchTracks()
+        for track in tracks:
+            plex_track_absolute_location = track.locations[0]
+            plex_track_path = PathOps.get_path_from_str(
+                plex_track_absolute_location,
+            )
+            plex_track_full_name = plex_track_path.name
+            plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
+            plex_track_ext =  FileType.get_file_type_from_str(
+                plex_track_full_name.rsplit(".", 1)[1],
+            )
+            SongEntity(
+                name=plex_track_name, extension=plex_track_ext.value
+            ).save(force_insert=True)
+
         plex_playlists = self.plex_server.playlists(playlistType="audio")
-        music_playlist_file_dto = MusicPlaylistFileDTO(len(tracks), [])
 
         for plex_playlist in plex_playlists:
-            songs = []
+
+            music_playlist_id = MusicPlaylistEntity(
+                name=plex_playlist.title,
+            ).save(force_insert=True)
+
             for track in plex_playlist.items():
                 plex_track_absolute_location = track.locations[0]
                 plex_track_path = PathOps.get_path_from_str(
@@ -163,15 +195,17 @@ class Playlist(Library):
                 )
                 plex_track_full_name = plex_track_path.name
                 plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
-                plex_track_ext = plex_track_full_name.rsplit(".", 1)[1]
-                song_dto = SongDTO(
-                    plex_track_name,
-                    FileType.get_file_type_from_str(plex_track_ext),
+                plex_track_ext =  FileType.get_file_type_from_str(
+                    plex_track_full_name.rsplit(".", 1)[1],
                 )
-                songs.append(song_dto)
 
-            music_playlist_file_dto.playlists.append(
-                MusicPlaylistDTO(plex_playlist.title, songs),
-            )
+                song_entity = SongEntity.select().where(
+                    (SongEntity.name == plex_track_name)
+                    & (SongEntity.extension == plex_track_ext)
+                ).get()
 
-        return music_playlist_file_dto
+                SongMusicPlaylistEntity(
+                    playlist=music_playlist_id, song=song_entity.id
+                ).save(force_insert=True)
+        db.close()
+

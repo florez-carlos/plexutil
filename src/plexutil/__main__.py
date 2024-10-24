@@ -1,18 +1,27 @@
 import sys
 
+from peewee import SqliteDatabase
 from plexapi.server import PlexServer
 
 from plexutil.core.movie_library import MovieLibrary
 from plexutil.core.music_library import MusicLibrary
+from plexutil.core.music_playlist_importer import MusicPlaylistImporter
 from plexutil.core.playlist import Playlist
 from plexutil.core.prompt import Prompt
 from plexutil.core.tv_library import TVLibrary
+from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
+from plexutil.dto.plex_config_dto import PlexConfigDTO
+from plexutil.dto.song_dto import SongDTO
+from plexutil.enums.file_type import FileType
 from plexutil.enums.language import Language
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
 from plexutil.exception.plex_util_config_error import PlexUtilConfigError
+from plexutil.model.music_playlist_entity import MusicPlaylistEntity
+from plexutil.model.song_entity import SongEntity
+from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
 from plexutil.util.plex_ops import PlexOps
@@ -211,9 +220,8 @@ def main() -> None:
                     Language.ENGLISH_US,
                     music_playlist_file_dto,
                 )
-                music_playlist_file_dto = (
-                    playlist_library.export_music_playlists()
-                )
+                playlist_library.export_music_playlists(bootstrap_paths_dto)
+                return
                 FileImporter.export_music_playlist_file_dto(
                     music_playlist_file_dto
                 )
