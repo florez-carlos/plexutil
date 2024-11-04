@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import sys
 from argparse import RawTextHelpFormatter
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from plexutil.dto.plex_config_dto import PlexConfigDTO
@@ -121,11 +123,43 @@ class Prompt(Static):
             default="",
         )
 
+        parser.add_argument(
+            "-sc",
+            "--show_configuration",
+            action="store_true",
+            help=("Displays host,port,token"),
+        )
+
+        parser.add_argument(
+            "-v",
+            "--version",
+            action="store_true",
+            help=("Displays version"),
+        )
+
         args = parser.parse_args()
 
         request = args.request
         items = args.items
         is_all_items = args.all_items
+        is_version = args.version
+        is_show_configuration = args.show_configuration
+
+        if is_version:
+            plexutil_version = ""
+
+            try:
+                plexutil_version = version("plexutil")
+
+            except PackageNotFoundError:
+                pyproject = FileImporter.get_pyproject()
+                plexutil_version = pyproject["project"]["version"]
+
+            PlexUtilLogger.get_logger().info(plexutil_version)
+            sys.exit(0)
+
+        if is_show_configuration:
+            sys.exit(0)
 
         if request is None:
             description = (
