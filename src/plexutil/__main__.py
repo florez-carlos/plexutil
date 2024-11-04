@@ -14,6 +14,7 @@ from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
 from plexutil.exception.plex_util_config_error import PlexUtilConfigError
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.database_manager import DatabaseManager
 from plexutil.util.file_importer import FileImporter
 from plexutil.util.plex_ops import PlexOps
 
@@ -21,6 +22,8 @@ from plexutil.util.plex_ops import PlexOps
 def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
+        db_manager = DatabaseManager(bootstrap_paths_dto)
+        db_manager.initialize_db()
 
         config_dir = bootstrap_paths_dto.config_dir
         plexutil_config_file = bootstrap_paths_dto.plexutil_config_file
