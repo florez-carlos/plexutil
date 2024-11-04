@@ -6,6 +6,7 @@ import platform
 import time
 from pathlib import Path
 
+import toml
 from jsonschema import ValidationError, validate
 
 from plexutil.exception.bootstrap_error import BootstrapError
@@ -267,6 +268,10 @@ class FileImporter(Static):
             "r", errors="strict", encoding=FileImporter.encoding
         ) as file:
             return yaml.safe_load(file)
+
+    @staticmethod
+    def get_pyproject() -> dict:
+        return toml.load(PathOps.get_project_root().parent / "pyproject.toml")
 
     @staticmethod
     def bootstrap() -> BootstrapPathsDTO:
