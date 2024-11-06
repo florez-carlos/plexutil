@@ -1,24 +1,33 @@
 from pathlib import Path
 
-from peewee import SqliteDatabase
 from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
-from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from plexutil.enums.agent import Agent
-from plexutil.enums.file_type import FileType
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_op_error import LibraryOpError
+from plexutil.mapper.plex_playlist_music_playlist_entity_mapper import (
+    PlexPlaylistMusicPlaylistEntityMapper,
+)
+from plexutil.mapper.plex_track_song_entity_mapper import (
+    PlexTrackSongEntityMapper,
+)
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
-from plexutil.model.song_entity import SongEntity
 from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.service.music_playlist_service import MusicPlaylistService
+from plexutil.service.song_music_playlist_service import (
+    SongMusicPlaylistService,
+)
+from plexutil.service.song_service import SongService
+from plexutil.util.database_manager import DatabaseManager
 from plexutil.util.path_ops import PathOps
+from plexutil.util.plex_ops import PlexOps
 
 
 class Playlist(Library):
@@ -56,14 +65,15 @@ class Playlist(Library):
         info = "Creating playlist library: \n" f"Playlists: {playlist_names}\n"
 
         PlexUtilLogger.get_logger().info(info)
+        local_track_count = len(PlexOps.get_local_songs(self.location))
 
         info = (
             "Checking server track count "
             f"meets expected "
-            f"count: {self.music_playlist_file_dto.track_count!s}\n"
+            f"count: {local_track_count!s}\n"
         )
         PlexUtilLogger.get_logger().info(info)
-        self.poll(10, self.music_playlist_file_dto.track_count, 10)
+        self.poll(10, local_track_count, 10)
 
         playlists = self.music_playlist_file_dto.playlists
 
@@ -151,85 +161,48 @@ class Playlist(Library):
         return all_exist
 
     def export_music_playlists(
-        self, bootstrap_paths_dto: BootstrapPathsDTO
+        self, database_manager: DatabaseManager
     ) -> None:
-        db = SqliteDatabase(bootstrap_paths_dto.config_dir / "playlists.db")
-        db.connect()
-        db.create_tables([SongEntity], safe=True)
-        db.create_tables([MusicPlaylistEntity], safe=True)
-        db.create_tables([SongMusicPlaylistEntity], safe=True)
+        song_service = SongService(database_manager)
+        music_playlist_service = MusicPlaylistService(database_manager)
+        song_music_playlist_service = SongMusicPlaylistService(
+            database_manager
+        )
 
         tracks = self.plex_server.library.section(
             self.name.value,
         ).searchTracks()
-        bulk = []
-        for track in tracks:
-            plex_track_absolute_location = track.locations[0]
-            plex_track_path = PathOps.get_path_from_str(
-                plex_track_absolute_location,
-            )
-            plex_track_full_name = plex_track_path.name
-            plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
-            plex_track_ext = FileType.get_file_type_from_str(
-                plex_track_full_name.rsplit(".", 1)[1],
-            )
-            bulk.append((plex_track_name, plex_track_ext.value))
-
-        query = SongEntity.insert_many(
-            bulk,
-            fields=[SongEntity.name, SongEntity.extension],
-        )
-        query.execute()
+        songs_to_save = [
+            PlexTrackSongEntityMapper.get_song_entity(track)
+            for track in tracks
+        ]
+        song_service.add_many_song(songs_to_save)
 
         plex_playlists = self.plex_server.playlists(playlistType="audio")
+        music_playlists_to_save = [
+            PlexPlaylistMusicPlaylistEntityMapper.get_music_playlist_entity(
+                plex_playlist
+            )
+            for plex_playlist in plex_playlists
+        ]
+        music_playlist_service.add_many_playlist(music_playlists_to_save)
 
-        bulk = []
+        song_music_playlists_to_save = []
         for plex_playlist in plex_playlists:
-            bulk.append((plex_playlist.title,))
-
-        query = MusicPlaylistEntity.insert_many(
-            bulk,
-            fields=[MusicPlaylistEntity.name],
-        )
-        query.execute()
-
-        bulk = []
-        for plex_playlist in plex_playlists:
-            music_playlist_id = (
-                MusicPlaylistEntity.select()
-                .where(
-                    MusicPlaylistEntity.name == plex_playlist.title,
-                )
-                .get()
+            music_playlist_id = music_playlist_service.get_id(
+                MusicPlaylistEntity(name=plex_playlist.title)
             )
 
             for track in plex_playlist.items():
-                plex_track_absolute_location = track.locations[0]
-                plex_track_path = PathOps.get_path_from_str(
-                    plex_track_absolute_location,
-                )
-                plex_track_full_name = plex_track_path.name
-                plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
-                plex_track_ext = FileType.get_file_type_from_str(
-                    plex_track_full_name.rsplit(".", 1)[1],
-                )
+                song_entity = PlexTrackSongEntityMapper.get_song_entity(track)
+                song_service = SongService(database_manager)
+                song_entity_id = song_service.get_id(song_entity)
 
-                song_entity = (
-                    SongEntity.select()
-                    .where(
-                        (SongEntity.name == plex_track_name)
-                        & (SongEntity.extension == plex_track_ext.value)
+                song_music_playlists_to_save.append(
+                    SongMusicPlaylistEntity(
+                        playlist=music_playlist_id, song=song_entity_id
                     )
-                    .get()
                 )
-                bulk.append((music_playlist_id, song_entity.id))
-        query = SongMusicPlaylistEntity.insert_many(
-            bulk,
-            fields=[
-                SongMusicPlaylistEntity.playlist,
-                SongMusicPlaylistEntity.song,
-            ],
-        )
-        query.execute()
-
-        db.close()
+            song_music_playlist_service.add_many_song_playlist(
+                song_music_playlists_to_save
+            )
