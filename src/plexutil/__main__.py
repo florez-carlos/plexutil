@@ -227,9 +227,7 @@ def main() -> None:
                         Language.ENGLISH_US,
                         music_playlist_file_dto,
                     )
-                    playlist_library.export_music_playlists(
-                        bootstrap_paths_dto
-                    )
+                    playlist_library.export_music_playlists()
 
     except SystemExit as e:
         if e.code == 0:
