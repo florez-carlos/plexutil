@@ -34,7 +34,7 @@ class MusicPlaylistService(Static):
 
     @staticmethod
     def add_many_playlist(playlists: list[MusicPlaylistEntity]) -> None:
-        bulk = [(playlist.name) for playlist in playlists]
+        bulk = [(playlist.name,) for playlist in playlists]
 
         MusicPlaylistEntity.insert_many(
             bulk,
