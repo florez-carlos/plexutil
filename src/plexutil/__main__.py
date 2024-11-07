@@ -14,21 +14,21 @@ from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
 from plexutil.exception.plex_util_config_error import PlexUtilConfigError
-from plexutil.plex_util_logger import PlexUtilLogger
-# from plexutil.util.database_manager import DatabaseManager
-from plexutil.util.file_importer import FileImporter
-from plexutil.util.plex_ops import PlexOps
+from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_entity import SongEntity
 from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
-from plexutil.model.music_playlist_entity import MusicPlaylistEntity
+from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.file_importer import FileImporter
+from plexutil.util.plex_ops import PlexOps
 
 
 def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
 
-        with SqliteDatabase(bootstrap_paths_dto.config_dir / "plexutil.db") as db:
-
+        with SqliteDatabase(
+            bootstrap_paths_dto.config_dir / "plexutil.db"
+        ) as db:
             db.bind([SongEntity, SongMusicPlaylistEntity, MusicPlaylistEntity])
 
             db.create_tables(
@@ -60,8 +60,10 @@ def main() -> None:
             music_playlist_file_dto = FileImporter.get_music_playlist_file_dto(
                 config_dir,
             )
-            tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(
-                config_dir,
+            tv_language_manifest_file_dto = (
+                FileImporter.get_tv_language_manifest(
+                    config_dir,
+                )
             )
 
             playlists = []
@@ -225,7 +227,9 @@ def main() -> None:
                         Language.ENGLISH_US,
                         music_playlist_file_dto,
                     )
-                    playlist_library.export_music_playlists(bootstrap_paths_dto)
+                    playlist_library.export_music_playlists(
+                        bootstrap_paths_dto
+                    )
 
     except SystemExit as e:
         if e.code == 0:

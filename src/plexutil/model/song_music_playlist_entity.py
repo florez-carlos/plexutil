@@ -1,4 +1,4 @@
-from peewee import CompositeKey, ForeignKeyField, Model, SqliteDatabase
+from peewee import CompositeKey, ForeignKeyField, Model
 
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_entity import SongEntity

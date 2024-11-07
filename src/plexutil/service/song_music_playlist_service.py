@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-
 from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.static import Static
 
 
-
 class SongMusicPlaylistService(Static):
-
     @staticmethod
     def add_many_song_playlist(
         song_playlists: list[SongMusicPlaylistEntity],

@@ -9,9 +9,7 @@ if TYPE_CHECKING:
     from uuid import UUID
 
 
-
 class SongService(Static):
-
     @staticmethod
     def get_id(song: SongEntity) -> UUID:
         return (

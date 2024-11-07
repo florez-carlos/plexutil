@@ -3,7 +3,6 @@ from pathlib import Path
 from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
-from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from plexutil.enums.agent import Agent
@@ -160,10 +159,7 @@ class Playlist(Library):
 
         return all_exist
 
-    def export_music_playlists(
-        self, bootstrap_paths_dto: BootstrapPathsDTO
-    ) -> None:
-
+    def export_music_playlists(self) -> None:
         tracks = self.plex_server.library.section(
             self.name.value,
         ).searchTracks()

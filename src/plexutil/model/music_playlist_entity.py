@@ -1,7 +1,6 @@
 import uuid
 
-from peewee import Model, SqliteDatabase, TextField, UUIDField
-
+from peewee import Model, TextField, UUIDField
 
 
 class MusicPlaylistEntity(Model):
