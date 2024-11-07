@@ -2,7 +2,6 @@ import uuid
 
 from peewee import Model, SqliteDatabase, TextField, UUIDField
 
-db = SqliteDatabase("plexutil.db")
 
 
 class SongEntity(Model):
@@ -12,5 +11,4 @@ class SongEntity(Model):
 
     class Meta:
         table_name = "music_song"
-        database = db
         indexes = ((("name", "extension"), True),)

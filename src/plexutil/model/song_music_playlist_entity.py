@@ -3,8 +3,6 @@ from peewee import CompositeKey, ForeignKeyField, Model, SqliteDatabase
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_entity import SongEntity
 
-db = SqliteDatabase("plexutil.db")
-
 
 class SongMusicPlaylistEntity(Model):
     playlist = ForeignKeyField(
@@ -16,5 +14,4 @@ class SongMusicPlaylistEntity(Model):
 
     class Meta:
         table_name = "song_music_playlist"
-        database = db
         primary_key = CompositeKey("playlist", "song")

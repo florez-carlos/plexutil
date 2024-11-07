@@ -3,6 +3,7 @@ from pathlib import Path
 from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
+from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from plexutil.enums.agent import Agent
@@ -25,7 +26,6 @@ from plexutil.service.song_music_playlist_service import (
     SongMusicPlaylistService,
 )
 from plexutil.service.song_service import SongService
-from plexutil.util.database_manager import DatabaseManager
 from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
@@ -161,13 +161,8 @@ class Playlist(Library):
         return all_exist
 
     def export_music_playlists(
-        self, database_manager: DatabaseManager
+        self, bootstrap_paths_dto: BootstrapPathsDTO
     ) -> None:
-        song_service = SongService(database_manager)
-        music_playlist_service = MusicPlaylistService(database_manager)
-        song_music_playlist_service = SongMusicPlaylistService(
-            database_manager
-        )
 
         tracks = self.plex_server.library.section(
             self.name.value,
@@ -176,7 +171,7 @@ class Playlist(Library):
             PlexTrackSongEntityMapper.get_song_entity(track)
             for track in tracks
         ]
-        song_service.add_many_song(songs_to_save)
+        SongService.add_many_song(songs_to_save)
 
         plex_playlists = self.plex_server.playlists(playlistType="audio")
         music_playlists_to_save = [
@@ -185,24 +180,23 @@ class Playlist(Library):
             )
             for plex_playlist in plex_playlists
         ]
-        music_playlist_service.add_many_playlist(music_playlists_to_save)
+        MusicPlaylistService.add_many_playlist(music_playlists_to_save)
 
         song_music_playlists_to_save = []
         for plex_playlist in plex_playlists:
-            music_playlist_id = music_playlist_service.get_id(
+            music_playlist_id = MusicPlaylistService.get_id(
                 MusicPlaylistEntity(name=plex_playlist.title)
             )
 
             for track in plex_playlist.items():
                 song_entity = PlexTrackSongEntityMapper.get_song_entity(track)
-                song_service = SongService(database_manager)
-                song_entity_id = song_service.get_id(song_entity)
+                song_entity_id = SongService.get_id(song_entity)
 
                 song_music_playlists_to_save.append(
                     SongMusicPlaylistEntity(
                         playlist=music_playlist_id, song=song_entity_id
                     )
                 )
-            song_music_playlist_service.add_many_song_playlist(
+            SongMusicPlaylistService.add_many_song_playlist(
                 song_music_playlists_to_save
             )
