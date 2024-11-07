@@ -193,6 +193,6 @@ class Playlist(Library):
                         playlist=music_playlist_id, song=song_entity_id
                     )
                 )
-            SongMusicPlaylistService.add_many_song_playlist(
-                song_music_playlists_to_save
-            )
+        SongMusicPlaylistService.add_many_song_playlist(
+            song_music_playlists_to_save
+        )
