@@ -29,6 +29,14 @@ class MusicPlaylistService(Static):
         )
 
     @staticmethod
+    def get_many_playlist(names: list[str]) -> list[MusicPlaylistEntity]:
+        return (
+            MusicPlaylistEntity.select()
+            .where(MusicPlaylistEntity.name.in_(names))
+            .get()
+        )
+
+    @staticmethod
     def add_playlist(playlist: MusicPlaylistEntity) -> None:
         playlist.save(force_insert=True)
 

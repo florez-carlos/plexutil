@@ -1,12 +1,12 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
 class LibraryPreferencesDTO:
-    music: dict
-    movie: dict
-    tv: dict
-    plex_server_settings: dict
+    music: dict = field(default_factory=dict)
+    movie: dict = field(default_factory=dict)
+    tv: dict = field(default_factory=dict)
+    plex_server_settings: dict = field(default_factory=dict)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, LibraryPreferencesDTO):

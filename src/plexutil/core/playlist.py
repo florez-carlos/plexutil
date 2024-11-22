@@ -4,7 +4,6 @@ from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -21,6 +20,7 @@ from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.service.music_playlist_service import MusicPlaylistService
+from plexutil.service.song_music_playlist_composite_service import SongMusicPlaylistCompositeService
 from plexutil.service.song_music_playlist_service import (
     SongMusicPlaylistService,
 )
@@ -33,38 +33,29 @@ class Playlist(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        location: Path,
-        language: Language,
-        music_playlist_file_dto: MusicPlaylistFileDTO,
+        locations: list[Path],
+        name: str = LibraryName.MUSIC.value,
+        library_type: LibraryType = LibraryType.MUSIC,
+        playlist_names: list[str] = [],
+        language: Language = Language.ENGLISH_US,
     ) -> None:
         super().__init__(
             plex_server,
-            LibraryName.MUSIC,
-            LibraryType.MUSIC,
+            name,
+            library_type,
             Agent.MUSIC,
             Scanner.MUSIC,
-            location,
+            locations,
             language,
-            LibraryPreferencesDTO({}, {}, {}, {}),
+            LibraryPreferencesDTO(),
         )
-        self.music_playlist_file_dto = music_playlist_file_dto
+        self.playlist_names = playlist_names
 
     def create(self) -> None:
         op_type = "CREATE"
-        tracks = self.plex_server.library.section(
-            self.name.value,
-        ).searchTracks()
-        plex_track_dict = {}
-        plex_playlist = []
+        self.plex_server.library.section(self.name).update()
 
-        playlist_names = [
-            x.name for x in self.music_playlist_file_dto.playlists
-        ]
-
-        info = "Creating playlist library: \n" f"Playlists: {playlist_names}\n"
-
-        PlexUtilLogger.get_logger().info(info)
-        local_track_count = len(PlexOps.get_local_songs(self.location))
+        local_track_count = len(PathOps.get_local_files(self.locations))
 
         info = (
             "Checking server track count "
@@ -74,16 +65,27 @@ class Playlist(Library):
         PlexUtilLogger.get_logger().info(info)
         self.poll(10, local_track_count, 10)
 
-        playlists = self.music_playlist_file_dto.playlists
+        tracks = self.plex_server.library.section(
+            self.name,
+        ).searchTracks()
+        plex_track_dict = {}
+        plex_playlist = []
+
+        info = (
+            "Creating playlist library: \n",
+            f"Playlists: {self.playlist_names}\n"
+        )
+
+        PlexUtilLogger.get_logger().info(info)
+
+        playlists = SongMusicPlaylistCompositeService.get_music_playlist_dto(
+            self.playlist_names,
+
+        )
 
         for track in tracks:
-            plex_track_absolute_location = track.locations[0]
-            plex_track_path = PathOps.get_path_from_str(
-                plex_track_absolute_location,
-            )
-            plex_track_full_name = plex_track_path.name
-            plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
-            plex_track_dict[plex_track_name] = track
+            song_entity = PlexTrackSongEntityMapper.get_song_entity(track)
+            plex_track_dict[str(song_entity.name)] = track
 
         for playlist in playlists:
             playlist_name = playlist.name
@@ -119,7 +121,7 @@ class Playlist(Library):
         info = (
             "Deleting music playlists: \n"
             f"Playlists: {playlist_names}\n"
-            f"Location: {self.location!s}\n"
+            f"Location: {self.locations!s}\n"
         )
         PlexUtilLogger.get_logger().info(info)
 
@@ -161,7 +163,7 @@ class Playlist(Library):
 
     def export_music_playlists(self) -> None:
         tracks = self.plex_server.library.section(
-            self.name.value,
+            self.name,
         ).searchTracks()
         songs_to_save = [
             PlexTrackSongEntityMapper.get_song_entity(track)

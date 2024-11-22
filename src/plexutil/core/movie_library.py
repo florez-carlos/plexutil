@@ -16,48 +16,37 @@ class MovieLibrary(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        location: Path,
-        language: Language,
+        locations: list[Path],
         preferences: LibraryPreferencesDTO,
+        language: Language = Language.ENGLISH_US,
+        name: str = LibraryName.MOVIE.value,
     ) -> None:
         super().__init__(
             plex_server,
-            LibraryName.MOVIE,
+            name,
             LibraryType.MOVIE,
             Agent.MOVIE,
             Scanner.MOVIE,
-            location,
+            locations,
             language,
             preferences,
         )
 
     def create(self) -> None:
-        info = (
-            "Creating movie library: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
-        )
-
-        PlexUtilLogger.get_logger().info(info)
-
+        super().create()
         self.plex_server.library.add(
-            name=self.name.value,
+            name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=str(self.location),
+            location=locations, #pyright: ignore
             language=self.language.value,
         )
 
         # This line triggers a refresh of the library
         self.plex_server.library.sections()
 
-        self.plex_server.library.section(self.name.value).editAdvanced(
+        self.plex_server.library.section(self.name).editAdvanced(
             **self.preferences.movie,
         )
 

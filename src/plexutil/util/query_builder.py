@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import List
 import urllib.parse
 
 
@@ -24,7 +25,7 @@ class QueryBuilder:
 
     def __walk__(
         self,
-        path: dict[str, str] | dict[str, bool] | dict[str, int] | None = None,
+        path: dict[str, str] | dict[str, bool] | dict[str, int] | dict[str, dict] | dict[str, list] | None = None,
         nested_parent_name: str = "",
     ) -> str:
         result = ""
@@ -45,6 +46,9 @@ class QueryBuilder:
             if isinstance(v, dict):
                 result += self.__walk__(v, k)
                 continue
+
+            if isinstance(v, list):
+                v = ",".join(v)
 
             v = urllib.parse.quote(v)  # noqa: PLW2901
 

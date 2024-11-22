@@ -26,6 +26,10 @@ class SongService(Static):
         return SongEntity.select().where(SongEntity.id == uuid).get()
 
     @staticmethod
+    def get_many_song(uuids: list[UUID]) -> list[SongEntity]:
+        return SongEntity.select().where(SongEntity.id.in_(uuids)).get()
+
+    @staticmethod
     def add_song(song: SongEntity) -> None:
         song.save(force_insert=True)
 

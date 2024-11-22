@@ -17,9 +17,7 @@ from plexutil.util.file_importer import FileImporter
 
 class Prompt(Static):
     @staticmethod
-    def get_user_instructions_dto(
-        config_file_path: Path,
-    ) -> UserInstructionsDTO:
+    def get_user_instructions_dto() -> UserInstructionsDTO:
         parser = argparse.ArgumentParser(
             description="Plexutil", formatter_class=RawTextHelpFormatter
         )
@@ -183,7 +181,6 @@ class Prompt(Static):
             items = list(items.split(","))
 
         request = UserRequest.get_user_request_from_str(request)
-        is_config = request == UserRequest.CONFIG
 
         music_folder_path = args.music_folder_path
         movie_folder_path = args.movie_folder_path
@@ -200,16 +197,6 @@ class Prompt(Static):
             port=plex_server_port,
             token=plex_server_token,
         )
-
-        if is_config:
-            FileImporter.save_plex_config_dto(
-                config_file_path,
-                plex_config_dto,
-            )
-        else:
-            plex_config_dto = FileImporter.get_plex_config_dto(
-                config_file_path,
-            )
 
         debug = (
             "Received a User Request:\n"

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
+from plexapi.library import MovieSection, MusicSection, ShowSection
 
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
@@ -36,11 +38,11 @@ class Library(ABC):
     def __init__(
         self,
         plex_server: PlexServer,
-        name: LibraryName,
+        name: str,
         library_type: LibraryType,
         agent: Agent,
         scanner: Scanner,
-        location: Path,
+        locations: List[Path],
         language: Language,
         preferences: LibraryPreferencesDTO,
     ) -> None:
@@ -49,13 +51,37 @@ class Library(ABC):
         self.library_type = library_type
         self.agent = agent
         self.scanner = scanner
-        self.location = location
+        self.locations = locations
         self.language = language
         self.preferences = preferences
 
     @abstractmethod
     def create(self) -> None:
-        raise NotImplementedError
+        info = (
+            f"Creating {self.library_type} library: \n"
+            f"Name: {self.name}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Locations: {self.locations!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Preferences: {self.preferences.movie}\n"
+            f"{self.preferences.music}\n"
+            f"{self.preferences.tv}\n"
+        )
+        PlexUtilLogger.get_logger().info(info)
+        PlexUtilLogger.get_logger().debug(info)
+
+        if self.exists():
+            description = (
+                f"Library {self.name} of " 
+                f"type {self.library_type} already exists"
+            )
+            raise LibraryOpError(
+                "CREATE",
+                self.library_type,
+                description,
+            )
 
     @abstractmethod
     def delete(self) -> None:
@@ -63,18 +89,20 @@ class Library(ABC):
 
         info = (
             "Deleting library: \n"
-            f"Name: {self.name.value}\n"
+            f"Name: {self.name}\n"
             f"Type: {self.library_type.value}\n"
             f"Agent: {self.agent.value}\n"
             f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
+            f"Locations: {self.locations!s}\n"
             f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.music}\n"
+            f"Preferences: {self.preferences.movie}\n"
+            f"{self.preferences.music}\n"
+            f"{self.preferences.tv}\n"
         )
         PlexUtilLogger.get_logger().info(info)
 
         try:
-            result = self.plex_server.library.section(self.name.value)
+            result = self.plex_server.library.section(self.name)
 
             if result:
                 result.delete()
@@ -96,29 +124,27 @@ class Library(ABC):
     def exists(self) -> bool:
         debug = (
             "Checking library exists: \n"
-            f"Name: {self.name.value}\n"
+            f"Name: {self.name}\n"
             f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
         )
         try:
-            result = self.plex_server.library.section(self.name.value)
+
+            result = self.plex_server.library.section(self.name)
 
             if not result:
                 debug = debug + "-Not found-"
                 PlexUtilLogger.get_logger().debug(debug)
                 return False
 
+            PlexUtilLogger.get_logger().debug(debug)
+            return LibraryType.is_eq(self.library_type,result)
+
+
         except NotFound:
             debug = debug + "-Not found-"
             PlexUtilLogger.get_logger().debug(debug)
             return False
 
-        PlexUtilLogger.get_logger().debug(debug)
-        return True
 
     def poll(
         self,
@@ -176,7 +202,7 @@ class Library(ABC):
 
         debug = (
             "Performing query:\n"
-            f"Name: {self.name.value}\n"
+            f"Name: {self.name}\n"
             f"Library Type: {self.library_type.value}\n"
             f"TVDB Ids: {tvdb_ids}\n"
         )
@@ -185,11 +211,11 @@ class Library(ABC):
         try:
             if self.library_type is LibraryType.MUSIC:
                 return self.plex_server.library.section(
-                    self.name.value,
+                    self.name,
                 ).searchTracks()
 
             elif self.library_type is LibraryType.TV:
-                shows = self.plex_server.library.section(self.name.value).all()
+                shows = self.plex_server.library.section(self.name).all()
                 shows_filtered = []
 
                 if tvdb_ids:

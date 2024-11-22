@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
-from plexutil.dto.song_dto import SongDTO
+from plexapi.audio import Track
+from plexapi.server import Playlist
+
 from plexutil.enums.file_type import FileType
+from plexutil.model.music_playlist_entity import MusicPlaylistEntity
+from plexutil.model.song_entity import SongEntity
 from plexutil.static import Static
+from plexutil.util.path_ops import PathOps
 
 if TYPE_CHECKING:
     from plexapi.server import PlexServer
@@ -25,20 +30,34 @@ class PlexOps(Static):
         plex_server.settings.save()
 
     @staticmethod
-    def get_local_songs(music_folder_path: Path) -> list[SongDTO]:
-        songs = []
+    def get_music_playlist_entity(playlist: Playlist) -> MusicPlaylistEntity:
+        return MusicPlaylistEntity(name=playlist.title)
 
-        for item in Path(music_folder_path).iterdir():
-            if item.is_file():
-                file_name = item.stem
-                file_extension = item.suffix
-                songs.append(
-                    SongDTO(
-                        name=file_name,
-                        extension=FileType.get_file_type_from_str(
-                            file_extension
-                        ),
-                    )
-                )
+    # @staticmethod
+    # def get_entity(plexutil_config_dto: PlexConfigDTO) -> PlexUtilConfigEntity:
+    #     return PlexUtilConfigEntity(
+    #         host=plexutil_config_dto.host,
+    #         port=plexutil_config_dto.port,
+    #         token=plexutil_config_dto.token,
+    #     )
+    #
+    # @staticmethod
+    # def get_dto(plexutil_config_entity: PlexUtilConfigEntity) -> PlexConfigDTO:
+    #     return PlexConfigDTO(
+    #         host=str(plexutil_config_entity.host),
+    #         port=int(plexutil_config_entity.port),
+    #         token=str(plexutil_config_entity.token),
+    #     )
 
-        return songs
+    @staticmethod
+    def get_song_entity(track: Track) -> SongEntity:
+        plex_track_absolute_location = track.locations[0]
+        plex_track_path = PathOps.get_path_from_str(
+            plex_track_absolute_location,
+        )
+        plex_track_full_name = plex_track_path.name
+        plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
+        plex_track_ext = FileType.get_file_type_from_str(
+            plex_track_full_name.rsplit(".", 1)[1],
+        )
+        return SongEntity(name=plex_track_name, extension=plex_track_ext.value)

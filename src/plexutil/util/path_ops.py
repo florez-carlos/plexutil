@@ -1,5 +1,8 @@
 from pathlib import Path
+from typing import List
 
+from plexutil.dto.local_file_dto import LocalFileDTO
+from plexutil.enums.file_type import FileType
 from plexutil.static import Static
 
 
@@ -40,6 +43,27 @@ class PathOps(Static):
             raise ValueError(description)
 
         return path
+
+    @staticmethod
+    def get_local_files(paths: List[Path]) -> list[LocalFileDTO]:
+        files = []
+
+        for path in paths:
+            for item in path.iterdir():
+                if item.is_file():
+                    file_name = item.stem
+                    file_extension = item.suffix
+                    files.append(
+                        LocalFileDTO(
+                            name=file_name,
+                            extension=FileType.get_file_type_from_str(
+                                file_extension
+                            ),
+                            location=item
+                        )
+                    )
+
+        return files
 
     @staticmethod
     def get_project_root() -> Path:

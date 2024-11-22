@@ -19,55 +19,50 @@ class TVLibrary(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        location: Path,
-        language: Language,
+        locations: list[Path],
         preferences: LibraryPreferencesDTO,
         tv_language_manifest_file_dto: TVLanguageManifestFileDTO,
+        name: str = LibraryName.TV.value,
+        language: Language = Language.ENGLISH_US,
     ) -> None:
         super().__init__(
             plex_server,
-            LibraryName.TV,
+            name,
             LibraryType.TV,
             Agent.TV,
             Scanner.TV,
-            location,
+            locations,
             language,
             preferences,
         )
         self.tv_language_manifest_file_dto = tv_language_manifest_file_dto
 
     def create(self) -> None:
+
+        super().create()
+
+        manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
+
+        info = (f"Manifests: {manifests_dto}\n")
+
+        PlexUtilLogger.get_logger().info(info)
+        PlexUtilLogger.get_logger().debug(info)
+
         self.plex_server.library.add(
-            name=self.name.value,
+            name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=str(self.location),
+            location=self.locations, #pyright: ignore
             language=self.language.value,
         )
 
         # This line triggers a refresh of the library
         self.plex_server.library.sections()
 
-        self.plex_server.library.section(self.name.value).editAdvanced(
+        self.plex_server.library.section(self.name).editAdvanced(
             **self.preferences.tv,
         )
-
-        manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
-
-        info = (
-            "Creating tv library: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.tv}\n"
-            f"Manifests: {manifests_dto}\n"
-        )
-
-        PlexUtilLogger.get_logger().info(info)
 
         for manifest_dto in manifests_dto:
             language = manifest_dto.language
@@ -85,7 +80,7 @@ class TVLibrary(Library):
             for show in shows:
                 show.editAdvanced(languageOverride=language.value)
 
-            self.plex_server.library.section(self.name.value).refresh()
+            self.plex_server.library.section(self.name).refresh()
 
     def delete(self) -> None:
         return super().delete()
