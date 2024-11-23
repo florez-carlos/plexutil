@@ -1,6 +1,6 @@
 from peewee import IntegerField, Model, TextField
 
-class PlexUtilConfigEntity(Model):
+class ServerConfigEntity(Model):
 
     id = IntegerField(primary_key=True, default=1)
     host = TextField(null=False,default="localhost")
@@ -8,7 +8,7 @@ class PlexUtilConfigEntity(Model):
     token =  TextField(null=False)
 
     class Meta:
-        table_name = "plexutil_config"
+        table_name = "server_config"
 
 
 

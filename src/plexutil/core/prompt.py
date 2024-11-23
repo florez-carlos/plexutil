@@ -7,8 +7,10 @@ from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
-from plexutil.dto.plex_config_dto import PlexConfigDTO
+from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
+from plexutil.enums.language import Language
+from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
@@ -59,33 +61,23 @@ class Prompt(Static):
         )
 
         parser.add_argument(
-            "-music",
-            "--music_folder_path",
-            metavar="Music Folder Path",
+            "-loc",
+            "--locations",
+            metavar="Library Locations",
             type=pathlib.Path,
-            nargs="?",
-            help="Path to music folder",
+            nargs="+",
+            help="Library Locations",
             default=pathlib.Path(),
         )
-
+        
         parser.add_argument(
-            "-movie",
-            "--movie_folder_path",
-            metavar="Movie Folder Path",
-            type=pathlib.Path,
+            "-l",
+            "--language",
+            metavar="Library Language",
+            type=Language,
             nargs="?",
-            help="Path to movie folder",
-            default=pathlib.Path(),
-        )
-
-        parser.add_argument(
-            "-tv",
-            "--tv_folder_path",
-            metavar="TV Folder Path",
-            type=pathlib.Path,
-            nargs="?",
-            help="Path to tv folder",
-            default=pathlib.Path(),
+            help="Library Language",
+            default=Language.ENGLISH_US,
         )
 
         parser.add_argument(
@@ -142,6 +134,12 @@ class Prompt(Static):
         is_all_items = args.all_items
         is_version = args.version
         is_show_configuration = args.show_configuration
+        language = args.language
+        plex_server_host = args.plex_server_host
+        plex_server_port = args.plex_server_port
+        plex_server_token = args.plex_server_token
+        locations = args.locations
+        print(f"Locations: {locations}")
 
         if is_version:
             plexutil_version = ""
@@ -182,21 +180,13 @@ class Prompt(Static):
 
         request = UserRequest.get_user_request_from_str(request)
 
-        music_folder_path = args.music_folder_path
-        movie_folder_path = args.movie_folder_path
-        tv_folder_path = args.tv_folder_path
-        plex_server_host = args.plex_server_host
-        plex_server_port = args.plex_server_port
-        plex_server_token = args.plex_server_token
 
-        plex_config_dto = PlexConfigDTO(
-            music_folder_path=music_folder_path,
-            movie_folder_path=movie_folder_path,
-            tv_folder_path=tv_folder_path,
+        server_config_dto = ServerConfigDTO(
             host=plex_server_host,
             port=plex_server_port,
             token=plex_server_token,
         )
+
 
         debug = (
             "Received a User Request:\n"
@@ -210,7 +200,10 @@ class Prompt(Static):
 
         return UserInstructionsDTO(
             request=request,
+            library_type=LibraryType.MUSIC,
             items=items,
-            plex_config_dto=plex_config_dto,
+            locations=locations,
             is_all_items=is_all_items,
+            server_config_dto=server_config_dto,
+            language=language,
         )

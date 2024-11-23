@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+from plexutil.dto.server_config_dto import ServerConfigDTO
+from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 
 if TYPE_CHECKING:
-    from plexutil.dto.plex_config_dto import PlexConfigDTO
     from plexutil.enums.user_request import UserRequest
 
 
@@ -14,9 +16,12 @@ if TYPE_CHECKING:
 class UserInstructionsDTO:
     request: UserRequest
     library_type: LibraryType
-    items: list[str]
-    plex_config_dto: PlexConfigDTO
+    server_config_dto: ServerConfigDTO
+    language: Language = Language.ENGLISH_US
+    locations: list[Path]= field(default_factory=list)
+    items: list[str] = field(default_factory=list)
     is_all_items: bool = False
+    
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, UserInstructionsDTO):
@@ -26,8 +31,9 @@ class UserInstructionsDTO:
             self.request == other.request
             and self.library_type == other.library_type
             and self.items == other.items
-            and self.plex_config_dto == other.plex_config_dto
+            and self.locations == other.locations
             and self.is_all_items == other.is_all_items
+            and self.server_config_dto == other.server_config_dto
         )
 
     def __hash__(self) -> int:
@@ -36,7 +42,8 @@ class UserInstructionsDTO:
                 self.request,
                 self.library_type,
                 self.items,
-                self.plex_config_dto,
+                self.locations,
                 self.is_all_items,
+                self.server_config_dto,
             ),
         )

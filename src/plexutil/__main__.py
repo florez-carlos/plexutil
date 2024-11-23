@@ -4,19 +4,18 @@ import sys
 from peewee import SqliteDatabase
 from plexapi.server import PlexServer
 
-from plexutil.core.config import Config
 from plexutil.core.movie_library import MovieLibrary
 from plexutil.core.music_library import MusicLibrary
 from plexutil.core.playlist import Playlist
 from plexutil.core.prompt import Prompt
+from plexutil.core.server_config import ServerConfig
 from plexutil.core.tv_library import TVLibrary
-from plexutil.dto.plex_config_dto import PlexConfigDTO
+from plexutil.dto import user_instructions_dto
 from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
-from plexutil.exception.plex_util_config_error import PlexUtilConfigError
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_entity import SongEntity
 from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
@@ -41,11 +40,11 @@ def main() -> None:
 
         request = instructions_dto.request
         items = instructions_dto.items
-        plex_config_dto = PlexConfigDTO()
+        server_config_dto = instructions_dto.server_config_dto
 
         if request == UserRequest.CONFIG:
-            config = Config(bootstrap_paths_dto,plex_config_dto)
-            plex_config_dto = config.setup()
+            config = ServerConfig(bootstrap_paths_dto,server_config_dto)
+            server_config_dto = config.setup()
             sys.exit(0)
 
         preferences_dto = FileImporter.get_library_preferences_dto(
@@ -58,14 +57,14 @@ def main() -> None:
             )
         )
 
-        host = plex_config_dto.host
-        port = plex_config_dto.port
-        token = plex_config_dto.token
+        host = server_config_dto.host
+        port = server_config_dto.port
+        token = server_config_dto.token
 
         baseurl = f"http://{host}:{port}"
         plex_server = PlexServer(baseurl, token)
         library = None
-        language = Language.ENGLISH_US
+        language = instructions_dto.language
 
         match instructions_dto.library_type:
             case LibraryType.MUSIC:
