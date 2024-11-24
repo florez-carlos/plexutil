@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from plexapi.library import MusicSection
 from plexapi.server import PlexServer
@@ -27,7 +26,7 @@ class MusicLibrary(Library):
         language: Language = Language.ENGLISH_US,
     ) -> None:
         section = plex_server.library.section(name)
-        plex_locations = []        
+        plex_locations = []
         if isinstance(section, MusicSection):
             plex_locations = section.locations
         super().__init__(
@@ -42,9 +41,8 @@ class MusicLibrary(Library):
         )
 
     def create(self) -> None:
-
         super().create()
-            
+
         part = ""
 
         query_builder = QueryBuilder(

@@ -1,4 +1,3 @@
-
 from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
 from plexutil.mapper.song_mapper import SongMapper
@@ -9,18 +8,27 @@ from plexutil.static import Static
 
 
 class SongMusicPlaylistCompositeService(Static):
-
     @staticmethod
-    def get_music_playlist_dto(playlist_names: list[str]) -> list[MusicPlaylistDTO]:
-
+    def get_music_playlist_dto(
+        playlist_names: list[str],
+    ) -> list[MusicPlaylistDTO]:
         song_playlists = (
-            SongEntity
-            .select(SongEntity.id.alias('song_id'), 
-                    SongEntity.name.alias('song_name'), 
-                    MusicPlaylistEntity.name.alias('playlist_id'), 
-                    MusicPlaylistEntity.name.alias('playlist_name'))
-            .join(SongMusicPlaylistEntity, on=(SongEntity.id == SongMusicPlaylistEntity.song))
-            .join(MusicPlaylistEntity, on=(SongMusicPlaylistEntity.playlist == MusicPlaylistEntity.id))
+            SongEntity.select(
+                SongEntity.id.alias("song_id"),
+                SongEntity.name.alias("song_name"),
+                MusicPlaylistEntity.name.alias("playlist_id"),
+                MusicPlaylistEntity.name.alias("playlist_name"),
+            )
+            .join(
+                SongMusicPlaylistEntity,
+                on=(SongEntity.id == SongMusicPlaylistEntity.song),
+            )
+            .join(
+                MusicPlaylistEntity,
+                on=(
+                    SongMusicPlaylistEntity.playlist == MusicPlaylistEntity.id
+                ),
+            )
             .where(MusicPlaylistEntity.name.in_(playlist_names))
         )
 
@@ -40,8 +48,9 @@ class SongMusicPlaylistCompositeService(Static):
             )
 
             song_dto = song_mapper.get_dto(song_entity)
-            music_playlist_dto = music_playlist_mapper.get_dto(music_playlist_entity)
-
+            music_playlist_dto = music_playlist_mapper.get_dto(
+                music_playlist_entity
+            )
 
             if music_playlist_dto.name not in playlists:
                 playlists[music_playlist_dto.name] = music_playlist_dto
@@ -49,10 +58,6 @@ class SongMusicPlaylistCompositeService(Static):
             playlists[music_playlist_dto.name].songs.append(song_dto)
 
         result = []
-        for k,v in playlists.items():
+        for k, v in playlists.items():
             result.append(v)
         return result
-
-
-
-

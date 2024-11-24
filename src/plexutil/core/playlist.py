@@ -20,13 +20,14 @@ from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.service.music_playlist_service import MusicPlaylistService
-from plexutil.service.song_music_playlist_composite_service import SongMusicPlaylistCompositeService
+from plexutil.service.song_music_playlist_composite_service import (
+    SongMusicPlaylistCompositeService,
+)
 from plexutil.service.song_music_playlist_service import (
     SongMusicPlaylistService,
 )
 from plexutil.service.song_service import SongService
 from plexutil.util.path_ops import PathOps
-from plexutil.util.plex_ops import PlexOps
 
 
 class Playlist(Library):
@@ -73,14 +74,13 @@ class Playlist(Library):
 
         info = (
             "Creating playlist library: \n",
-            f"Playlists: {self.playlist_names}\n"
+            f"Playlists: {self.playlist_names}\n",
         )
 
         PlexUtilLogger.get_logger().info(info)
 
         playlists = SongMusicPlaylistCompositeService.get_music_playlist_dto(
             self.playlist_names,
-
         )
 
         for track in tracks:

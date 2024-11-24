@@ -59,7 +59,7 @@ class PathOps(Static):
                             extension=FileType.get_file_type_from_str(
                                 file_extension
                             ),
-                            location=item
+                            location=item,
                         )
                     )
 

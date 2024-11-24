@@ -1,16 +1,15 @@
 from peewee import DoesNotExist, SqliteDatabase
 
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
+from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.exception.server_config_error import ServerConfigError
+from plexutil.mapper.server_config_mapper import ServerConfigMapper
 from plexutil.model.server_config_entity import ServerConfigEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.service.server_config_service import ServerConfigService
-from plexutil.dto.server_config_dto import ServerConfigDTO
-from plexutil.mapper.server_config_mapper import ServerConfigMapper
 
 
 class ServerConfig:
-
     def __init__(
         self,
         bootstrap_paths_dto: BootstrapPathsDTO,
@@ -20,7 +19,6 @@ class ServerConfig:
         self.server_config_dto = server_config_dto
 
     def setup(self) -> ServerConfigDTO:
-
         with SqliteDatabase(
             self.bootstrap_paths_dto.config_dir / "plexutil.db"
         ) as db:
@@ -33,7 +31,6 @@ class ServerConfig:
             try:
                 return ServerConfigMapper.get_dto(ServerConfigService.get())
             except DoesNotExist:
-        
                 if not self.server_config_dto.token:
                     description = "No Plex Token has been supplied"
                     PlexUtilLogger.get_logger().error(description)

@@ -38,12 +38,11 @@ class TVLibrary(Library):
         self.tv_language_manifest_file_dto = tv_language_manifest_file_dto
 
     def create(self) -> None:
-
         super().create()
 
         manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
 
-        info = (f"Manifests: {manifests_dto}\n")
+        info = f"Manifests: {manifests_dto}\n"
 
         PlexUtilLogger.get_logger().info(info)
         PlexUtilLogger.get_logger().debug(info)
@@ -53,7 +52,7 @@ class TVLibrary(Library):
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=self.locations, #pyright: ignore
+            location=self.locations,  # pyright: ignore
             language=self.language.value,
         )
 

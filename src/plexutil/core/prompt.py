@@ -5,7 +5,6 @@ import pathlib
 import sys
 from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
-from pathlib import Path
 
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
@@ -69,7 +68,7 @@ class Prompt(Static):
             help="Library Locations",
             default=pathlib.Path(),
         )
-        
+
         parser.add_argument(
             "-l",
             "--language",
@@ -180,13 +179,11 @@ class Prompt(Static):
 
         request = UserRequest.get_user_request_from_str(request)
 
-
         server_config_dto = ServerConfigDTO(
             host=plex_server_host,
             port=plex_server_port,
             token=plex_server_token,
         )
-
 
         debug = (
             "Received a User Request:\n"

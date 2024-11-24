@@ -21,6 +21,4 @@ class LocalFileDTO:
         )
 
     def __hash__(self) -> int:
-        return hash(
-            (self.name, self.extension, self.location)
-        )
+        return hash((self.name, self.extension, self.location))

@@ -1,3 +1,3 @@
-#Marker class
+# Marker class
 class MappableDTO:
     pass

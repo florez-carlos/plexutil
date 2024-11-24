@@ -4,8 +4,6 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List
 
-from plexapi.library import MovieSection, MusicSection, ShowSection
-
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
 )
@@ -21,7 +19,6 @@ if TYPE_CHECKING:
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.enums.agent import Agent
     from plexutil.enums.language import Language
-    from plexutil.enums.library_name import LibraryName
     from plexutil.enums.scanner import Scanner
 
 from alive_progress import alive_bar
@@ -74,7 +71,7 @@ class Library(ABC):
 
         if self.exists():
             description = (
-                f"Library {self.name} of " 
+                f"Library {self.name} of "
                 f"type {self.library_type} already exists"
             )
             raise LibraryOpError(
@@ -128,7 +125,6 @@ class Library(ABC):
             f"Type: {self.library_type.value}\n"
         )
         try:
-
             result = self.plex_server.library.section(self.name)
 
             if not result:
@@ -137,14 +133,12 @@ class Library(ABC):
                 return False
 
             PlexUtilLogger.get_logger().debug(debug)
-            return LibraryType.is_eq(self.library_type,result)
-
+            return LibraryType.is_eq(self.library_type, result)
 
         except NotFound:
             debug = debug + "-Not found-"
             PlexUtilLogger.get_logger().debug(debug)
             return False
-
 
     def poll(
         self,

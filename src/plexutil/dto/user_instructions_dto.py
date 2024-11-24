@@ -18,10 +18,9 @@ class UserInstructionsDTO:
     library_type: LibraryType
     server_config_dto: ServerConfigDTO
     language: Language = Language.ENGLISH_US
-    locations: list[Path]= field(default_factory=list)
+    locations: list[Path] = field(default_factory=list)
     items: list[str] = field(default_factory=list)
     is_all_items: bool = False
-    
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, UserInstructionsDTO):

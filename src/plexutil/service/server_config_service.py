@@ -1,10 +1,8 @@
-from plexutil.exception.entity_not_found_error import EntityNotFoundError
 from plexutil.model.server_config_entity import ServerConfigEntity
 from plexutil.static import Static
 
 
 class ServerConfigService(Static):
-    
     @staticmethod
     def get() -> ServerConfigEntity:
         return ServerConfigEntity.select().get()

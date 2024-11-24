@@ -7,12 +7,10 @@ import time
 from pathlib import Path
 
 import toml
-from jsonschema import ValidationError, validate
 
 from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 from plexutil.enums.language import Language
 from plexutil.exception.bootstrap_error import BootstrapError
-from plexutil.exception.invalid_schema_error import InvalidSchemaError
 
 if platform.system() == "Windows":
     import win32evtlog  # pyright: ignore # noqa: PGH003
@@ -118,11 +116,10 @@ class FileImporter(Static):
     def get_tv_language_manifest(
         config_dir: Path,
     ) -> list[TVLanguageManifestDTO]:
-
         tv_language_manifest_file_location = (
             config_dir / "tv_language_manifest.json"
         )
-        
+
         try:
             with tv_language_manifest_file_location.open(
                 encoding=FileImporter.encoding

@@ -9,7 +9,6 @@ from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
-from plexutil.plex_util_logger import PlexUtilLogger
 
 
 class MovieLibrary(Library):
@@ -39,7 +38,7 @@ class MovieLibrary(Library):
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=locations, #pyright: ignore
+            location=locations,  # pyright: ignore
             language=self.language.value,
         )
 
