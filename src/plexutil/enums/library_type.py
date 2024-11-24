@@ -14,6 +14,7 @@ class LibraryType(Enum):
     MUSIC = "music"
     TV = "show"
     MOVIE = "movie"
+    MUSIC_PLAYLIST = "audio"
 
     @staticmethod
     def is_eq(

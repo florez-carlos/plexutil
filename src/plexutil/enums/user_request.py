@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from enum import Enum
 
+from plexutil.enums.library_type import LibraryType
+
 
 class UserRequest(Enum):
     CONFIG = "config"
-    INIT = "init"
     SET_SERVER_SETTINGS = "set_server_settings"
     CREATE_MOVIE_LIBRARY = "create_movie_library"
     DELETE_MOVIE_LIBRARY = "delete_movie_library"
@@ -22,7 +23,6 @@ class UserRequest(Enum):
     def get_all() -> list[UserRequest]:
         return [
             UserRequest.CONFIG,
-            UserRequest.INIT,
             UserRequest.SET_SERVER_SETTINGS,
             UserRequest.CREATE_MOVIE_LIBRARY,
             UserRequest.DELETE_MOVIE_LIBRARY,
@@ -50,3 +50,29 @@ class UserRequest(Enum):
                 return request
 
         raise ValueError("Request not supported: " + user_request_candidate)
+
+    @staticmethod
+    def get_library_type_from_request(
+        user_request: UserRequest,
+    ) -> LibraryType:
+        match user_request:
+            case (
+                UserRequest.CREATE_MOVIE_LIBRARY
+                | UserRequest.DELETE_MOVIE_LIBRARY
+            ):
+                return LibraryType.MOVIE
+            case UserRequest.CREATE_TV_LIBRARY | UserRequest.DELETE_TV_LIBRARY:
+                return LibraryType.TV
+            case (
+                UserRequest.CREATE_MUSIC_LIBRARY
+                | UserRequest.DELETE_MUSIC_LIBRARY
+            ):
+                return LibraryType.MUSIC
+            case (
+                UserRequest.CREATE_MUSIC_PLAYLIST
+                | UserRequest.DELETE_MUSIC_PLAYLIST
+                | UserRequest.EXPORT_MUSIC_PLAYLIST
+            ):
+                return LibraryType.MUSIC_PLAYLIST
+            case _:
+                return LibraryType.MUSIC

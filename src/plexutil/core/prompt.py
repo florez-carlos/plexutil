@@ -9,6 +9,7 @@ from importlib.metadata import PackageNotFoundError, version
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
 from plexutil.enums.language import Language
+from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.plex_util_logger import PlexUtilLogger
@@ -70,13 +71,33 @@ class Prompt(Static):
         )
 
         parser.add_argument(
+            "-lib",
+            "--library_type",
+            metavar="Library Type",
+            type=str,
+            nargs="?",
+            help="Library Type",
+            default=LibraryType.MUSIC.value,
+        )
+
+        parser.add_argument(
+            "-libn",
+            "--library_name",
+            metavar="Library Name",
+            type=str,
+            nargs="?",
+            help="Library Type",
+            default=LibraryName.MUSIC.value,
+        )
+
+        parser.add_argument(
             "-l",
             "--language",
             metavar="Library Language",
-            type=Language,
+            type=str,
             nargs="?",
             help="Library Language",
-            default=Language.ENGLISH_US,
+            default=Language.ENGLISH_US.value,
         )
 
         parser.add_argument(
@@ -133,11 +154,14 @@ class Prompt(Static):
         is_all_items = args.all_items
         is_version = args.version
         is_show_configuration = args.show_configuration
-        language = args.language
+        language = Language.get_language_from_str(args.language)
         plex_server_host = args.plex_server_host
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
         locations = args.locations
+        library_type = UserRequest.get_library_type_from_request(
+            UserRequest.get_user_request_from_str(args.library_type)
+        )
         print(f"Locations: {locations}")
 
         if is_version:
@@ -197,7 +221,7 @@ class Prompt(Static):
 
         return UserInstructionsDTO(
             request=request,
-            library_type=LibraryType.MUSIC,
+            library_type=library_type,
             items=items,
             locations=locations,
             is_all_items=is_all_items,
