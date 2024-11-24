@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class MusicPlaylistDTO():
+class MusicPlaylistDTO:
     name: str = ""
     songs: list[SongDTO] = field(default_factory=list)
 

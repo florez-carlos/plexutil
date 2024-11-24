@@ -1,11 +1,7 @@
 from dataclasses import dataclass
-from pathlib import Path
-
-from plexutil.serializer.serializable import Serializable
-
 
 @dataclass(frozen=True)
-class ServerConfigDTO(Serializable):
+class ServerConfigDTO:
     host: str = "localhost"
     port: int = 32000
     token: str = ""
