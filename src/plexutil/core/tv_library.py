@@ -4,9 +4,7 @@ from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.tv_language_manifest_file_dto import (
-    TVLanguageManifestFileDTO,
-)
+from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -21,7 +19,7 @@ class TVLibrary(Library):
         plex_server: PlexServer,
         locations: list[Path],
         preferences: LibraryPreferencesDTO,
-        tv_language_manifest_file_dto: TVLanguageManifestFileDTO,
+        tv_language_manifest_dto: list[TVLanguageManifestDTO],
         name: str = LibraryName.TV.value,
         language: Language = Language.ENGLISH_US,
     ) -> None:
@@ -35,12 +33,12 @@ class TVLibrary(Library):
             language,
             preferences,
         )
-        self.tv_language_manifest_file_dto = tv_language_manifest_file_dto
+        self.tv_language_manifest_dto = tv_language_manifest_dto
 
     def create(self) -> None:
         super().create()
 
-        manifests_dto = self.tv_language_manifest_file_dto.manifests_dto
+        manifests_dto = self.tv_language_manifest_dto
 
         info = f"Manifests: {manifests_dto}\n"
 
