@@ -1,6 +1,6 @@
 import sys
+from typing import cast
 
-from peewee import SqliteDatabase
 from plexapi.server import PlexServer
 
 from plexutil.core.movie_library import MovieLibrary
@@ -9,14 +9,10 @@ from plexutil.core.playlist import Playlist
 from plexutil.core.prompt import Prompt
 from plexutil.core.server_config import ServerConfig
 from plexutil.core.tv_library import TVLibrary
-from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
-from plexutil.model.music_playlist_entity import MusicPlaylistEntity
-from plexutil.model.song_entity import SongEntity
-from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
 from plexutil.util.plex_ops import PlexOps
@@ -48,7 +44,7 @@ def main() -> None:
             config_dir,
         )
 
-        tv_language_manifest_file_dto = FileImporter.get_tv_language_manifest(
+        tv_language_manifest_dto = FileImporter.get_tv_language_manifest(
             config_dir,
         )
 
@@ -60,6 +56,9 @@ def main() -> None:
         plex_server = PlexServer(baseurl, token)
         library = None
         language = instructions_dto.language
+        library_name = instructions_dto.library_name
+        locations = instructions_dto.locations
+        library_type = instructions_dto.library_type
 
         match instructions_dto.library_type:
             case LibraryType.MUSIC:
@@ -67,43 +66,46 @@ def main() -> None:
                     plex_server=plex_server,
                     language=language,
                     preferences=preferences_dto,
-                    name=instructions_dto.library_name,
-                    locations=instructions_dto.locations,
+                    name=library_name,
+                    locations=locations,
                 )
-            case LibraryType.PLAYLIST:
+            case LibraryType.MUSIC_PLAYLIST:
                 library = Playlist(
-                    plex_server,
-                    language,
-                    music_playlist_file_dto_filtered,
+                    plex_server=plex_server,
+                    language=language,
+                    playlist_names=items,
+                    library_type=library_type,
+                    name=library_name,
+                    locations=locations,
                 )
             case LibraryType.MOVIE:
                 library = MovieLibrary(
-                    plex_server,
-                    language,
-                    preferences_dto,
+                    plex_server=plex_server,
+                    language=language,
+                    preferences=preferences_dto,
+                    name=library_name,
+                    locations=locations,
                 )
             case LibraryType.TV:
                 library = TVLibrary(
-                    plex_server,
-                    language,
-                    preferences_dto,
-                    tv_language_manifest_file_dto,
+                    plex_server=plex_server,
+                    language=language,
+                    preferences=preferences_dto,
+                    tv_language_manifest_dto=tv_language_manifest_dto,
+                    locations=locations,
                 )
             case _:
                 # TODO:
                 sys.exit(1)
 
         match request:
-            case UserRequest.CREATE_MUSIC_PLAYLIST:
-                playlist_library.create()
-
-            case UserRequest.CREATE_MUSIC_LIBRARY:
-                # TODO: PlexOPS.create_library()
-                # TODO: Simplify naming
+            case (
+                UserRequest.CREATE_MUSIC_PLAYLIST
+                | UserRequest.CREATE_MUSIC_LIBRARY
+                | UserRequest.CREATE_MOVIE_LIBRARY
+                | UserRequest.CREATE_TV_LIBRARY
+            ):
                 library.create()
-
-            case UserRequest.CREATE_MOVIE_LIBRARY:
-                movie_library.create()
 
             case (
                 UserRequest.DELETE_MOVIE_LIBRARY
@@ -114,39 +116,11 @@ def main() -> None:
                 if library.exists():
                     library.delete()
 
-            case UserRequest.CREATE_TV_LIBRARY:
-                tv_library.create()
-
             case UserRequest.SET_SERVER_SETTINGS:
                 PlexOps.set_server_settings(plex_server, preferences_dto)
 
             case UserRequest.EXPORT_MUSIC_PLAYLIST:
-                with SqliteDatabase(
-                    bootstrap_paths_dto.config_dir / "playlists.db"
-                ) as db:
-                    db.bind(
-                        [
-                            SongEntity,
-                            SongMusicPlaylistEntity,
-                            MusicPlaylistEntity,
-                        ]
-                    )
-
-                    db.create_tables(
-                        [
-                            SongEntity,
-                            SongMusicPlaylistEntity,
-                            MusicPlaylistEntity,
-                        ],
-                        safe=True,
-                    )
-                    playlist_library = Playlist(
-                        plex_server,
-                        music_location,
-                        Language.ENGLISH_US,
-                        music_playlist_file_dto,
-                    )
-                    playlist_library.export_music_playlists()
+                cast(Playlist, library).export_music_playlists()
 
     except SystemExit as e:
         if e.code == 0:
@@ -156,10 +130,6 @@ def main() -> None:
             description = "Unexpected error:"
             PlexUtilLogger.get_logger().exception(description)
             raise
-
-    except PlexUtilConfigError:
-        description = "Plexutil configuration error"
-        PlexUtilLogger.get_logger().exception(description)
 
     except InvalidSchemaError as e:
         description = "\n\n=====Invalid schema error=====\n\n" f"{e!s}"
