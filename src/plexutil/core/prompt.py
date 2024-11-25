@@ -162,6 +162,7 @@ class Prompt(Static):
         library_type = UserRequest.get_library_type_from_request(
             UserRequest.get_user_request_from_str(args.library_type)
         )
+        library_name = args.library_name
         print(f"Locations: {locations}")
 
         if is_version:
@@ -222,6 +223,7 @@ class Prompt(Static):
         return UserInstructionsDTO(
             request=request,
             library_type=library_type,
+            library_name=library_name,
             items=items,
             locations=locations,
             is_all_items=is_all_items,
