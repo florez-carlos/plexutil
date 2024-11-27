@@ -20,11 +20,6 @@ from plexutil.util.plex_ops import PlexOps
 
 def main() -> None:
     try:
-        # TODO:
-        # https://docs.peewee-orm.com/en/latest/peewee/relationships.html
-        # # Ensure foreign-key constraints are enforced.
-        # db = SqliteDatabase('my_app.db', pragmas={'foreign_keys': 1})
-
         bootstrap_paths_dto = FileImporter.bootstrap()
 
         config_dir = bootstrap_paths_dto.config_dir
@@ -100,8 +95,7 @@ def main() -> None:
 
         match request:
             case (
-                UserRequest.CREATE_MUSIC_PLAYLIST
-                | UserRequest.CREATE_MUSIC_LIBRARY
+                UserRequest.CREATE_MUSIC_LIBRARY
                 | UserRequest.CREATE_MOVIE_LIBRARY
                 | UserRequest.CREATE_TV_LIBRARY
             ):
@@ -120,7 +114,14 @@ def main() -> None:
                 PlexOps.set_server_settings(plex_server, preferences_dto)
 
             case UserRequest.EXPORT_MUSIC_PLAYLIST:
-                cast(Playlist, library).export_music_playlists()
+                cast(Playlist, library).export_music_playlists(
+                    bootstrap_paths_dto
+                )
+
+            case UserRequest.EXPORT_MUSIC_PLAYLIST:
+                cast(Playlist, library).import_music_playlists(
+                    bootstrap_paths_dto
+                )
 
     except SystemExit as e:
         if e.code == 0:
