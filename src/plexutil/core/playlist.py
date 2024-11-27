@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from peewee import SqliteDatabase
 from plexapi.server import PlexServer
 
 from plexutil.core.library import Library
@@ -12,18 +11,13 @@ from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_op_error import LibraryOpError
+from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
+from plexutil.mapper.song_mapper import SongMapper
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
-from plexutil.model.song_entity import SongEntity
-from plexutil.model.song_music_playlist_entity import SongMusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
-from plexutil.service.music_playlist_service import MusicPlaylistService
 from plexutil.service.song_music_playlist_composite_service import (
     SongMusicPlaylistCompositeService,
 )
-from plexutil.service.song_music_playlist_service import (
-    SongMusicPlaylistService,
-)
-from plexutil.service.song_service import SongService
 from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
@@ -34,7 +28,7 @@ class Playlist(Library):
         plex_server: PlexServer,
         locations: list[Path],
         name: str = LibraryName.MUSIC.value,
-        library_type: LibraryType = LibraryType.MUSIC,
+        library_type: LibraryType = LibraryType.MUSIC_PLAYLIST,
         playlist_names: list[str] = [],
         language: Language = Language.ENGLISH_US,
     ) -> None:
@@ -50,7 +44,89 @@ class Playlist(Library):
         )
         self.playlist_names = playlist_names
 
-    def create(self) -> None:
+    def delete(self) -> None:
+        info = (
+            "Deleting music playlists: \n"
+            f"Playlists: {self.playlist_names}\n"
+            f"Location: {self.locations!s}\n"
+        )
+        PlexUtilLogger.get_logger().info(info)
+
+        playlist_type = LibraryType.MUSIC_PLAYLIST
+
+        if self.library_type is LibraryType.MOVIE:
+            pass
+
+        playlists = self.plex_server.playlists(playlistType=playlist_type)
+
+        debug = f"Playlists available in server: {playlists}"
+        PlexUtilLogger.get_logger().debug(debug)
+
+        for playlist in playlists:
+            if playlist.title in self.playlist_names:
+                playlist.delete()
+
+    def exists(self) -> bool:
+        playlist_type = LibraryType.MUSIC_PLAYLIST
+
+        if self.library_type is LibraryType.MOVIE:
+            pass
+
+        playlists = self.plex_server.playlists(playlistType=playlist_type)
+
+        debug = (
+            f"Checking playlists exist\n"
+            f"Requested: {self.playlist_names}\n"
+            f"In server: {playlists}\n"
+        )
+        PlexUtilLogger.get_logger().debug(debug)
+
+        if not playlists or not self.playlist_names:
+            return False
+
+        all_exist = True
+        for playlist_name in self.playlist_names:
+            if playlist_name in [x.title for x in playlists]:
+                continue
+            all_exist = False
+
+        debug = f"All exist: {all_exist}"
+        PlexUtilLogger.get_logger().debug(debug)
+
+        return all_exist
+
+    def export_music_playlists(
+        self,
+        bootstrap_paths_dto: BootstrapPathsDTO,
+    ) -> None:
+        service = SongMusicPlaylistCompositeService(
+            bootstrap_paths_dto.config_dir / "playlists.db"
+        )
+        song_mapper = SongMapper()
+        music_playlist_mapper = MusicPlaylistMapper()
+
+        plex_playlists = self.plex_server.playlists(
+            LibraryType.MUSIC_PLAYLIST,
+        )
+
+        to_save = []
+        for plex_playlist in plex_playlists:
+            music_playlist_dto = music_playlist_mapper.get_dto(
+                PlexOps.get_music_playlist_entity(plex_playlist)
+            )
+
+            for track in plex_playlist.items():
+                song_dto = song_mapper.get_dto(PlexOps.get_song_entity(track))
+                music_playlist_dto.songs.append(song_dto)
+
+            to_save.append(music_playlist_dto)
+
+        service.add_many(to_save)
+
+    def import_music_playlists(
+        self,
+        bootstrap_paths_dto: BootstrapPathsDTO,
+    ) -> None:
         op_type = "CREATE"
         self.plex_server.library.section(self.name).update()
 
@@ -77,9 +153,11 @@ class Playlist(Library):
 
         PlexUtilLogger.get_logger().info(info)
 
-        playlists = SongMusicPlaylistCompositeService.get_music_playlist_dto(
-            self.playlist_names,
+        entities = [MusicPlaylistEntity(name=x) for x in self.playlist_names]
+        service = SongMusicPlaylistCompositeService(
+            bootstrap_paths_dto.config_dir / "playlists.db"
         )
+        playlists = service.get(entities)
 
         for track in tracks:
             song_entity = PlexOps.get_song_entity(track)
@@ -111,101 +189,5 @@ class Playlist(Library):
             )
             plex_playlist = []
 
-    def delete(self) -> None:
-        info = (
-            "Deleting music playlists: \n"
-            f"Playlists: {self.playlist_names}\n"
-            f"Location: {self.locations!s}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
-
-        server_playlists = self.plex_server.playlists(playlistType="audio")
-
-        debug = f"Playlists available in server: {server_playlists}"
-        PlexUtilLogger.get_logger().debug(debug)
-
-        for playlist in server_playlists:
-            if playlist.title in self.playlist_names:
-                playlist.delete()
-
-    def exists(self) -> bool:
-        playlists = self.plex_server.playlists(playlistType="audio")
-
-        debug = (
-            f"Checking playlists exist\n"
-            f"Requested: {self.playlist_names}\n"
-            f"In server: {playlists}\n"
-        )
-        PlexUtilLogger.get_logger().debug(debug)
-
-        if not playlists or not self.playlist_names:
-            return False
-
-        all_exist = True
-        for playlist_name in self.playlist_names:
-            if playlist_name in [x.title for x in playlists]:
-                continue
-            all_exist = False
-
-        debug = f"All exist: {all_exist}"
-        PlexUtilLogger.get_logger().debug(debug)
-
-        return all_exist
-
-    def export_music_playlists(
-        self,
-        bootstrap_paths_dto: BootstrapPathsDTO,
-    ) -> None:
-        tracks = self.plex_server.library.section(
-            self.name,
-        ).searchTracks()
-        songs_to_save = [PlexOps.get_song_entity(track) for track in tracks]
-        SongService.add_many_song(songs_to_save)
-
-        plex_playlists = self.plex_server.playlists(
-            LibraryType.MUSIC_PLAYLIST,
-        )
-        music_playlists_to_save = [
-            PlexOps.get_music_playlist_entity(plex_playlist)
-            for plex_playlist in plex_playlists
-        ]
-        MusicPlaylistService.add_many_playlist(music_playlists_to_save)
-
-        song_music_playlists_to_save = []
-        for plex_playlist in plex_playlists:
-            music_playlist_id = MusicPlaylistService.get_id(
-                MusicPlaylistEntity(name=plex_playlist.title)
-            )
-
-            for track in plex_playlist.items():
-                song_entity = PlexOps.get_song_entity(track)
-                song_entity_id = SongService.get_id(song_entity)
-
-                song_music_playlists_to_save.append(
-                    SongMusicPlaylistEntity(
-                        playlist=music_playlist_id, song=song_entity_id
-                    )
-                )
-        SongMusicPlaylistService.add_many_song_playlist(
-            song_music_playlists_to_save
-        )
-        with SqliteDatabase(
-            bootstrap_paths_dto.config_dir / "playlists.db",
-            pragmas={"foreign_keys": 1},
-        ) as db:
-            db.bind(
-                [
-                    SongEntity,
-                    SongMusicPlaylistEntity,
-                    MusicPlaylistEntity,
-                ]
-            )
-
-            db.create_tables(
-                [
-                    SongEntity,
-                    SongMusicPlaylistEntity,
-                    MusicPlaylistEntity,
-                ],
-                safe=True,
-            )
+    def create(self) -> None:
+        raise NotImplementedError
