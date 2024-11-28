@@ -26,7 +26,8 @@ dependencies = [
   "toml==0.10.2",
   "pywin32==306;sys_platform == 'win32'",
   "jsonschema==4.23.0",
-  "peewee==3.17.7"
+  "peewee==3.17.7",
+  "colorlog==6.4.0"
 
 
 
