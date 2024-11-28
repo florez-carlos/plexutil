@@ -159,11 +159,12 @@ class Prompt(Static):
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
         locations = args.locations
-        library_type = UserRequest.get_library_type_from_request(
-            UserRequest.get_user_request_from_str(args.library_type)
-        )
+        library_type = LibraryType.MUSIC
+        if request:
+            library_type = UserRequest.get_library_type_from_request(
+                UserRequest.get_user_request_from_str(args.request)
+            )
         library_name = args.library_name
-        print(f"Locations: {locations}")
 
         if is_version:
             plexutil_version = ""
@@ -178,18 +179,6 @@ class Prompt(Static):
             PlexUtilLogger.get_logger().info(plexutil_version)
             sys.exit(0)
 
-        if is_show_configuration:
-            sys.exit(0)
-
-        if request is None:
-            description = (
-                (
-                    "Positional argument (request) "
-                    "expected but none supplied, see -h"
-                ),
-            )
-            raise ValueError(description)
-
         if items is not None:
             if is_all_items:
                 description = (
@@ -202,7 +191,8 @@ class Prompt(Static):
 
             items = list(items.split(","))
 
-        request = UserRequest.get_user_request_from_str(request)
+        if request:
+            request = UserRequest.get_user_request_from_str(request)
 
         server_config_dto = ServerConfigDTO(
             host=plex_server_host,
@@ -212,7 +202,7 @@ class Prompt(Static):
 
         debug = (
             "Received a User Request:\n"
-            f"Request: {request.value}\n"
+            f"Request: {request.value if request else None}\n"
             f"items: {items or []}\n"
             f"is_all_items: {is_all_items or False}\n"
             f"Host: {plex_server_host}\n"
@@ -222,6 +212,7 @@ class Prompt(Static):
 
         return UserInstructionsDTO(
             request=request,
+            is_show_configuration=is_show_configuration,
             library_type=library_type,
             library_name=library_name,
             items=items,
