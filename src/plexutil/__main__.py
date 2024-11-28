@@ -1,6 +1,7 @@
 import sys
 from typing import cast
 
+from peewee import DoesNotExist
 from plexapi.server import PlexServer
 
 from plexutil.core.movie_library import MovieLibrary
@@ -9,11 +10,13 @@ from plexutil.core.playlist import Playlist
 from plexutil.core.prompt import Prompt
 from plexutil.core.server_config import ServerConfig
 from plexutil.core.tv_library import TVLibrary
+from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.service.server_config_service import ServerConfigService
 from plexutil.util.file_importer import FileImporter
 from plexutil.util.plex_ops import PlexOps
 
@@ -33,6 +36,26 @@ def main() -> None:
         if request == UserRequest.CONFIG:
             config = ServerConfig(bootstrap_paths_dto, server_config_dto)
             server_config_dto = config.setup()
+            sys.exit(0)
+
+        if instructions_dto.is_show_configuration:
+            try:
+                service = ServerConfigService(bootstrap_paths_dto.config_dir / "config.db")
+                server_config_dto = service.get_id()
+                print(server_config_dto)
+            except DoesNotExist:
+                dto = ServerConfigDTO()
+                description = (
+                    "\n=====Server Configuration=====\n"
+                    "To update the configuration: plexutil config --token ...\n\n"
+                    f"Host: {dto.host}\n"
+                    f"Port: {dto.port}\n"
+                    f"Token: None supplied\n"
+                )
+                PlexUtilLogger.get_logger().info(description)
+                description = "WARNING: Token has not been supplied"
+                PlexUtilLogger.get_logger().warning(description)
+
             sys.exit(0)
 
         preferences_dto = FileImporter.get_library_preferences_dto(
