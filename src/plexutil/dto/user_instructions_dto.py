@@ -17,7 +17,8 @@ class UserInstructionsDTO:
     request: UserRequest
     library_type: LibraryType
     library_name: str
-    server_config_dto: ServerConfigDTO
+    server_config_dto: ServerConfigDTO = ServerConfigDTO()
+    is_show_configuration: bool = False
     language: Language = Language.ENGLISH_US
     locations: list[Path] = field(default_factory=list)
     items: list[str] = field(default_factory=list)
@@ -31,9 +32,11 @@ class UserInstructionsDTO:
             self.request == other.request
             and self.library_type == other.library_type
             and self.library_name == other.library_name
-            and self.items == other.items
+            and self.is_show_configuration == other.is_show_configuration
+            and self.language is other.language
             and self.locations == other.locations
-            and self.is_all_items == other.is_all_items
+            and self.items == other.items
+            and self.is_all_items is other.is_all_items
             and self.server_config_dto == other.server_config_dto
         )
 
@@ -43,9 +46,11 @@ class UserInstructionsDTO:
                 self.request,
                 self.library_type,
                 self.library_name,
-                self.items,
-                self.locations,
-                self.is_all_items,
                 self.server_config_dto,
+                self.is_show_configuration,
+                self.language,
+                self.locations,
+                self.items,
+                self.is_all_items,
             ),
         )
