@@ -27,10 +27,8 @@ dependencies = [
   "pywin32==306;sys_platform == 'win32'",
   "jsonschema==4.23.0",
   "peewee==3.17.7",
-  "colorlog==6.4.0"
-
-
-
+  "colorlog==6.4.0",
+  "keyring==25.5.0"
 ]
 
 [project.scripts]
