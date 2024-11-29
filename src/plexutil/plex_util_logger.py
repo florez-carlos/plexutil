@@ -33,9 +33,15 @@ class PlexUtilLogger(metaclass=SingletonMeta):
             logging.config.dictConfig(log_config)
             # Initialize loggers
             self.logger = logging.getLogger("regular")
+            self.console_logger = logging.getLogger("console")
             self.initialized = True
 
     @classmethod
     def get_logger(cls) -> logging.Logger:
         instance = cls._instances[cls]
         return instance.logger
+
+    @classmethod
+    def get_console_logger(cls) -> logging.Logger:
+        instance = cls._instances[cls]
+        return instance.console_logger

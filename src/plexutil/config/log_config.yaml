@@ -1,6 +1,9 @@
 ---
 version: 1
 disable_existing_loggers: False
+filters:
+    token_mask:
+        (): plexutil.token_masking_filter.TokenMaskingFilter
 formatters:
     console_color:
         (): colorlog.ColoredFormatter
@@ -37,6 +40,7 @@ handlers:
         class: logging.StreamHandler
         level: INFO
         formatter: console_color
+        filters: [token_mask]
         stream: ext://sys.stdout
     
     regular_file_handler:
@@ -44,9 +48,13 @@ handlers:
         class: logging.FileHandler
         level: DEBUG
         formatter: detailed_color
+        filters: [token_mask]
         encoding: utf8
 
 loggers:
+    console:
+        level: INFO
+        handlers: [console_color]
     regular:
         level: DEBUG
         handlers: [console_color, regular_file_handler]
