@@ -14,6 +14,7 @@ class UserRequest(Enum):
     DELETE_TV_LIBRARY = "delete_tv_library"
     CREATE_MUSIC_LIBRARY = "create_music_library"
     DELETE_MUSIC_LIBRARY = "delete_music_library"
+    CREATE_MUSIC_PLAYLIST = "create_music_playlist"
     DELETE_MUSIC_PLAYLIST = "delete_music_playlist"
     EXPORT_MUSIC_PLAYLIST = "export_music_playlist"
     IMPORT_MUSIC_PLAYLIST = "import_music_playlist"
@@ -30,6 +31,7 @@ class UserRequest(Enum):
             UserRequest.DELETE_TV_LIBRARY,
             UserRequest.CREATE_MUSIC_LIBRARY,
             UserRequest.DELETE_MUSIC_LIBRARY,
+            UserRequest.CREATE_MUSIC_PLAYLIST,
             UserRequest.DELETE_MUSIC_PLAYLIST,
             UserRequest.EXPORT_MUSIC_PLAYLIST,
             UserRequest.IMPORT_MUSIC_PLAYLIST,
@@ -70,6 +72,7 @@ class UserRequest(Enum):
                 return LibraryType.MUSIC
             case (
                 UserRequest.IMPORT_MUSIC_PLAYLIST
+                | UserRequest.CREATE_MUSIC_PLAYLIST
                 | UserRequest.DELETE_MUSIC_PLAYLIST
                 | UserRequest.EXPORT_MUSIC_PLAYLIST
             ):
