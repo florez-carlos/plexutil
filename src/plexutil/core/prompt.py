@@ -12,6 +12,9 @@ from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
+from plexutil.exception.unexpected_argument_error import (
+    UnexpectedArgumentError,
+)
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.file_importer import FileImporter
@@ -38,26 +41,24 @@ class Prompt(Static):
         )
 
         parser.add_argument(
-            "-i",
-            "--items",
-            metavar="Items",
-            type=str,
-            nargs="?",
+            "-s",
+            "--songs",
+            metavar="songs",
+            nargs="+",
             help=(
-                "Items to be passed for the request wrapped"
-                "in double quotes and separated by comma"
-                'i.e create_playlist --items "jazz classics,ambient"'
+                "Songs to be passed to a musical request, "
+                'i.e create_music_playlist --songs "path/to/song" "path_to_song"'
             ),
+            default=[],
         )
 
         parser.add_argument(
-            "-ai",
-            "--all_items",
-            action="store_true",
-            help=(
-                "Indicates operation to be performed on all available items"
-                "instead of specifying individual items"
-            ),
+            "-pn",
+            "--playlist_name",
+            metavar="Playlist Name",
+            type=str,
+            nargs="?",
+            help=("Name of the playlist"),
         )
 
         parser.add_argument(
@@ -67,7 +68,7 @@ class Prompt(Static):
             type=pathlib.Path,
             nargs="+",
             help="Library Locations",
-            default=pathlib.Path(),
+            default=[],
         )
 
         parser.add_argument(
@@ -137,6 +138,13 @@ class Prompt(Static):
             "-sc",
             "--show_configuration",
             action="store_true",
+            help=("Displays host,port"),
+        )
+
+        parser.add_argument(
+            "-sct",
+            "--show_configuration_token",
+            action="store_true",
             help=("Displays host,port,token"),
         )
 
@@ -147,13 +155,20 @@ class Prompt(Static):
             help=("Displays version"),
         )
 
-        args = parser.parse_args()
+        # args = parser.parse_args()
+        args, unknown = parser.parse_known_args()
+        print(f"args: {args}")
+        print(f"unk: {unknown}")
+
+        if unknown:
+            raise UnexpectedArgumentError(unknown)
 
         request = args.request
-        items = args.items
-        is_all_items = args.all_items
+        songs = args.songs
+        playlist_name = args.playlist_name
         is_version = args.version
         is_show_configuration = args.show_configuration
+        is_show_configuration_token = args.show_configuration_token
         language = Language.get_language_from_str(args.language)
         plex_server_host = args.plex_server_host
         plex_server_port = args.plex_server_port
@@ -179,18 +194,6 @@ class Prompt(Static):
             PlexUtilLogger.get_logger().info(plexutil_version)
             sys.exit(0)
 
-        if items is not None:
-            if is_all_items:
-                description = (
-                    (
-                        "--all_items requested but --items also specified,"
-                        "only one can be used at a time"
-                    ),
-                )
-                raise ValueError(description)
-
-            items = list(items.split(","))
-
         if request:
             request = UserRequest.get_user_request_from_str(request)
 
@@ -203,21 +206,28 @@ class Prompt(Static):
         debug = (
             "Received a User Request:\n"
             f"Request: {request.value if request else None}\n"
-            f"items: {items or []}\n"
-            f"is_all_items: {is_all_items or False}\n"
+            f"Songs: {songs!s}\n"
+            f"Playlist Name: {playlist_name}\n"
             f"Host: {plex_server_host}\n"
             f"Port: {plex_server_port}\n"
+            f"show config: {is_show_configuration!s}\n"
+            f"show config token: {is_show_configuration_token!s}\n"
+            f"Language: {language.value}\n"
+            f"Locations: {locations!s}\n"
+            f"Library Name: {library_name}\n"
+            f"Library Type: {library_type.value}\n"
         )
         PlexUtilLogger.get_logger().debug(debug)
 
         return UserInstructionsDTO(
             request=request,
             is_show_configuration=is_show_configuration,
+            is_show_configuration_token=is_show_configuration_token,
             library_type=library_type,
             library_name=library_name,
-            items=items,
+            playlist_name=playlist_name,
+            songs=songs,
             locations=locations,
-            is_all_items=is_all_items,
             server_config_dto=server_config_dto,
             language=language,
         )
