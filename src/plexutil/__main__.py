@@ -10,17 +10,21 @@ from plexutil.core.playlist import Playlist
 from plexutil.core.prompt import Prompt
 from plexutil.core.server_config import ServerConfig
 from plexutil.core.tv_library import TVLibrary
-from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
+from plexutil.exception.server_config_error import ServerConfigError
+from plexutil.exception.unexpected_argument_error import (
+    UnexpectedArgumentError,
+)
+from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
-from plexutil.service.server_config_service import ServerConfigService
 from plexutil.util.file_importer import FileImporter
 from plexutil.util.plex_ops import PlexOps
 
 
+# TODO: Mask token logging, check claude
 def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
@@ -30,33 +34,70 @@ def main() -> None:
         instructions_dto = Prompt.get_user_instructions_dto()
 
         request = instructions_dto.request
-        items = instructions_dto.items
+        songs = instructions_dto.songs
+        playlist_name = instructions_dto.playlist_name
+        language = instructions_dto.language
+        library_name = instructions_dto.library_name
+        locations = instructions_dto.locations
+        library_type = instructions_dto.library_type
         server_config_dto = instructions_dto.server_config_dto
 
+        config = ServerConfig(bootstrap_paths_dto, server_config_dto)
+
         if request == UserRequest.CONFIG:
-            config = ServerConfig(bootstrap_paths_dto, server_config_dto)
-            server_config_dto = config.setup()
+            server_config_dto = config.save()
             sys.exit(0)
-
-        if instructions_dto.is_show_configuration:
+        else:
             try:
-                service = ServerConfigService(bootstrap_paths_dto.config_dir / "config.db")
-                server_config_dto = service.get_id()
-                print(server_config_dto)
+                server_config_dto = config.get()
             except DoesNotExist:
-                dto = ServerConfigDTO()
+                description = "Queried a ServerConfig but none exist"
+                PlexUtilLogger.get_logger().debug(description)
+
+        host = server_config_dto.host
+        port = server_config_dto.port
+        token = server_config_dto.token
+
+        if (
+            instructions_dto.is_show_configuration
+            | instructions_dto.is_show_configuration_token
+        ):
+            if request:
                 description = (
-                    "\n=====Server Configuration=====\n"
-                    "To update the configuration: plexutil config --token ...\n\n"
-                    f"Host: {dto.host}\n"
-                    f"Port: {dto.port}\n"
-                    f"Token: None supplied\n"
+                    f"Received a request: '{request.value}' but also a call "
+                    f"to show configuration?\n"
+                    f"plexutil -sc OR plexutil -sct to show the token\n"
                 )
-                PlexUtilLogger.get_logger().info(description)
-                description = "WARNING: Token has not been supplied"
-                PlexUtilLogger.get_logger().warning(description)
+
+                raise UserError(description)
+
+            description = (
+                "\n=====Server Configuration=====\n"
+                "To update the configuration: plexutil config -token ...\n\n"
+                f"Host: {host}\n"
+                f"Port: {port}\n"
+                f"Token: "
+            )
+            if instructions_dto.is_show_configuration_token:
+                description = (
+                    description + f"{token if token else 'NOT SUPPLIED'}\n"
+                )
+            else:
+                description = (
+                    description
+                    + "\n\nINFO: To show token use --show_configuration_token\n"
+                )
+
+            PlexUtilLogger.get_console_logger().info(description)
 
             sys.exit(0)
+
+        if not token:
+            description = (
+                "Plex Token has not been supplied, cannot continue\n"
+                "Set a token -> plexutil config -token ..."
+            )
+            raise ServerConfigError(description)
 
         preferences_dto = FileImporter.get_library_preferences_dto(
             config_dir,
@@ -66,17 +107,9 @@ def main() -> None:
             config_dir,
         )
 
-        host = server_config_dto.host
-        port = server_config_dto.port
-        token = server_config_dto.token
-
         baseurl = f"http://{host}:{port}"
         plex_server = PlexServer(baseurl, token)
         library = None
-        language = instructions_dto.language
-        library_name = instructions_dto.library_name
-        locations = instructions_dto.locations
-        library_type = instructions_dto.library_type
 
         match instructions_dto.library_type:
             case LibraryType.MUSIC:
@@ -91,7 +124,7 @@ def main() -> None:
                 library = Playlist(
                     plex_server=plex_server,
                     language=language,
-                    playlist_names=items,
+                    playlist_names=[playlist_name],
                     library_type=library_type,
                     name=library_name,
                     locations=locations,
@@ -141,7 +174,7 @@ def main() -> None:
                     bootstrap_paths_dto
                 )
 
-            case UserRequest.EXPORT_MUSIC_PLAYLIST:
+            case UserRequest.IMPORT_MUSIC_PLAYLIST:
                 cast(Playlist, library).import_music_playlists(
                     bootstrap_paths_dto
                 )
@@ -151,22 +184,46 @@ def main() -> None:
             description = "Successful System Exit"
             PlexUtilLogger.get_logger().debug(description)
         else:
-            description = "Unexpected error:"
+            description = "\n=====Unexpected error=====\n" f"{e!s}"
             PlexUtilLogger.get_logger().exception(description)
             raise
 
+    except ServerConfigError as e:
+        sys.tracebacklimit = 0
+        description = "\n=====Server Config Error=====\n" f"{e!s}"
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
+    except UserError as e:
+        sys.tracebacklimit = 0
+        description = "\n=====User Error=====\n" f"{e!s}"
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
+    except UnexpectedArgumentError as e:
+        sys.tracebacklimit = 0
+        description = (
+            "\n=====User Argument Error=====\n"
+            "These arguments are unrecognized: \n"
+        )
+        for argument in e.args[0]:
+            description += "-> " + argument + "\n"
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
     except InvalidSchemaError as e:
-        description = "\n\n=====Invalid schema error=====\n\n" f"{e!s}"
-        PlexUtilLogger.get_logger().exception(description)
+        sys.tracebacklimit = 0
+        description = "\n=====Invalid schema error=====\n" f"{e!s}"
+        PlexUtilLogger.get_logger().error(description)
 
     # No regular logger can be expected to be initialized
     except BootstrapError as e:
-        description = "\n\n=====Program initialization error=====\n\n" f"{e!s}"
+        description = "\n=====Program initialization error=====\n" f"{e!s}"
         e.args = (description,)
         raise
 
-    except Exception:  # noqa: BLE001
-        description = "Unexpected error:"
+    except Exception as e:  # noqa: BLE001
+        description = "\n=====Unexpected error=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().exception(description)
 
 
