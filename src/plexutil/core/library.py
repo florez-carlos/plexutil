@@ -51,94 +51,50 @@ class Library(ABC):
         self.locations = locations
         self.language = language
         self.preferences = preferences
+        library = self.plex_server.library.search(
+            title=name, libtype=library_type.value
+        )
+        if library:
+            self.library = library[0]
+        else:
+            self.library = None
 
     @abstractmethod
     def create(self) -> None:
-        info = (
-            f"Creating {self.library_type} library: \n"
-            f"Name: {self.name}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Locations: {self.locations!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
-            f"{self.preferences.music}\n"
-            f"{self.preferences.tv}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
-        PlexUtilLogger.get_logger().debug(info)
+        self.__log_library(operation="CREATE", is_info=True, is_debug=True)
 
         if self.exists():
             description = (
-                f"Library {self.name} of "
+                f"Library {self.name} "
+                f"({self.library.key if self.library else ''}) of "
                 f"type {self.library_type} already exists"
             )
             raise LibraryOpError(
-                "CREATE",
-                self.library_type,
-                description,
+                op_type="CREATE",
+                description=description,
+                library_type=self.library_type,
             )
 
     @abstractmethod
     def delete(self) -> None:
-        op_type = "DELETE"
+        self.__log_library(operation="DELETE", is_info=True, is_debug=True)
 
-        info = (
-            "Deleting library: \n"
-            f"Name: {self.name}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Locations: {self.locations!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
-            f"{self.preferences.music}\n"
-            f"{self.preferences.tv}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
-
-        try:
-            result = self.plex_server.library.section(self.name)
-
-            if result:
-                result.delete()
-            else:
-                description = "Nothing found"
-                raise LibraryOpError(
-                    op_type=op_type,
-                    description=description,
-                    library_type=self.library_type,
-                )
-
-        except NotFound:
+        if self.library:
+            self.library.delete()
+        else:
+            description = "Nothing found"
             raise LibraryOpError(
-                op_type=op_type,
+                op_type="DELETE",
+                description=description,
                 library_type=self.library_type,
-            ) from NotFound
+            )
 
     @abstractmethod
     def exists(self) -> bool:
-        debug = (
-            "Checking library exists: \n"
-            f"Name: {self.name}\n"
-            f"Type: {self.library_type.value}\n"
+        self.__log_library(
+            operation="Check Exists", is_info=True, is_debug=True
         )
-        try:
-            result = self.plex_server.library.section(self.name)
-
-            if not result:
-                debug = debug + "-Not found-"
-                PlexUtilLogger.get_logger().debug(debug)
-                return False
-
-            PlexUtilLogger.get_logger().debug(debug)
-            return LibraryType.is_eq(self.library_type, result)
-
-        except NotFound:
-            debug = debug + "-Not found-"
-            PlexUtilLogger.get_logger().debug(debug)
-            return False
+        return bool(self.library)
 
     def poll(
         self,
@@ -203,46 +159,75 @@ class Library(ABC):
         PlexUtilLogger.get_logger().debug(debug)
 
         try:
-            if self.library_type is LibraryType.MUSIC:
-                return self.plex_server.library.section(
-                    self.name,
-                ).searchTracks()
+            if self.library:
+                if self.library_type is LibraryType.MUSIC:
+                    return self.library.searchTracks()
 
-            elif self.library_type is LibraryType.TV:
-                shows = self.plex_server.library.section(self.name).all()
-                shows_filtered = []
+                elif self.library_type is LibraryType.TV:
+                    shows = self.library.all()
+                    shows_filtered = []
 
-                if tvdb_ids:
-                    for show in shows:
-                        guids = show.guids
-                        tvdb_prefix = "tvdb://"
-                        for guid in guids:
-                            if tvdb_prefix in guid.id:
-                                tvdb = guid.id.replace(tvdb_prefix, "")
-                                if int(tvdb) in tvdb_ids:
-                                    shows_filtered.append(show)
-                            else:
-                                description = (
-                                    "Expected ("
-                                    + tvdb_prefix
-                                    + ") but show does not have any: "
-                                    + guid.id
-                                )
-                                LibraryOpError(
-                                    op_type=op_type,
-                                    library_type=self.library_type,
-                                    description=description,
-                                )
+                    if tvdb_ids:
+                        for show in shows:
+                            guids = show.guids
+                            tvdb_prefix = "tvdb://"
+                            for guid in guids:
+                                if tvdb_prefix in guid.id:
+                                    tvdb = guid.id.replace(tvdb_prefix, "")
+                                    if int(tvdb) in tvdb_ids:
+                                        shows_filtered.append(show)
+                                else:
+                                    description = (
+                                        "Expected ("
+                                        + tvdb_prefix
+                                        + ") but show does not have any: "
+                                        + guid.id
+                                    )
+                                    LibraryOpError(
+                                        op_type=op_type,
+                                        library_type=self.library_type,
+                                        description=description,
+                                    )
 
-                return shows_filtered
+                    return shows_filtered
 
+                else:
+                    raise LibraryUnsupportedError(
+                        op_type=op_type,
+                        library_type=self.library_type,
+                    )
             else:
-                raise LibraryUnsupportedError(
-                    op_type=op_type,
-                    library_type=self.library_type,
-                )
+                return []
 
         except NotFound:
             debug = "Received Not Found on a Query operation"
             PlexUtilLogger.get_logger().debug(debug)
             return []
+
+    def __log_library(
+        self,
+        operation: str,
+        is_info: bool = True,
+        is_debug: bool = False,
+        is_console: bool = False,
+    ) -> None:
+        info = (
+            f"{operation} {self.library_type} library: \n"
+            f"ID: {self.library.key if self.library else ''}\n"
+            f"Name: {self.name}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Locations: {self.locations!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Preferences: {self.preferences.movie}\n"
+            f"{self.preferences.music}\n"
+            f"{self.preferences.tv}\n"
+        )
+        if not is_console:
+            if is_info:
+                PlexUtilLogger.get_logger().info(info)
+            if is_debug:
+                PlexUtilLogger.get_logger().debug(info)
+        else:
+            PlexUtilLogger.get_console_logger().info(info)
