@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple
 
 from plexapi.audio import Track
 from plexapi.server import Playlist
 
+from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.file_type import FileType
+from plexutil.mapper.song_mapper import SongMapper
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_entity import SongEntity
 from plexutil.static import Static
@@ -60,3 +62,39 @@ class PlexOps(Static):
             plex_track_full_name.rsplit(".", 1)[1],
         )
         return SongEntity(name=plex_track_name, extension=plex_track_ext.value)
+
+    @staticmethod
+    def filter_tracks(
+        tracks: list[Track],
+        songs: list[SongDTO],
+    ) -> Tuple[list[Track], list[SongDTO]]:
+        """
+        Filters the provided tracks with the provided songs,
+        return as 1st element in tuple the filtered tracks,
+        2nd element is songs that do not match any tracks
+
+        Args:
+            tracks ([plexapi.audio.Track]): plexapi tracks.
+            songs ([SongDTO]): SongDTOs.
+
+        Returns:
+        A tuple of:
+        1) Tracks that match the provided songs
+        2) Songs that did not match to any tracks
+        """
+
+        filtered_tracks = []
+        unknown_songs = []
+        mapper = SongMapper()
+        track_song = {}
+        for track in tracks:
+            song_dto = mapper.get_dto(PlexOps.get_song_entity(track))
+            track_song[song_dto] = track
+
+        for song in songs:
+            if song in track_song:
+                filtered_tracks.append(track_song)
+            else:
+                unknown_songs.append(song)
+
+        return filtered_tracks, unknown_songs
