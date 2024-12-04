@@ -1,34 +1,22 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.service.db_manager import db_manager
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 
 class MusicPlaylistService:
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
 
-    def get_id(self, entity: MusicPlaylistEntity) -> UUID:
+    def get(self, entity: MusicPlaylistEntity) -> MusicPlaylistEntity:
         with db_manager(self.db_path, [MusicPlaylistEntity]):
             return (
                 MusicPlaylistEntity.select()
                 .where(
                     MusicPlaylistEntity.name == entity.name,
                 )
-                .get()
-            )
-
-    def get(self, uuid: UUID) -> MusicPlaylistEntity:
-        with db_manager(self.db_path, [MusicPlaylistEntity]):
-            return (
-                MusicPlaylistEntity.select()
-                .where(MusicPlaylistEntity.id == uuid)
                 .get()
             )
 
@@ -43,15 +31,22 @@ class MusicPlaylistService:
                 .get()
             )
 
-    def add(self, entity: MusicPlaylistEntity) -> int:
-        with db_manager(self.db_path, [MusicPlaylistEntity]):
-            return entity.save(force_insert=True)
+    def save(self, entity: MusicPlaylistEntity) -> MusicPlaylistEntity:
+        force_insert = False if self.exists() else True
 
-    def add_many(self, entities: list[MusicPlaylistEntity]) -> int:
         with db_manager(self.db_path, [MusicPlaylistEntity]):
+            entity.save(force_insert=force_insert)
+            return entity
+
+    def exists(self) -> bool:
+        with db_manager(self.db_path, [MusicPlaylistEntity]):
+            return MusicPlaylistEntity.select().exists()
+
+    def add_many(self, entities: list[MusicPlaylistEntity]) -> None:
+        with db_manager(self.db_path, [MusicPlaylistEntity], is_atomic=True):
             bulk = [(entity.name,) for entity in entities]
-
-            return MusicPlaylistEntity.insert_many(
-                bulk,
-                fields=[MusicPlaylistEntity.name],
-            ).execute()
+            for idx in range(0, len(bulk), 100):
+                MusicPlaylistEntity.insert_many(
+                    bulk[idx : idx + 100],
+                    fields=[MusicPlaylistEntity.name],
+                ).execute()

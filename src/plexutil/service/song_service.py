@@ -1,20 +1,16 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from plexutil.model.song_entity import SongEntity
 from plexutil.service.db_manager import db_manager
-
-if TYPE_CHECKING:
-    from uuid import UUID
 
 
 class SongService:
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
 
-    def get_id(self, entity: SongEntity) -> UUID:
+    def get(self, entity: SongEntity) -> SongEntity:
         with db_manager(self.db_path, [SongEntity]):
             return (
                 SongEntity.select()
@@ -24,10 +20,6 @@ class SongService:
                 )
                 .get()
             )
-
-    def get(self, uuid: UUID) -> SongEntity:
-        with db_manager(self.db_path, [SongEntity]):
-            return SongEntity.select().where(SongEntity.id == uuid).get()
 
     def get_many(self, entities: list[SongEntity]) -> list[SongEntity]:
         with db_manager(self.db_path, [SongEntity]):
@@ -42,15 +34,28 @@ class SongService:
                 .get()
             )
 
-    def add(self, entity: SongEntity) -> int:
-        with db_manager(self.db_path, [SongEntity]):
-            return entity.save(force_insert=True)
+    def save(self, entity: SongEntity) -> SongEntity:
+        force_insert = False if self.exists(entity) else True
 
-    def add_many(self, entities: list[SongEntity]) -> int:
         with db_manager(self.db_path, [SongEntity]):
+            return entity.save(force_insert=force_insert)
+
+    def exists(self, entity: SongEntity) -> bool:
+        return (
+            SongEntity.select()
+            .where(
+                (SongEntity.name == entity.name)
+                & (SongEntity.extension == entity.extension)
+            )
+            .exists()
+        )
+
+    def add_many(self, entities: list[SongEntity]) -> None:
+        with db_manager(self.db_path, [SongEntity], is_atomic=True):
             bulk = [(song.name, song.extension) for song in entities]
 
-            return SongEntity.insert_many(
-                bulk,
-                fields=[SongEntity.name, SongEntity.extension],
-            ).execute()
+            for idx in range(0, len(bulk), 100):
+                SongEntity.insert_many(
+                    bulk[idx : idx + 100],
+                    fields=[SongEntity.name, SongEntity.extension],
+                ).execute()

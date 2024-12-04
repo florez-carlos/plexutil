@@ -75,10 +75,10 @@ class SongMusicPlaylistCompositeService:
                 result.append(v)
             return result
 
-    def add(self, music_playlist_dto: MusicPlaylistDTO) -> int:
-        return self.add_many([music_playlist_dto])
+    def add(self, music_playlist_dto: MusicPlaylistDTO) -> None:
+        self.add_many([music_playlist_dto])
 
-    def add_many(self, music_playlist_dtos: list[MusicPlaylistDTO]) -> int:
+    def add_many(self, music_playlist_dtos: list[MusicPlaylistDTO]) -> None:
         with db_manager(
             self.db_path,
             [MusicPlaylistEntity, SongEntity, SongMusicPlaylistEntity],
@@ -107,12 +107,9 @@ class SongMusicPlaylistCompositeService:
             song_service.add_many(flattened_songs)
 
             to_save = []
-            rows_inserted = 0
             for music_playlist_dto in music_playlist_dtos:
                 playlist = music_playlist_service.get(
-                    music_playlist_service.get_id(
-                        music_playlist_mapper.get_entity(music_playlist_dto)
-                    )
+                    music_playlist_mapper.get_entity(music_playlist_dto)
                 )
                 songs = [
                     song_mapper.get_entity(x) for x in music_playlist_dto.songs
@@ -127,15 +124,12 @@ class SongMusicPlaylistCompositeService:
 
                 bulk = [(entity.playlist, entity.song) for entity in to_save]
 
-                rows_inserted = (
-                    rows_inserted
-                    + SongMusicPlaylistEntity.insert_many(
-                        bulk,
-                        fields=[
-                            SongMusicPlaylistEntity.playlist,
-                            SongMusicPlaylistEntity.song,
-                        ],
-                    ).execute()
-                )
+                SongMusicPlaylistEntity.insert_many(
+                    bulk,
+                    fields=[
+                        SongMusicPlaylistEntity.playlist,
+                        SongMusicPlaylistEntity.song,
+                    ],
+                ).execute()
 
-            return rows_inserted
+            return
