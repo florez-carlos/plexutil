@@ -11,7 +11,7 @@ from plexapi.library import (
 
 
 class LibraryType(Enum):
-    MUSIC = "music"
+    MUSIC = "track"  # track 10
     TV = "show"
     MOVIE = "movie"
     MUSIC_PLAYLIST = "audio"
@@ -24,9 +24,9 @@ class LibraryType(Enum):
             isinstance(library_section, MovieSection)
             and library_type is LibraryType.MOVIE
             or isinstance(library_section, MusicSection)
-            and library_type is LibraryType.TV
-            or isinstance(library_section, ShowSection)
             and library_type is LibraryType.MUSIC
+            or isinstance(library_section, ShowSection)
+            and library_type is LibraryType.TV
         ):
             return True
         return False
