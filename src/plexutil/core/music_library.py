@@ -48,7 +48,7 @@ class MusicLibrary(Library):
         query_builder = QueryBuilder(
             "/library/sections",
             name=self.name,
-            the_type=LibraryType.MUSIC.value,
+            the_type="music",
             agent=Agent.MUSIC.value,
             scanner=Scanner.MUSIC.value,
             language=self.language.value,
