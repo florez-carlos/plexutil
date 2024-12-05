@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from plexutil.dto.local_file_dto import LocalFileDTO
 from plexutil.enums.file_type import FileType
@@ -45,23 +44,37 @@ class PathOps(Static):
         return path
 
     @staticmethod
-    def get_local_files(paths: List[Path]) -> list[LocalFileDTO]:
+    def get_local_files(paths: list[Path]) -> list[LocalFileDTO]:
         files = []
 
         for path in paths:
-            for item in path.iterdir():
-                if item.is_file():
-                    file_name = item.stem
-                    file_extension = item.suffix
-                    files.append(
-                        LocalFileDTO(
-                            name=file_name,
-                            extension=FileType.get_file_type_from_str(
-                                file_extension
-                            ),
-                            location=item,
-                        )
+            if path.is_file():
+                file_name = path.stem
+                file_extension = path.suffix.rsplit(".")[1]
+
+                files.append(
+                    LocalFileDTO(
+                        name=file_name,
+                        extension=FileType.get_file_type_from_str(
+                            file_extension
+                        ),
+                        location=path,
                     )
+                )
+            else:
+                for item in path.iterdir():
+                    if item.is_file():
+                        file_name = item.stem
+                        file_extension = item.suffix.rsplit(".")[1]
+                        files.append(
+                            LocalFileDTO(
+                                name=file_name,
+                                extension=FileType.get_file_type_from_str(
+                                    file_extension
+                                ),
+                                location=item,
+                            )
+                        )
 
         return files
 
