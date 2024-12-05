@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Tuple
 
 from plexapi.audio import Track
 from plexapi.server import Playlist
 
+from plexutil.dto.local_file_dto import LocalFileDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.file_type import FileType
+from plexutil.exception.library_illegal_state_error import (
+    LibraryIllegalStateError,
+)
 from plexutil.mapper.song_mapper import SongMapper
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.model.song_entity import SongEntity
@@ -33,22 +38,6 @@ class PlexOps(Static):
     @staticmethod
     def get_music_playlist_entity(playlist: Playlist) -> MusicPlaylistEntity:
         return MusicPlaylistEntity(name=playlist.title)
-
-    # @staticmethod
-    # def get_entity(plexutil_config_dto: PlexConfigDTO) -> PlexUtilConfigEntity:
-    #     return PlexUtilConfigEntity(
-    #         host=plexutil_config_dto.host,
-    #         port=plexutil_config_dto.port,
-    #         token=plexutil_config_dto.token,
-    #     )
-    #
-    # @staticmethod
-    # def get_dto(plexutil_config_entity: PlexUtilConfigEntity) -> PlexConfigDTO:
-    #     return PlexConfigDTO(
-    #         host=str(plexutil_config_entity.host),
-    #         port=int(plexutil_config_entity.port),
-    #         token=str(plexutil_config_entity.token),
-    #     )
 
     @staticmethod
     def get_song_entity(track: Track) -> SongEntity:
@@ -98,3 +87,41 @@ class PlexOps(Static):
                 unknown_songs.append(song)
 
         return filtered_tracks, unknown_songs
+
+    @staticmethod
+    def validate_local_files(
+        tracks: list[Track],
+        locations: list[Path],
+    ) -> None:
+        """
+        Verifies that all local files match the provided plex tracks
+        in the locations indicated
+
+        Args:
+            tracks ([plexapi.audio.Track]): plexapi tracks.
+            locations ([Path]): local file locations.
+
+        Returns:
+            None, raises error if local files do not match tracks
+        """
+
+        local_files = PathOps.get_local_files(locations)
+        songs = []
+        for local_file in local_files:
+            song_dto = PlexOps.local_file_to_song_dto(local_file)
+            songs.append(song_dto)
+
+        _, unknown = PlexOps.filter_tracks(tracks, songs)
+        if unknown:
+            description = (
+                f"These local songs are unknown to the plex server:\n"
+                f"{unknown!s}"
+            )
+            raise LibraryIllegalStateError(description)
+
+    @staticmethod
+    def local_file_to_song_dto(local_file: LocalFileDTO) -> SongDTO:
+        return SongDTO(
+            name=local_file.name,
+            extension=local_file.extension,
+        )
