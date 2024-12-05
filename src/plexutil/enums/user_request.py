@@ -14,8 +14,8 @@ class UserRequest(Enum):
     DELETE_TV_LIBRARY = "delete_tv_library"
     CREATE_MUSIC_LIBRARY = "create_music_library"
     DELETE_MUSIC_LIBRARY = "delete_music_library"
-    ADD_SONGS_TO_MUSIC_LIBRARY = "add_songs_from_music_library",
-    DELETE_SONGS_FROM_MUSIC_LIBRARY = "delete_songs_from_music_library",
+    ADD_SONGS_TO_MUSIC_LIBRARY = "add_songs_from_music_library"
+    DELETE_SONGS_FROM_MUSIC_LIBRARY = "delete_songs_from_music_library"
     CREATE_MUSIC_PLAYLIST = "create_music_playlist"
     DELETE_MUSIC_PLAYLIST = "delete_music_playlist"
     EXPORT_MUSIC_PLAYLIST = "export_music_playlist"
