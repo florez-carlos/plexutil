@@ -18,6 +18,8 @@ class UserRequest(Enum):
     DELETE_MUSIC_PLAYLIST = "delete_music_playlist"
     EXPORT_MUSIC_PLAYLIST = "export_music_playlist"
     IMPORT_MUSIC_PLAYLIST = "import_music_playlist"
+    ADD_SONGS_TO_MUSIC_PLAYLIST = "add_songs_to_music_playlist"
+    DELETE_SONGS_FROM_MUSIC_PLAYLIST = "delete_songs_from_music_playlist"
 
     @staticmethod
     # Forward Reference used here in type hint
@@ -35,6 +37,8 @@ class UserRequest(Enum):
             UserRequest.DELETE_MUSIC_PLAYLIST,
             UserRequest.EXPORT_MUSIC_PLAYLIST,
             UserRequest.IMPORT_MUSIC_PLAYLIST,
+            UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST,
+            UserRequest.DELETE_SONGS_FROM_MUSIC_PLAYLIST,
         ]
 
     @staticmethod
@@ -75,6 +79,8 @@ class UserRequest(Enum):
                 | UserRequest.CREATE_MUSIC_PLAYLIST
                 | UserRequest.DELETE_MUSIC_PLAYLIST
                 | UserRequest.EXPORT_MUSIC_PLAYLIST
+                | UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST
+                | UserRequest.DELETE_SONGS_FROM_MUSIC_PLAYLIST
             ):
                 return LibraryType.MUSIC_PLAYLIST
             case _:
