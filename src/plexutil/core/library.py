@@ -4,10 +4,13 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List
 
+from plexapi.library import LibrarySection
+
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
 )
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -116,6 +119,7 @@ class Library(ABC):
 
         PlexUtilLogger.get_logger().debug(debug)
 
+        library = self.get_library_or_error("POLL")
         with alive_bar(init_offset) as bar:
             attempts = 0
             display_count = 0
@@ -159,50 +163,56 @@ class Library(ABC):
         PlexUtilLogger.get_logger().debug(debug)
 
         try:
-            if self.library:
-                if self.library_type is LibraryType.MUSIC:
-                    return self.library.searchTracks()
+            library = self.get_library_or_error("QUERY")
+            if self.library_type is LibraryType.MUSIC:
+                return library.searchTracks()
 
-                elif self.library_type is LibraryType.TV:
-                    shows = self.library.all()
-                    shows_filtered = []
+            elif self.library_type is LibraryType.TV:
+                shows = library.all()
+                shows_filtered = []
 
-                    if tvdb_ids:
-                        for show in shows:
-                            guids = show.guids
-                            tvdb_prefix = "tvdb://"
-                            for guid in guids:
-                                if tvdb_prefix in guid.id:
-                                    tvdb = guid.id.replace(tvdb_prefix, "")
-                                    if int(tvdb) in tvdb_ids:
-                                        shows_filtered.append(show)
-                                else:
-                                    description = (
-                                        "Expected ("
-                                        + tvdb_prefix
-                                        + ") but show does not have any: "
-                                        + guid.id
-                                    )
-                                    LibraryOpError(
-                                        op_type=op_type,
-                                        library_type=self.library_type,
-                                        description=description,
-                                    )
+                if tvdb_ids:
+                    for show in shows:
+                        guids = show.guids
+                        tvdb_prefix = "tvdb://"
+                        for guid in guids:
+                            if tvdb_prefix in guid.id:
+                                tvdb = guid.id.replace(tvdb_prefix, "")
+                                if int(tvdb) in tvdb_ids:
+                                    shows_filtered.append(show)
+                            else:
+                                description = (
+                                    "Expected ("
+                                    + tvdb_prefix
+                                    + ") but show does not have any: "
+                                    + guid.id
+                                )
+                                LibraryOpError(
+                                    op_type=op_type,
+                                    library_type=self.library_type,
+                                    description=description,
+                                )
 
-                    return shows_filtered
+                return shows_filtered
 
-                else:
-                    raise LibraryUnsupportedError(
-                        op_type=op_type,
-                        library_type=self.library_type,
-                    )
             else:
-                return []
+                raise LibraryUnsupportedError(
+                    op_type=op_type,
+                    library_type=self.library_type,
+                )
 
         except NotFound:
             debug = "Received Not Found on a Query operation"
             PlexUtilLogger.get_logger().debug(debug)
             return []
+
+    def get_library_or_error(self, op_type: str) -> LibrarySection:
+        if self.library:
+            return self.library
+        else:
+            description = f"Library {self.name} does not exist"
+
+            raise LibraryOpError(op_type, self.library_type, description)
 
     def __log_library(
         self,
@@ -231,3 +241,18 @@ class Library(ABC):
                 PlexUtilLogger.get_logger().debug(info)
         else:
             PlexUtilLogger.get_console_logger().info(info)
+
+    def __verify_and_get_library(self, op_type: str) -> LibrarySection:
+        library = self.get_library_or_error(op_type)
+
+        if LibraryType.is_eq(LibraryType.MOVIE, library) or LibraryType.is_eq(
+            LibraryType.TV, library
+        ):
+            raise NotImplementedError
+
+        library.update()
+        if LibraryType.is_eq(LibraryType.MOVIE, library):
+            tracks = library.searchTracks()
+            PlexOps.validate_local_files(tracks, self.locations)
+
+        return library
