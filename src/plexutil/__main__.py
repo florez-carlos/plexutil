@@ -10,6 +10,7 @@ from plexutil.core.playlist import Playlist
 from plexutil.core.prompt import Prompt
 from plexutil.core.server_config import ServerConfig
 from plexutil.core.tv_library import TVLibrary
+from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
@@ -21,6 +22,7 @@ from plexutil.exception.unexpected_argument_error import (
 from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
+from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 
@@ -44,6 +46,15 @@ def main() -> None:
 
         config = ServerConfig(bootstrap_paths_dto, server_config_dto)
 
+        song_paths = [PathOps.get_path_from_str(x) for x in songs]
+        local_files = PathOps.get_local_files(song_paths)
+        songs_dto = [PlexOps.local_file_to_song_dto(x) for x in local_files]
+
+        music_playlist_dto = MusicPlaylistDTO(
+            name=playlist_name,
+            songs=songs_dto,
+        )
+
         if request == UserRequest.CONFIG:
             server_config_dto = config.save()
             sys.exit(0)
@@ -51,7 +62,7 @@ def main() -> None:
             try:
                 server_config_dto = config.get()
             except DoesNotExist:
-                description = "Queried a ServerConfig but none exist"
+                description = "No Server Config found"
                 PlexUtilLogger.get_logger().debug(description)
 
         host = server_config_dto.host
@@ -124,7 +135,7 @@ def main() -> None:
                 library = Playlist(
                     plex_server=plex_server,
                     language=language,
-                    playlist_names=[playlist_name],
+                    music_playlists_dto=[music_playlist_dto],
                     library_type=library_type,
                     name=library_name,
                     locations=locations,
@@ -146,7 +157,8 @@ def main() -> None:
                     locations=locations,
                 )
             case _:
-                # TODO:
+                description = "Didn't receive a request"
+                PlexUtilLogger.get_logger().error(description)
                 sys.exit(1)
 
         match request:
@@ -178,6 +190,12 @@ def main() -> None:
                 cast(Playlist, library).import_music_playlists(
                     bootstrap_paths_dto
                 )
+
+            case UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST:
+                cast(Playlist, library).add_songs(songs_dto)
+
+            case UserRequest.DELETE_SONGS_FROM_MUSIC_PLAYLIST:
+                cast(Playlist, library).delete_songs(songs_dto)
 
     except SystemExit as e:
         if e.code == 0:
