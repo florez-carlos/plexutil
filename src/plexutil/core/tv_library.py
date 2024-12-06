@@ -54,12 +54,9 @@ class TVLibrary(Library):
             language=self.language.value,
         )
 
-        # This line triggers a refresh of the library
-        self.plex_server.library.sections()
+        library = self.__verify_and_get_library("CREATE")
 
-        self.plex_server.library.section(self.name).editAdvanced(
-            **self.preferences.tv,
-        )
+        library.editAdvanced(**self.preferences.tv)
 
         for manifest_dto in manifests_dto:
             language = manifest_dto.language
@@ -77,7 +74,7 @@ class TVLibrary(Library):
             for show in shows:
                 show.editAdvanced(languageOverride=language.value)
 
-            self.plex_server.library.section(self.name).refresh()
+            self.__verify_and_get_library("CREATE")
 
     def delete(self) -> None:
         return super().delete()

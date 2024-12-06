@@ -33,21 +33,21 @@ class MovieLibrary(Library):
 
     def create(self) -> None:
         super().create()
-        self.plex_server.library.add(
+        library = self.__verify_and_get_library("CREATE")
+        library.add(
             name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=locations,  # pyright: ignore
+            location=self.locations,
             language=self.language.value,
         )
 
         # This line triggers a refresh of the library
-        self.plex_server.library.sections()
+        # self.plex_server.library.sections()
 
-        self.plex_server.library.section(self.name).editAdvanced(
-            **self.preferences.movie,
-        )
+        library = self.__verify_and_get_library("CREATE")
+        library.editAdvanced(**self.preferences.movie)
 
     def delete(self) -> None:
         return super().delete()

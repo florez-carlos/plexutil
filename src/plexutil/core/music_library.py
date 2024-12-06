@@ -43,6 +43,8 @@ class MusicLibrary(Library):
     def create(self) -> None:
         super().create()
 
+        library = self.__verify_and_get_library("CREATE")
+
         part = ""
 
         query_builder = QueryBuilder(
@@ -66,7 +68,7 @@ class MusicLibrary(Library):
 
         # This posts a music library
         if part:
-            self.plex_server.query(
+            library.query(
                 part,
                 method=self.plex_server._session.post,
             )
@@ -79,8 +81,11 @@ class MusicLibrary(Library):
             )
 
         # This triggers a refresh of the library
-        self.plex_server.library.sections()
+        # self.plex_server.library.sections()
 
+        library = library.__verify_and_get_library("CREATE")
+
+        # TODO: Should this be here?
         local_files = PathOps.get_local_files(self.locations)
 
         info = (
