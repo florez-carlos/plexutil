@@ -157,8 +157,6 @@ class Prompt(Static):
 
         # args = parser.parse_args()
         args, unknown = parser.parse_known_args()
-        print(f"args: {args}")
-        print(f"unk: {unknown}")
 
         if unknown:
             raise UnexpectedArgumentError(unknown)

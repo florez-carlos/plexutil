@@ -26,10 +26,10 @@ from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 
-# TODO: Mask token logging, check claude
 def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
+        FileImporter.populate_sample(bootstrap_paths_dto)
 
         config_dir = bootstrap_paths_dto.config_dir
 
