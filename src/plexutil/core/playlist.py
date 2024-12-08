@@ -47,7 +47,7 @@ class Playlist(Library):
         self.music_playlists_dto = music_playlists_dto
 
     def create(self) -> None:
-        library = self.__verify_and_get_library("CREATE")
+        library = self.verify_and_get_library("CREATE")
         tracks = library.searchTracks()
         locations = library.locations
         # TODO: polling here, validate in poll method?
@@ -88,7 +88,7 @@ class Playlist(Library):
             )
 
     def delete(self) -> None:
-        library = self.__verify_and_get_library("DELETE")
+        library = self.verify_and_get_library("DELETE")
         playlist_names = [x.name for x in self.music_playlists_dto]
         info = (
             "Deleting music playlists: \n"
@@ -108,7 +108,7 @@ class Playlist(Library):
                 playlist.delete()
 
     def exists(self) -> bool:
-        library = self.__verify_and_get_library("EXISTS")
+        library = self.verify_and_get_library("EXISTS")
 
         plex_playlists = library.playlists()
 
@@ -141,7 +141,7 @@ class Playlist(Library):
         self,
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
-        library = self.__verify_and_get_library("EXPORT")
+        library = self.verify_and_get_library("EXPORT")
         service = SongMusicPlaylistCompositeService(
             bootstrap_paths_dto.config_dir / "playlists.db"
         )
@@ -169,7 +169,7 @@ class Playlist(Library):
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
         op_type = "IMPORT"
-        library = self.__verify_and_get_library(op_type)
+        library = self.verify_and_get_library(op_type)
         playlist_names = [x.name for x in self.music_playlists_dto]
 
         local_track_count = len(PathOps.get_local_files(self.locations))
@@ -230,14 +230,14 @@ class Playlist(Library):
             plex_playlist = []
 
     def delete_songs(self, songs: list[SongDTO]) -> None:
-        library = self.__verify_and_get_library("DELETE SONG")
+        library = self.verify_and_get_library("DELETE SONG")
         playlist = library.playlist(self.name)
         tracks = playlist.items()
         known, _ = PlexOps.filter_tracks(tracks, songs)
         playlist.removeItems(known)
 
     def add_songs(self, songs: list[SongDTO]) -> None:
-        library = self.__verify_and_get_library("ADD SONG")
+        library = super().verify_and_get_library("ADD SONG")
         library_tracks = library.searchTracks()
         known, _ = PlexOps.filter_tracks(library_tracks, songs)
         playlist = library.playlist(self.name)

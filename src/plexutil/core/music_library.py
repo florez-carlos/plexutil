@@ -43,7 +43,7 @@ class MusicLibrary(Library):
     def create(self) -> None:
         super().create()
 
-        library = self.__verify_and_get_library("CREATE")
+        library = self.verify_and_get_library("CREATE")
 
         part = ""
 
@@ -83,7 +83,7 @@ class MusicLibrary(Library):
         # This triggers a refresh of the library
         # self.plex_server.library.sections()
 
-        library = library.__verify_and_get_library("CREATE")
+        library = self.verify_and_get_library("CREATE")
 
         # TODO: Should this be here?
         local_files = PathOps.get_local_files(self.locations)

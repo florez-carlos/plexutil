@@ -54,7 +54,7 @@ class TVLibrary(Library):
             language=self.language.value,
         )
 
-        library = self.__verify_and_get_library("CREATE")
+        library = self.verify_and_get_library("CREATE")
 
         library.editAdvanced(**self.preferences.tv)
 
@@ -74,7 +74,7 @@ class TVLibrary(Library):
             for show in shows:
                 show.editAdvanced(languageOverride=language.value)
 
-            self.__verify_and_get_library("CREATE")
+            self.verify_and_get_library("CREATE")
 
     def delete(self) -> None:
         return super().delete()

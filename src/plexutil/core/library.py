@@ -54,13 +54,18 @@ class Library(ABC):
         self.locations = locations
         self.language = language
         self.preferences = preferences
-        library = self.plex_server.library.search(
-            title=name, libtype=library_type.value
-        )
-        if library:
-            self.library = library[0]
-        else:
-            self.library = None
+        self.library = None
+
+        sections = self.plex_server.library.sections()
+        filtered_sections = []
+
+        for section in sections:
+            if LibraryType.is_eq(self.library_type, section):
+                filtered_sections.append(section)
+
+        for filtered_section in filtered_sections:
+            if filtered_section.name == self.name:
+                self.library = filtered_section
 
     @abstractmethod
     def create(self) -> None:
@@ -206,14 +211,6 @@ class Library(ABC):
             PlexUtilLogger.get_logger().debug(debug)
             return []
 
-    def get_library_or_error(self, op_type: str) -> LibrarySection:
-        if self.library:
-            return self.library
-        else:
-            description = f"Library {self.name} does not exist"
-
-            raise LibraryOpError(op_type, self.library_type, description)
-
     def __log_library(
         self,
         operation: str,
@@ -242,7 +239,15 @@ class Library(ABC):
         else:
             PlexUtilLogger.get_console_logger().info(info)
 
-    def __verify_and_get_library(self, op_type: str) -> LibrarySection:
+    def get_library_or_error(self, op_type: str) -> LibrarySection:
+        if self.library:
+            return self.library
+        else:
+            description = f"Library {self.name} does not exist"
+
+            raise LibraryOpError(op_type, self.library_type, description)
+
+    def verify_and_get_library(self, op_type: str) -> LibrarySection:
         library = self.get_library_or_error(op_type)
 
         if LibraryType.is_eq(LibraryType.MOVIE, library) or LibraryType.is_eq(

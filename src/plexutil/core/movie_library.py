@@ -33,7 +33,7 @@ class MovieLibrary(Library):
 
     def create(self) -> None:
         super().create()
-        library = self.__verify_and_get_library("CREATE")
+        library = self.verify_and_get_library("CREATE")
         library.add(
             name=self.name,
             type=self.library_type.value,
@@ -46,7 +46,7 @@ class MovieLibrary(Library):
         # This line triggers a refresh of the library
         # self.plex_server.library.sections()
 
-        library = self.__verify_and_get_library("CREATE")
+        library = self.verify_and_get_library("CREATE")
         library.editAdvanced(**self.preferences.movie)
 
     def delete(self) -> None:
