@@ -187,7 +187,7 @@ class FileImporter(Static):
 
         for src_config in src_configs:
             for item in src_config.iterdir():
-                if item.is_file():
+                if item.is_dir():
                     continue
 
                 src_file_name = item.name
