@@ -11,7 +11,7 @@ from plexapi.library import (
 
 
 class LibraryType(Enum):
-    MUSIC = "track"  # track 10
+    MUSIC = "music"
     TV = "show"
     MOVIE = "movie"
     MUSIC_PLAYLIST = "audio"
