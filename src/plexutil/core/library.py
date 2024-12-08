@@ -64,7 +64,7 @@ class Library(ABC):
                 filtered_sections.append(section)
 
         for filtered_section in filtered_sections:
-            if filtered_section.name == self.name:
+            if filtered_section.title == self.name:
                 self.library = filtered_section
 
     @abstractmethod
