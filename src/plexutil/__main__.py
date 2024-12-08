@@ -136,7 +136,7 @@ def main() -> None:
                     plex_server=plex_server,
                     language=language,
                     music_playlists_dto=[music_playlist_dto],
-                    library_type=library_type,
+                    library_type=LibraryType.MUSIC,
                     name=library_name,
                     locations=locations,
                 )
