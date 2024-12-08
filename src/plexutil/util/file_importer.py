@@ -170,7 +170,7 @@ class FileImporter(Static):
         return toml.load(PathOps.get_project_root().parent / "pyproject.toml")
 
     @staticmethod
-    def populate_config(bootstrap_paths_dto: BootstrapPathsDTO) -> None:
+    def populate_sample(bootstrap_paths_dto: BootstrapPathsDTO) -> None:
         dst_configs = []
         for config in bootstrap_paths_dto.config_dir.iterdir():
             dst_configs.append(config.name)
