@@ -3,8 +3,8 @@ import json
 import logging
 import os
 import platform
-import time
 import shutil
+import time
 from pathlib import Path
 
 import toml
@@ -171,30 +171,22 @@ class FileImporter(Static):
 
     @staticmethod
     def populate_config(bootstrap_paths_dto: BootstrapPathsDTO) -> None:
-
         dst_configs = []
         for config in bootstrap_paths_dto.config_dir.iterdir():
             dst_configs.append(config.name)
 
         manifests = (
-            PathOps.get_project_root()
-            / "plexutil"
-            / "sample"
-            / "manifests"
+            PathOps.get_project_root() / "plexutil" / "sample" / "manifests"
         )
 
         preferences = (
-            PathOps.get_project_root()
-            / "plexutil"
-            / "sample"
-            / "preferences"
+            PathOps.get_project_root() / "plexutil" / "sample" / "preferences"
         )
-        
+
         src_configs = [manifests, preferences]
-        
+
         for src_config in src_configs:
             for item in src_config.iterdir():
-
                 if item.is_file():
                     continue
 
@@ -204,7 +196,6 @@ class FileImporter(Static):
                     continue
 
                 shutil.copy2(item, bootstrap_paths_dto.config_dir)
-
 
     @staticmethod
     def bootstrap() -> BootstrapPathsDTO:
