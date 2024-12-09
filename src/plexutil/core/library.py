@@ -67,6 +67,9 @@ class Library(ABC):
         for filtered_section in filtered_sections:
             if filtered_section.title == self.name:
                 self.library = filtered_section
+                self.name = self.library.title
+                self.library_type = LibraryType.get_from_section(self.library)
+                self.locations = self.library.locations
 
     @abstractmethod
     def create(self) -> None:
@@ -158,14 +161,6 @@ class Library(ABC):
 
         if tvdb_ids is None:
             tvdb_ids = []
-
-        debug = (
-            "Performing query:\n"
-            f"Name: {self.name}\n"
-            f"Library Type: {self.library_type.value}\n"
-            f"TVDB Ids: {tvdb_ids}\n"
-        )
-        PlexUtilLogger.get_logger().debug(debug)
 
         try:
             library = self.get_library_or_error("QUERY")
