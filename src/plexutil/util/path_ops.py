@@ -47,6 +47,16 @@ class PathOps(Static):
     def get_local_files(paths: list[Path]) -> list[LocalFileDTO]:
         files = []
 
+        filtered_paths = []
+        for path in paths:
+            if isinstance(path, Path):
+                filtered_paths.append(path)
+            elif isinstance(path, str):
+                filtered_paths.append(Path(path))
+            else:
+                description = f"Unsupported local file type: {type(path)!s}"
+                raise ValueError(description)
+
         for path in paths:
             if path.is_file():
                 file_name = path.stem
