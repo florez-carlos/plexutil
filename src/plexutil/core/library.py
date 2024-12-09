@@ -235,12 +235,22 @@ class Library(ABC):
             PlexUtilLogger.get_console_logger().info(info)
 
     def get_library_or_error(self, op_type: str) -> LibrarySection:
-        if self.library:
-            return self.library
-        else:
-            description = f"Library {self.name} does not exist"
 
-            raise LibraryOpError(op_type, self.library_type, description)
+        sections = self.plex_server.library.sections()
+        filtered_sections = []
+
+        for section in sections:
+            if LibraryType.is_eq(self.library_type, section):
+                filtered_sections.append(section)
+
+        for filtered_section in filtered_sections:
+            if filtered_section.title == self.name:
+                self.library = filtered_section
+                return filtered_section
+
+        description = f"Library {self.name} does not exist"
+
+        raise LibraryOpError(op_type, self.library_type, description)
 
     def verify_and_get_library(self, op_type: str) -> LibrarySection:
         library = self.get_library_or_error(op_type)
