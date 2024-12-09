@@ -29,6 +29,7 @@ class Playlist(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
+        playlist_name: str,
         name: str = LibraryName.MUSIC.value,
         library_type: LibraryType = LibraryType.MUSIC_PLAYLIST,
         music_playlists_dto: list[MusicPlaylistDTO] = [],
@@ -44,6 +45,7 @@ class Playlist(Library):
             language,
             LibraryPreferencesDTO(),
         )
+        self.playlist_name = playlist_name
         self.music_playlists_dto = music_playlists_dto
 
     def create(self) -> None:
@@ -240,5 +242,5 @@ class Playlist(Library):
         library = super().verify_and_get_library("ADD SONG")
         library_tracks = library.searchTracks()
         known, _ = PlexOps.filter_tracks(library_tracks, songs)
-        playlist = library.playlist(self.name)
+        playlist = library.playlist(self.playlist_name)
         playlist.addItems(known)
