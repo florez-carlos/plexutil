@@ -255,12 +255,11 @@ class Library(ABC):
             raise NotImplementedError
 
         library.update()
-        if (
-            LibraryType.is_eq(LibraryType.MUSIC, library)
-            | LibraryType.is_eq(LibraryType.MUSIC_PLAYLIST, library)
+        if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
+            LibraryType.MUSIC_PLAYLIST, library
         ):
             tracks = library.searchTracks()
-            self.poll(50, len(tracks), 10)
+            self.poll(100, len(tracks), 10)
             PlexOps.validate_local_files(tracks, self.locations)
 
         return library
