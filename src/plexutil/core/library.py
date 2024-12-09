@@ -10,6 +10,7 @@ from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
 )
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
@@ -259,7 +260,8 @@ class Library(ABC):
             LibraryType.MUSIC_PLAYLIST, library
         ):
             tracks = library.searchTracks()
-            self.poll(100, len(tracks), 10)
+            local_files = PathOps.get_local_files(self.locations)
+            self.poll(100, len(local_files), 10)
             PlexOps.validate_local_files(tracks, self.locations)
 
         return library
