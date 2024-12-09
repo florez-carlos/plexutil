@@ -113,10 +113,10 @@ class PlexOps(Static):
 
         _, unknown = PlexOps.filter_tracks(tracks, songs)
         if unknown:
-            description = (
-                f"These local songs are unknown to the plex server:\n"
-                f"{unknown!s}"
-            )
+            description = "These local songs are unknown to the plex server:\n"
+            for u in unknown:
+                description = description + f"-> {u.name}.{u.extension}\n"
+
             raise LibraryIllegalStateError(description)
 
     @staticmethod
