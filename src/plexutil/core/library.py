@@ -124,7 +124,6 @@ class Library(ABC):
 
         PlexUtilLogger.get_logger().debug(debug)
 
-        library = self.get_library_or_error("POLL")
         with alive_bar(init_offset) as bar:
             attempts = 0
             display_count = 0
@@ -256,8 +255,12 @@ class Library(ABC):
             raise NotImplementedError
 
         library.update()
-        if LibraryType.is_eq(LibraryType.MOVIE, library):
+        if (
+            LibraryType.is_eq(LibraryType.MUSIC, library)
+            | LibraryType.is_eq(LibraryType.MUSIC_PLAYLIST, library)
+        ):
             tracks = library.searchTracks()
+            self.poll(50, len(tracks), 10)
             PlexOps.validate_local_files(tracks, self.locations)
 
         return library
