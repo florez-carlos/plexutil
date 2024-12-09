@@ -137,7 +137,7 @@ def main() -> None:
                     language=language,
                     music_playlists_dto=[music_playlist_dto],
                     library_type=LibraryType.MUSIC,
-                    name=library_name,
+                    name=playlist_name,
                     locations=locations,
                 )
             case LibraryType.MOVIE:
