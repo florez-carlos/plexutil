@@ -57,7 +57,7 @@ class PathOps(Static):
                 description = f"Unsupported local file type: {type(path)!s}"
                 raise ValueError(description)
 
-        for path in paths:
+        for path in filtered_paths:
             if path.is_file():
                 file_name = path.stem
                 file_extension = path.suffix.rsplit(".")[1]
