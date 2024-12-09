@@ -32,9 +32,7 @@ class LibraryType(Enum):
         return False
 
     @staticmethod
-    def get_from_section(
-        library_section: LibrarySection
-    ) -> LibraryType:
+    def get_from_section(library_section: LibrarySection) -> LibraryType:
         match library_section:
             case MovieSection():
                 return LibraryType.MOVIE
@@ -44,4 +42,3 @@ class LibraryType(Enum):
                 return LibraryType.TV
             case _:
                 return LibraryType.MUSIC
-            

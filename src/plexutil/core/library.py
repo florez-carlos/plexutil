@@ -235,7 +235,6 @@ class Library(ABC):
             PlexUtilLogger.get_console_logger().info(info)
 
     def get_library_or_error(self, op_type: str) -> LibrarySection:
-
         sections = self.plex_server.library.sections()
         filtered_sections = []
 
@@ -264,9 +263,9 @@ class Library(ABC):
         if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
             LibraryType.MUSIC_PLAYLIST, library
         ):
-            tracks = library.searchTracks()
             local_files = PathOps.get_local_files(self.locations)
             self.poll(100, len(local_files), 10)
+            tracks = library.searchTracks()
             PlexOps.validate_local_files(tracks, self.locations)
 
         return library

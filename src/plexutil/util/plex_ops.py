@@ -115,7 +115,7 @@ class PlexOps(Static):
         if unknown:
             description = "These local songs are unknown to the plex server:\n"
             for u in unknown:
-                description = description + f"-> {u.name}.{u.extension}\n"
+                description = description + f"-> {u.name}.{u.extension.value}\n"
 
             raise LibraryIllegalStateError(description)
 

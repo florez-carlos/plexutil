@@ -239,7 +239,7 @@ class Playlist(Library):
         playlist.removeItems(known)
 
     def add_songs(self, songs: list[SongDTO]) -> None:
-        library = super().verify_and_get_library("ADD SONG")
+        library = self.verify_and_get_library("ADD SONG")
         library_tracks = library.searchTracks()
         known, _ = PlexOps.filter_tracks(library_tracks, songs)
         playlist = library.playlist(self.playlist_name)
