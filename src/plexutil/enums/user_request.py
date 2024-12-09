@@ -78,13 +78,16 @@ class UserRequest(Enum):
                 | UserRequest.DELETE_MUSIC_LIBRARY
                 | UserRequest.ADD_SONGS_TO_MUSIC_LIBRARY
                 | UserRequest.DELETE_SONGS_FROM_MUSIC_LIBRARY
-                | UserRequest.IMPORT_MUSIC_PLAYLIST
+            ):
+                return LibraryType.MUSIC
+            case (
+                UserRequest.IMPORT_MUSIC_PLAYLIST
                 | UserRequest.CREATE_MUSIC_PLAYLIST
                 | UserRequest.DELETE_MUSIC_PLAYLIST
                 | UserRequest.EXPORT_MUSIC_PLAYLIST
                 | UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST
                 | UserRequest.DELETE_SONGS_FROM_MUSIC_PLAYLIST
             ):
-                return LibraryType.MUSIC
+                return LibraryType.MUSIC_PLAYLIST
             case _:
                 return LibraryType.MUSIC
