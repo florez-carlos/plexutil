@@ -82,7 +82,7 @@ class PlexOps(Static):
 
         for song in songs:
             if song in track_song:
-                filtered_tracks.append(track_song)
+                filtered_tracks.append(track_song[song])
             else:
                 unknown_songs.append(song)
 
