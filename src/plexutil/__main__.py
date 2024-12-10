@@ -122,7 +122,7 @@ def main() -> None:
         plex_server = PlexServer(baseurl, token)
         library = None
 
-        match instructions_dto.library_type:
+        match library_type:
             case LibraryType.MUSIC:
                 library = MusicLibrary(
                     plex_server=plex_server,
