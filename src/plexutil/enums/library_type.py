@@ -20,16 +20,14 @@ class LibraryType(Enum):
     def is_eq(
         library_type: LibraryType, library_section: LibrarySection
     ) -> bool:
-        if (
+        return (
             isinstance(library_section, MovieSection)
             and library_type is LibraryType.MOVIE
             or isinstance(library_section, MusicSection)
             and library_type is LibraryType.MUSIC
             or isinstance(library_section, ShowSection)
             and library_type is LibraryType.TV
-        ):
-            return True
-        return False
+        )
 
     @staticmethod
     def get_from_section(library_section: LibrarySection) -> LibraryType:

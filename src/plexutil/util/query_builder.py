@@ -52,7 +52,7 @@ class QueryBuilder:
                 continue
 
             if isinstance(v, list):
-                v = ",".join(v)
+                v = ",".join(v)  # noqa: PLW2901
 
             v = urllib.parse.quote(v)  # noqa: PLW2901
 

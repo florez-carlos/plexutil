@@ -6,7 +6,7 @@ class ServerConfigMapper:
     def get_dto(self, entity: ServerConfigEntity) -> ServerConfigDTO:
         return ServerConfigDTO(
             host=str(entity.host),
-            port=int(entity.port),  # pyright: ignore
+            port=int(entity.port),  # pyright: ignore [reportArgumentType]
             token=str(entity.token),
         )
 

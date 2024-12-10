@@ -1,15 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.enums.language import Language
-from plexutil.enums.library_type import LibraryType
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from plexutil.enums.library_type import LibraryType
     from plexutil.enums.user_request import UserRequest
+
+
+def create_server_config() -> ServerConfigDTO:
+    return ServerConfigDTO()
 
 
 @dataclass(frozen=True)
@@ -18,7 +23,9 @@ class UserInstructionsDTO:
     library_type: LibraryType
     library_name: str
     playlist_name: str
-    server_config_dto: ServerConfigDTO = ServerConfigDTO()
+    server_config_dto: ServerConfigDTO = field(
+        default_factory=create_server_config
+    )
     is_show_configuration: bool = False
     is_show_configuration_token: bool = False
     language: Language = Language.ENGLISH_US

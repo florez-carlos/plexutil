@@ -95,8 +95,8 @@ def main() -> None:
                 )
             else:
                 description = (
-                    description
-                    + "\n\nINFO: To show token use --show_configuration_token\n"
+                    description + "\n\nINFO: To show token use"
+                    "--show_configuration_token\n"
                 )
 
             PlexUtilLogger.get_console_logger().info(description)

@@ -12,7 +12,7 @@ class ServerConfig:
         self,
         bootstrap_paths_dto: BootstrapPathsDTO,
         server_config_dto: ServerConfigDTO,
-    ):
+    ) -> None:
         self.server_config_dto = server_config_dto
         self.service = ServerConfigService(
             bootstrap_paths_dto.config_dir / "config.db"
@@ -23,13 +23,11 @@ class ServerConfig:
         server_config_dto = self.mapper.get_dto(self.service.get())
         token = TokenManager.decrypt(server_config_dto.token)
 
-        dto = ServerConfigDTO(
+        return ServerConfigDTO(
             host=server_config_dto.host,
             port=server_config_dto.port,
             token=token,
         )
-
-        return dto
 
     def save(self) -> ServerConfigDTO:
         if not self.server_config_dto.token:

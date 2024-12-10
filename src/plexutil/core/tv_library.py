@@ -1,10 +1,16 @@
-from pathlib import Path
+from __future__ import annotations
 
-from plexapi.server import PlexServer
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from plexapi.server import PlexServer
+
+    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+    from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 
 from plexutil.core.library import Library
-from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -50,7 +56,7 @@ class TVLibrary(Library):
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=self.locations,  # pyright: ignore
+            location=self.locations,  # pyright: ignore [reportArgumentType]
             language=self.language.value,
         )
 

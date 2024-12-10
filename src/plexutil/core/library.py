@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List
-
-from plexapi.library import LibrarySection
+from typing import TYPE_CHECKING
 
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
@@ -17,6 +15,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.audio import Audio
+    from plexapi.library import LibrarySection
     from plexapi.server import PlexServer
     from plexapi.video import Video
 
@@ -43,7 +42,7 @@ class Library(ABC):
         library_type: LibraryType,
         agent: Agent,
         scanner: Scanner,
-        locations: List[Path],
+        locations: list[Path],
         language: Language,
         preferences: LibraryPreferencesDTO,
     ) -> None:
@@ -58,11 +57,11 @@ class Library(ABC):
         self.library = None
 
         sections = self.plex_server.library.sections()
-        filtered_sections = []
-
-        for section in sections:
-            if LibraryType.is_eq(self.library_type, section):
-                filtered_sections.append(section)
+        filtered_sections = [
+            section
+            for section in sections
+            if LibraryType.is_eq(self.library_type, section)
+        ]
 
         for filtered_section in filtered_sections:
             if filtered_section.title == self.name:
@@ -236,11 +235,11 @@ class Library(ABC):
 
     def get_library_or_error(self, op_type: str) -> LibrarySection:
         sections = self.plex_server.library.sections()
-        filtered_sections = []
-
-        for section in sections:
-            if LibraryType.is_eq(self.library_type, section):
-                filtered_sections.append(section)
+        filtered_sections = [
+            section
+            for section in sections
+            if LibraryType.is_eq(self.library_type, section)
+        ]
 
         for filtered_section in filtered_sections:
             if filtered_section.title == self.name:

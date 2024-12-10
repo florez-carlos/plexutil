@@ -1,6 +1,12 @@
-from pathlib import Path
+from __future__ import annotations
 
-from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
+
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
 from plexutil.mapper.song_mapper import SongMapper
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
@@ -12,7 +18,7 @@ from plexutil.service.song_service import SongService
 
 
 class SongMusicPlaylistCompositeService:
-    def __init__(self, db_path: Path):
+    def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
 
     def get(
@@ -70,10 +76,7 @@ class SongMusicPlaylistCompositeService:
 
                 playlists[music_playlist_dto.name].songs.append(song_dto)
 
-            result = []
-            for _, v in playlists.items():
-                result.append(v)
-            return result
+            return list(playlists.values())
 
     def add(self, music_playlist_dto: MusicPlaylistDTO) -> None:
         self.add_many([music_playlist_dto])
@@ -94,19 +97,14 @@ class SongMusicPlaylistCompositeService:
             ]
             music_playlist_service.add_many(playlists)
 
-            songs = []
-            for music_playlist_dto in music_playlist_dtos:
-                songs.append(
-                    [
-                        song_mapper.get_entity(x)
-                        for x in music_playlist_dto.songs
-                    ]
-                )
+            songs = [
+                [song_mapper.get_entity(x) for x in music_playlist_dto.songs]
+                for music_playlist_dto in music_playlist_dtos
+            ]
 
             flattened_songs = [item for sublist in songs for item in sublist]
             song_service.add_many(flattened_songs)
 
-            to_save = []
             for music_playlist_dto in music_playlist_dtos:
                 playlist = music_playlist_service.get(
                     music_playlist_mapper.get_entity(music_playlist_dto)
@@ -115,12 +113,10 @@ class SongMusicPlaylistCompositeService:
                     song_mapper.get_entity(x) for x in music_playlist_dto.songs
                 ]
                 songs = song_service.get_many(songs)
-                for song in songs:
-                    to_save.append(
-                        SongMusicPlaylistEntity(
-                            playlist=playlist.id, song=song.id
-                        )
-                    )
+                to_save = [
+                    SongMusicPlaylistEntity(playlist=playlist.id, song=song.id)
+                    for song in songs
+                ]
 
                 bulk = [(entity.playlist, entity.song) for entity in to_save]
 

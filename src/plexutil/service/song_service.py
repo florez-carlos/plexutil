@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
 
 from plexutil.model.song_entity import SongEntity
 from plexutil.service.db_manager import db_manager
@@ -35,7 +39,7 @@ class SongService:
             )
 
     def save(self, entity: SongEntity) -> SongEntity:
-        force_insert = False if self.exists(entity) else True
+        force_insert = self.exists(entity)
 
         with db_manager(self.db_path, [SongEntity]):
             return entity.save(force_insert=force_insert)

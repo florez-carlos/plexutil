@@ -47,7 +47,8 @@ class Prompt(Static):
             nargs="+",
             help=(
                 "Songs to be passed to a musical request, "
-                'i.e create_music_playlist --songs "path/to/song" "path_to_song"'
+                'i.e create_music_playlist --songs "path/to/song"'
+                '" path_to_song"'
             ),
             default=[],
         )
@@ -155,7 +156,6 @@ class Prompt(Static):
             help=("Displays version"),
         )
 
-        # args = parser.parse_args()
         args, unknown = parser.parse_known_args()
 
         if unknown:

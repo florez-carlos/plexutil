@@ -1,9 +1,15 @@
-from pathlib import Path
+from __future__ import annotations
 
-from plexapi.server import PlexServer
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from plexapi.server import PlexServer
+
+    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 
 from plexutil.core.library import Library
-from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName

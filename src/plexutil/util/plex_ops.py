@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 
-from plexapi.audio import Track
-from plexapi.server import Playlist
-
-from plexutil.dto.local_file_dto import LocalFileDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.library_illegal_state_error import (
@@ -19,9 +14,13 @@ from plexutil.static import Static
 from plexutil.util.path_ops import PathOps
 
 if TYPE_CHECKING:
-    from plexapi.server import PlexServer
+    from pathlib import Path
+
+    from plexapi.audio import Track
+    from plexapi.server import Playlist, PlexServer
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+    from plexutil.dto.local_file_dto import LocalFileDTO
 
 
 class PlexOps(Static):
@@ -56,7 +55,7 @@ class PlexOps(Static):
     def filter_tracks(
         tracks: list[Track],
         songs: list[SongDTO],
-    ) -> Tuple[list[Track], list[SongDTO]]:
+    ) -> tuple[list[Track], list[SongDTO]]:
         """
         Filters the provided tracks with the provided songs,
         return as 1st element in tuple the filtered tracks,

@@ -1,12 +1,18 @@
-from pathlib import Path
+from __future__ import annotations
 
-from plexapi.server import PlexServer
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from plexapi.server import PlexServer
+
+    from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
+    from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
+    from plexutil.dto.song_dto import SongDTO
 
 from plexutil.core.library import Library
-from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
-from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -30,9 +36,9 @@ class Playlist(Library):
         plex_server: PlexServer,
         locations: list[Path],
         playlist_name: str,
+        music_playlists_dto: list[MusicPlaylistDTO],
         name: str = LibraryName.MUSIC.value,
         library_type: LibraryType = LibraryType.MUSIC_PLAYLIST,
-        music_playlists_dto: list[MusicPlaylistDTO] = [],
         language: Language = Language.ENGLISH_US,
     ) -> None:
         super().__init__(
@@ -49,9 +55,9 @@ class Playlist(Library):
         self.music_playlists_dto = music_playlists_dto
 
     def create(self) -> None:
+        op = "CREATE"
         library = self.verify_and_get_library("CREATE")
         tracks = library.searchTracks()
-        locations = library.locations
         # TODO: polling here, validate in poll method?
 
         for music_playlist_dto in self.music_playlists_dto:
@@ -79,7 +85,7 @@ class Playlist(Library):
                     f"type {self.library_type} already exists"
                 )
                 raise LibraryOpError(
-                    "CREATE",
+                    op,
                     self.library_type,
                     description,
                 )

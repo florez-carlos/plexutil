@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ctypes.wintypes
 import json
 import logging
@@ -171,9 +173,9 @@ class FileImporter(Static):
 
     @staticmethod
     def populate_sample(bootstrap_paths_dto: BootstrapPathsDTO) -> None:
-        dst_configs = []
-        for config in bootstrap_paths_dto.config_dir.iterdir():
-            dst_configs.append(config.name)
+        dst_configs = [
+            x.name for x in bootstrap_paths_dto.config_dir.iterdir()
+        ]
 
         manifests = (
             PathOps.get_project_root() / "plexutil" / "sample" / "manifests"

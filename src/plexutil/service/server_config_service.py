@@ -1,4 +1,9 @@
-from pathlib import Path
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 from plexutil.model.server_config_entity import ServerConfigEntity
 from plexutil.service.db_manager import db_manager
@@ -30,11 +35,10 @@ class ServerConfigService:
             )
 
     def save(self, entity: ServerConfigEntity) -> int:
-        force_insert = False if self.exists() else True
+        force_insert = self.exists()
 
         with db_manager(self.db_path, [ServerConfigEntity]):
-            saved = entity.save(force_insert=force_insert)
-            return saved
+            return entity.save(force_insert=force_insert)
 
     def exists(self) -> bool:
         with db_manager(self.db_path, [ServerConfigEntity]):
