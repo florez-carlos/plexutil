@@ -20,12 +20,12 @@ class Language(Enum):
         ]
 
     @staticmethod
-    def get_language_from_str(language_candidate: str) -> Language:
+    def get_from_str(candidate: str) -> Language:
         languages = Language.get_all()
-        language_candidate = language_candidate.lower()
 
         for language in languages:
-            if language_candidate == language.value.lower():
+            if candidate.lower() == language.value.lower():
                 return language
 
-        raise ValueError("Language not supported: " + language_candidate)
+        description = f"Language not supported: {candidate}"
+        raise ValueError(description)
