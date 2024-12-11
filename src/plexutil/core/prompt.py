@@ -167,7 +167,7 @@ class Prompt(Static):
         is_version = args.version
         is_show_configuration = args.show_configuration
         is_show_configuration_token = args.show_configuration_token
-        language = Language.get_language_from_str(args.language)
+        language = Language.get_from_str(args.language)
         plex_server_host = args.plex_server_host
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token

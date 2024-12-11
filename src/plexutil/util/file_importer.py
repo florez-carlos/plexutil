@@ -138,7 +138,7 @@ class FileImporter(Static):
                     for region in regions:
                         region_name = region["name"]
                         ids = region["tvdbIds"]
-                        language = Language.get_language_from_str(
+                        language = Language.get_from_str(
                             language_name + "-" + region_name,
                         )
                         tv_language_manifests_dto.append(
