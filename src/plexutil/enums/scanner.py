@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from enum import Enum
 
 
@@ -13,8 +14,6 @@ class Scanner(Enum):
 
     @staticmethod
     def get_from_str(candidate: str) -> Scanner:
-
-
         for agent in Scanner.get_all():
             if candidate.lower() == agent.value:
                 return agent
