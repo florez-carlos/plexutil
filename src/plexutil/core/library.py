@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+from plexutil.enums.agent import Agent
+from plexutil.enums.language import Language
+from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
@@ -15,17 +19,12 @@ from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from plexapi.audio import Audio
     from plexapi.library import LibrarySection
     from plexapi.server import PlexServer
     from plexapi.video import Video
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-    from plexutil.enums.agent import Agent
-    from plexutil.enums.language import Language
-    from plexutil.enums.scanner import Scanner
 
 from alive_progress import alive_bar
 from plexapi.exceptions import NotFound
