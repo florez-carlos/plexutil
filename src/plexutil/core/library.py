@@ -4,6 +4,9 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from plexutil.exception.library_illegal_state_error import (
+    LibraryIllegalStateError,
+)
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
 )
@@ -54,58 +57,63 @@ class Library(ABC):
         self.locations = locations
         self.language = language
         self.preferences = preferences
-        self.library = None
 
-        sections = self.plex_server.library.sections()
-        filtered_sections = [
-            section
-            for section in sections
-            if LibraryType.is_eq(self.library_type, section)
-        ]
+        library = None
+        try:
+            library = self.get_library()
+        except LibraryOpError:
+            return
 
-        for filtered_section in filtered_sections:
-            if filtered_section.title == self.name:
-                self.library = filtered_section
-                self.name = self.library.title
-                self.library_type = LibraryType.get_from_section(self.library)
-                self.locations = self.library.locations
+        self.locations = self.library.locations
+        self.agent = Agent.get_from_str(library.agent)
+        self.scanner = Scanner.get_from_str(library.scanner)
+        self.locations = [Path(location) for location in library.locations]
+        self.language = Language.get_from_str(library.language)
 
     @abstractmethod
     def create(self) -> None:
-        self.__log_library(operation="CREATE", is_info=True, is_debug=True)
-
-        if self.exists():
-            description = (
-                f"Library {self.name} "
-                f"({self.library.key if self.library else ''}) of "
-                f"type {self.library_type} already exists"
-            )
-            raise LibraryOpError(
-                op_type="CREATE",
-                description=description,
-                library_type=self.library_type,
-            )
+        raise NotImplementedError
 
     @abstractmethod
     def delete(self) -> None:
-        self.__log_library(operation="DELETE", is_info=True, is_debug=True)
+        """
+        Generic Library Delete
 
-        if self.library:
-            self.library.delete()
+        Returns:
+            None: This method does not return a value.
+
+        Raises:
+            LibraryOpError: If Library isn't found
+
+        """
+        op_type = "DELETE"
+        self.__log_library(operation=op_type, is_info=True, is_debug=True)
+
+        library = self.get_library()
+
+        if library:
+            library.delete()
         else:
             description = "Nothing found"
             raise LibraryOpError(
-                op_type="DELETE",
+                op_type=op_type,
                 description=description,
                 library_type=self.library_type,
             )
 
     @abstractmethod
     def exists(self) -> bool:
+        """
+        Generic Library Exists
+
+        Returns:
+            bool: If Library exists
+
+        """
         self.__log_library(
             operation="Check Exists", is_info=True, is_debug=True
         )
-        return bool(self.library)
+        return bool(self.get_library())
 
     def poll(
         self,
@@ -212,6 +220,18 @@ class Library(ABC):
         is_debug: bool = False,
         is_console: bool = False,
     ) -> None:
+        """
+        Private logging template to be used by methods of this class
+
+        Args:
+            opration (str): The type of operation i.e. CREATE DELETE
+            is_info (bool): Should it be logged as INFO
+            is_debug (bool): Should it be logged as DEBUG
+            is_console (bool): Should it be logged with console handler
+
+        Returns:
+            None: This method does not return a value.
+        """
         info = (
             f"{operation} {self.library_type} library: \n"
             f"ID: {self.library.key if self.library else ''}\n"
@@ -221,9 +241,9 @@ class Library(ABC):
             f"Scanner: {self.scanner.value}\n"
             f"Locations: {self.locations!s}\n"
             f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
-            f"{self.preferences.music}\n"
-            f"{self.preferences.tv}\n"
+            f"Movie Preferences: {self.preferences.movie}\n"
+            f"Music Preferences: {self.preferences.music}\n"
+            f"TV Preferences: {self.preferences.tv}\n"
         )
         if not is_console:
             if is_info:
@@ -233,8 +253,19 @@ class Library(ABC):
         else:
             PlexUtilLogger.get_console_logger().info(info)
 
-    def get_library_or_error(self, op_type: str) -> LibrarySection:
+    def get_library(self) -> LibrarySection:
+        """
+        Gets an up-to-date Plex Server Library
+
+        Returns:
+            LibrarySection: A current LibrarySection
+
+        Raises:
+            LibraryOpError: If no library of the same type and name exist
+        """
+
         sections = self.plex_server.library.sections()
+
         filtered_sections = [
             section
             for section in sections
@@ -246,25 +277,46 @@ class Library(ABC):
                 self.library = filtered_section
                 return filtered_section
 
-        description = f"Library {self.name} does not exist"
+        description = f"Library: {self.name} does not exist"
 
+        op_type = "GET_LIBRARY"
         raise LibraryOpError(op_type, self.library_type, description)
 
-    def verify_and_get_library(self, op_type: str) -> LibrarySection:
-        library = self.get_library_or_error(op_type)
+    def probe_library(self) -> None:
+        """
+        Verifies local files match server files, if not then it issues a
+        library update, polls for 1000s or until server matches local files
+
+        Returns:
+            None: This method does not return a value.
+
+        Raises:
+            LibraryIllegalStateError: If local files do not match server
+            NotImplementedError: MOVIE/TV libraries are currently not supported
+        """
+        library = self.get_library()
 
         if LibraryType.is_eq(LibraryType.MOVIE, library) or LibraryType.is_eq(
             LibraryType.TV, library
         ):
             raise NotImplementedError
 
-        library.update()
         if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
             LibraryType.MUSIC_PLAYLIST, library
         ):
             local_files = PathOps.get_local_files(self.locations)
+            tracks = library.searchTracks()
+            try:
+                PlexOps.validate_local_files(tracks, self.locations)
+            except LibraryIllegalStateError:
+                description = (
+                    "Plex Server does not match local files\n"
+                    "A server update is necessary\n"
+                    "This process may take several minutes\n"
+                )
+                PlexUtilLogger.get_logger().info(description)
+                library.update()
+
             self.poll(100, len(local_files), 10)
             tracks = library.searchTracks()
             PlexOps.validate_local_files(tracks, self.locations)
-
-        return library
