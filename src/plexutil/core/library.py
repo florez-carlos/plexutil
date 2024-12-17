@@ -5,6 +5,12 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from plexapi.audio import Track
+from plexapi.video import Movie, Show
+
+from plexutil.dto.local_file_dto import LocalFileDTO
+from plexutil.dto.movie_dto import MovieDTO
+from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.scanner import Scanner
@@ -27,7 +33,6 @@ if TYPE_CHECKING:
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 
 from alive_progress import alive_bar
-from plexapi.exceptions import NotFound
 
 from plexutil.enums.library_type import LibraryType
 from plexutil.exception.library_op_error import LibraryOpError
@@ -119,9 +124,8 @@ class Library(ABC):
         requested_attempts: int = 0,
         expected_count: int = 0,
         interval_seconds: int = 0,
-        tvdb_ids: list[int] | None = None,
     ) -> None:
-        current_count = len(self.query(tvdb_ids))
+        current_count = len(self.query())
         init_offset = abs(expected_count - current_count)
 
         debug = (
@@ -140,7 +144,7 @@ class Library(ABC):
             offset = init_offset
 
             while attempts < requested_attempts:
-                updated_current_count = len(self.query(tvdb_ids))
+                updated_current_count = len(self.query())
                 offset = abs(updated_current_count - current_count)
                 current_count = updated_current_count
 
@@ -159,58 +163,62 @@ class Library(ABC):
                 if attempts >= requested_attempts:
                     raise LibraryPollTimeoutError
 
-    def query(
-        self,
-        tvdb_ids: list[int] | None = None,
-    ) -> list[Audio] | list[Video]:
-        op_type = "QUERY"
+    @abstractmethod
+    def query(self) -> list[Video] | list[Audio]:
+        raise NotImplementedError
 
-        if tvdb_ids is None:
-            tvdb_ids = []
-
-        try:
-            library = self.get_library_or_error("QUERY")
-            if self.library_type is LibraryType.MUSIC:
-                return library.searchTracks()
-
-            elif self.library_type is LibraryType.TV:
-                shows = library.all()
-                shows_filtered = []
-
-                if tvdb_ids:
-                    for show in shows:
-                        guids = show.guids
-                        tvdb_prefix = "tvdb://"
-                        for guid in guids:
-                            if tvdb_prefix in guid.id:
-                                tvdb = guid.id.replace(tvdb_prefix, "")
-                                if int(tvdb) in tvdb_ids:
-                                    shows_filtered.append(show)
-                            else:
-                                description = (
-                                    "Expected ("
-                                    + tvdb_prefix
-                                    + ") but show does not have any: "
-                                    + guid.id
-                                )
-                                LibraryOpError(
-                                    op_type=op_type,
-                                    library_type=self.library_type,
-                                    description=description,
-                                )
-
-                return shows_filtered
-
-            else:
-                raise LibraryUnsupportedError(
-                    op_type=op_type,
-                    library_type=self.library_type,
-                )
-
-        except NotFound:
-            debug = "Received Not Found on a Query operation"
-            PlexUtilLogger.get_logger().debug(debug)
-            return []
+    # def query(
+    #     self,
+    #     tvdb_ids: list[int] | None = None,
+    # ) -> list[Audio] | list[Video]:
+    #     op_type = "QUERY"
+    #
+    #     if tvdb_ids is None:
+    #         tvdb_ids = []
+    #
+    #     try:
+    #         library = self.get_library_or_error("QUERY")
+    #         if self.library_type is LibraryType.MUSIC:
+    #             return library.searchTracks()
+    #
+    #         elif self.library_type is LibraryType.TV:
+    #             shows = library.all()
+    #             shows_filtered = []
+    #
+    #             if tvdb_ids:
+    #                 for show in shows:
+    #                     guids = show.guids
+    #                     tvdb_prefix = "tvdb://"
+    #                     for guid in guids:
+    #                         if tvdb_prefix in guid.id:
+    #                             tvdb = guid.id.replace(tvdb_prefix, "")
+    #                             if int(tvdb) in tvdb_ids:
+    #                                 shows_filtered.append(show)
+    #                         else:
+    #                             description = (
+    #                                 "Expected ("
+    #                                 + tvdb_prefix
+    #                                 + ") but show does not have any: "
+    #                                 + guid.id
+    #                             )
+    #                             LibraryOpError(
+    #                                 op_type=op_type,
+    #                                 library_type=self.library_type,
+    #                                 description=description,
+    #                             )
+    #
+    #             return shows_filtered
+    #
+    #         else:
+    #             raise LibraryUnsupportedError(
+    #                 op_type=op_type,
+    #                 library_type=self.library_type,
+    #             )
+    #
+    #     except NotFound:
+    #         debug = "Received Not Found on a Query operation"
+    #         PlexUtilLogger.get_logger().debug(debug)
+    #         return []
 
     def __log_library(
         self,
@@ -281,6 +289,48 @@ class Library(ABC):
         op_type = "GET_LIBRARY"
         raise LibraryOpError(op_type, self.library_type, description)
 
+    def __get_local_files(
+        self,
+    ) -> list[LocalFileDTO] | list[MovieDTO] | list[TVEpisodeDTO]:
+        library = self.get_library()
+
+        if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
+            LibraryType.MUSIC_PLAYLIST, library
+        ):
+            local_files = PathOps.get_local_files(self.locations)
+        elif LibraryType.is_eq(LibraryType.TV, library):
+            local_files = PathOps.get_local_tv(self.locations)
+        elif LibraryType.is_eq(LibraryType.MOVIE, library):
+            local_files = PathOps.get_local_movie(self.locations)
+        else:
+            op_type = "GET_LOCAL_FILES"
+            raise LibraryUnsupportedError(
+                op_type,
+                LibraryType.get_from_section(library),
+            )
+
+        return local_files
+
+    def __get_plex_files(self) -> list[Show] | list[Track] | list[Movie]:
+        library = self.get_library()
+
+        if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
+            LibraryType.MUSIC_PLAYLIST, library
+        ):
+            plex_files = library.searchTracks()
+        elif LibraryType.is_eq(LibraryType.TV, library):
+            plex_files = library.searchShows()
+        elif LibraryType.is_eq(LibraryType.MOVIE, library):
+            plex_files = library.searchMovies()
+        else:
+            op_type = "GET_PLEX_FILES"
+            raise LibraryUnsupportedError(
+                op_type,
+                LibraryType.get_from_section(library),
+            )
+
+        return plex_files
+
     def probe_library(self) -> None:
         """
         Verifies local files match server files, if not then it issues a
@@ -291,31 +341,30 @@ class Library(ABC):
 
         Raises:
             LibraryIllegalStateError: If local files do not match server
-            NotImplementedError: MOVIE/TV libraries are currently not supported
+            LibraryUnsupportedError: If Library Type isn't supported
         """
         library = self.get_library()
+        local_files = self.__get_local_files()
+        plex_files = self.__get_plex_files()
+        try:
+            PlexOps.validate_local_files(plex_files, self.locations)
+        except LibraryIllegalStateError:
+            description = (
+                "Plex Server does not match local files\n"
+                "A server update is necessary\n"
+                "This process may take several minutes\n"
+            )
+            PlexUtilLogger.get_logger().info(description)
+            library.update()
 
-        if LibraryType.is_eq(LibraryType.MOVIE, library) or LibraryType.is_eq(
-            LibraryType.TV, library
-        ):
-            raise NotImplementedError
+        if LibraryType.is_eq(LibraryType.TV, library):
+            episodes = []
+            for show in plex_files:
+                episodes.extend(show.searchEpisodes())
+            expected_count = len(episodes)
+        else:
+            expected_count = len(local_files)
 
-        if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
-            LibraryType.MUSIC_PLAYLIST, library
-        ):
-            local_files = PathOps.get_local_files(self.locations)
-            tracks = library.searchTracks()
-            try:
-                PlexOps.validate_local_files(tracks, self.locations)
-            except LibraryIllegalStateError:
-                description = (
-                    "Plex Server does not match local files\n"
-                    "A server update is necessary\n"
-                    "This process may take several minutes\n"
-                )
-                PlexUtilLogger.get_logger().info(description)
-                library.update()
-
-            self.poll(100, len(local_files), 10)
-            tracks = library.searchTracks()
-            PlexOps.validate_local_files(tracks, self.locations)
+        self.poll(100, expected_count, 10)
+        plex_files = self.__get_plex_files()
+        PlexOps.validate_local_files(plex_files, self.locations)
