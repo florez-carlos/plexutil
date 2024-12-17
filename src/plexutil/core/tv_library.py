@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from plexapi.video import Video
+
+from plexutil.exception.library_op_error import LibraryOpError
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -25,7 +29,10 @@ class TVLibrary(Library):
         plex_server: PlexServer,
         locations: list[Path],
         preferences: LibraryPreferencesDTO,
+        tvdb_ids: list[int],
         tv_language_manifest_dto: list[TVLanguageManifestDTO],
+        agent: Agent = Agent.TV,
+        scanner: Scanner = Scanner.TV,
         name: str = LibraryName.TV.value,
         language: Language = Language.ENGLISH_US,
     ) -> None:
@@ -33,25 +40,29 @@ class TVLibrary(Library):
             plex_server,
             name,
             LibraryType.TV,
-            Agent.TV,
-            Scanner.TV,
+            agent,
+            scanner,
             locations,
             language,
             preferences,
         )
         self.tv_language_manifest_dto = tv_language_manifest_dto
+        self.tvdb_ids = tvdb_ids
 
     def create(self) -> None:
-        super().create()
+        op_type = "CREATE"
 
-        manifests_dto = self.tv_language_manifest_dto
+        if self.exists():
+            description = f"TV Library '{self.name}' already exists"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.TV,
+                description=description,
+            )
 
-        info = f"Manifests: {manifests_dto}\n"
+        self.__log_library(operation=op_type, is_info=False, is_debug=True)
 
-        PlexUtilLogger.get_logger().info(info)
-        PlexUtilLogger.get_logger().debug(info)
-
-        self.plex_server.library.add(
+        self.get_library().add(
             name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
@@ -60,30 +71,64 @@ class TVLibrary(Library):
             language=self.language.value,
         )
 
-        library = self.verify_and_get_library("CREATE")
+        if self.preferences.tv:
+            self.get_library().editAdvanced(**self.preferences.tv)
 
-        library.editAdvanced(**self.preferences.tv)
+        manifests_dto = self.tv_language_manifest_dto
+        debug = f"Manifests: {manifests_dto}\n"
+        PlexUtilLogger.get_logger().debug(debug)
+
+        self.probe_library()
 
         for manifest_dto in manifests_dto:
             language = manifest_dto.language
             ids = manifest_dto.ids
+            if not ids:
+                continue
 
             info = (
                 f"Checking server tv {language.value} language meets "
                 f"expected count {len(ids)!s}\n"
             )
             PlexUtilLogger.get_logger().info(info)
-            self.poll(100, len(ids), 10, ids)
 
-            shows = []
-
-            for show in shows:
+            for show in self.get_filtered_shows():
                 show.editAdvanced(languageOverride=language.value)
 
-            self.verify_and_get_library("CREATE")
+    def query(self) -> list[Video]:
+        if self.tvdb_ids:
+            return self.get_filtered_shows()
+        else:
+            return self.get_shows()
 
-    def delete(self) -> None:
-        return super().delete()
+    def get_shows(self) -> list[Video]:
+        library = self.get_library()
+        shows = library.all()
+        return shows
 
-    def exists(self) -> bool:
-        return super().exists()
+    def get_filtered_shows(self) -> list[Video]:
+        shows = self.get_shows()
+
+        tvdb_prefix = "tvdb://"
+
+        if not self.tvdb_ids:
+            return []
+
+        id_shows = {}
+        shows_filtered = []
+
+        for show in shows:
+            for guid in show.guids:
+                id = guid.id
+                if tvdb_prefix in id:
+                    tvdb = id.replace(tvdb_prefix, "")
+                    id_shows[int(tvdb)] = show
+
+        for tvdb_id in self.tvdb_ids:
+            if tvdb_id in id_shows:
+                shows_filtered.append(id_shows[tvdb_id])
+            else:
+                description = f"No show in server matches the supplied TVDB ID: {tvdb_id!s}"
+                PlexUtilLogger.get_logger().debug(description)
+
+        return shows_filtered
