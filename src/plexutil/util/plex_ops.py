@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
+from plexapi.video import Movie, Show
+
+from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.song_dto import SongDTO
+from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -29,6 +33,18 @@ class PlexOps(Static):
         plex_server: PlexServer,
         library_preferences_dto: LibraryPreferencesDTO,
     ) -> None:
+        """
+        Sets Plex Server Settings
+
+        Args:
+            plex_server (plexapi.server.PlexServer): A Plex Server instance
+            library_preferences_dto (LibraryPreferencesDTO): Library Preference
+
+
+        Returns:
+            None: This method does not return a value
+
+        """
         server_settings = library_preferences_dto.plex_server_settings
         for setting_id, setting_value in server_settings.items():
             plex_server.settings.get(setting_id).set(setting_value)
@@ -89,7 +105,7 @@ class PlexOps(Static):
 
     @staticmethod
     def validate_local_files(
-        tracks: list[Track],
+        plex_files: list[Track] | list[Show] | list[Movie],
         locations: list[Path],
     ) -> None:
         """
@@ -101,7 +117,8 @@ class PlexOps(Static):
             locations ([Path]): local file locations.
 
         Returns:
-            None, raises error if local files do not match tracks
+            None, raises LibraryIllegalStateError
+            if local files do not match tracks
         """
 
         local_files = PathOps.get_local_files(locations)
@@ -110,14 +127,113 @@ class PlexOps(Static):
             song_dto = PlexOps.local_file_to_song_dto(local_file)
             songs.append(song_dto)
 
-        _, unknown = PlexOps.filter_tracks(tracks, songs)
+        if all(isinstance(plex_file, Track) for plex_file in plex_files):
+            _, unknown = PlexOps.filter_tracks(
+                cast(list[Track], plex_files), songs
+            )
+        elif all(isinstance(plex_file, Show) for plex_file in plex_files):
+            _, unknown = PlexOps.filter_episodes(
+                cast(list[Show], plex_files), songs
+            )
+        elif all(isinstance(plex_file, Movie) for plex_file in plex_files):
+            _, unknown = PlexOps.filter_movies(
+                cast(list[Movie], plex_files), songs
+            )
+        else:
+            # TODO:
+            raise ValueError
+
         if unknown:
-            description = "These local songs are unknown to the plex server:\n"
+            description = "These local files are unknown to the plex server:\n"
             for u in unknown:
-                description = (
-                    description + f"-> {u.name}.{u.extension.value}\n"
+                description = description + f"-> {u}!s\n"
+
+            raise LibraryIllegalStateError(description)
+
+    @staticmethod
+    def filter_episodes(
+        shows: list[Show],
+        episodes: list[TVEpisodeDTO],
+    ) -> tuple[list[Show], list[TVEpisodeDTO]]:
+        plex_tv_episodes = []
+        filtered_episodes = []
+        unknown_episodes = []
+
+        for show in shows:
+            name = show.originalTitle
+            year = int(show.year)
+            for episode in show.episodes():
+                episode_number = episode.seasonEpisode
+                plex_tv_episodes.append(
+                    PathOps.get_episode_from_str(name, year, episode_number)
                 )
 
+        for episode in episodes:
+            if episode not in plex_tv_episodes:
+                unknown_episodes.append(episode)
+            else:
+                filtered_episodes.append(plex_tv_episodes)
+
+        return filtered_episodes, unknown_episodes
+
+    @staticmethod
+    def validate_local_tv(
+        shows: list[Show],
+        locations: list[Path],
+    ) -> None:
+        """
+        Verifies that all local tv files match the provided plex shows
+        in the locations indicated
+
+        Args:
+            shows ([plexapi.video.Show]): plexapi shows.
+            locations ([Path]): local file locations.
+
+        Returns:
+            None, raises LibraryIllegalStateError
+            if local files do not match shows
+        """
+
+        local_tv_episodes = PathOps.get_local_tv(locations)
+
+        _, unknown = PlexOps.filter_episodes(shows, local_tv_episodes)
+        if unknown:
+            description = (
+                "These local episodes are unknown to the plex server:\n"
+            )
+            for u in unknown:
+                description = description + f"{u}"
+            raise LibraryIllegalStateError(description)
+
+    @staticmethod
+    def filter_movies(
+        plex_movies: list[Movie], movies: list[MovieDTO]
+    ) -> tuple[list[Movie], list[MovieDTO]]:
+        filtered_movies = []
+        unknown_movies = []
+
+        for movie in movies:
+            found = [x for x in plex_movies if movie.name == x.title]
+            if found:
+                filtered_movies.extend(found)
+            else:
+                unknown_movies.append(movie)
+
+        return filtered_movies, unknown_movies
+
+    @staticmethod
+    def validate_local_movie(
+        movies: list[Movie], locations: list[Path]
+    ) -> None:
+        local_movie = PathOps.get_local_movie(locations)
+
+        _, unknown = PlexOps.filter_movies(movies, local_movie)
+        if unknown:
+            description = (
+                "These local movies are unknown to the plex server:\n"
+            )
+            for u in unknown:
+                description = description + f"{u}"
             raise LibraryIllegalStateError(description)
 
     @staticmethod
