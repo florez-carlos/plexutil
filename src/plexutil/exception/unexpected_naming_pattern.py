@@ -1,0 +1,2 @@
+class UnexpectedNamingPattern(Exception):
+    pass
