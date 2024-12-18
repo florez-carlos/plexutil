@@ -68,11 +68,19 @@ class Library(ABC):
         except LibraryOpError:
             return
 
-        self.locations = self.library.locations
-        self.agent = Agent.get_from_str(library.agent)
-        self.scanner = Scanner.get_from_str(library.scanner)
-        self.locations = [Path(location) for location in library.locations]
-        self.language = Language.get_from_str(library.language)
+        if library:
+            self.locations = library.locations
+            self.agent = Agent.get_from_str(library.agent)
+            self.scanner = Scanner.get_from_str(library.scanner)
+            self.locations = [Path(location) for location in library.locations]
+            self.language = Language.get_from_str(library.language)
+        else:
+            self.locations = locations
+            self.agent = agent
+            self.scanner = scanner
+            self.locations = locations
+            self.language = language
+
 
     @abstractmethod
     def create(self) -> None:
