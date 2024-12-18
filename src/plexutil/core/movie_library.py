@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from plexapi.video import Video
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -38,8 +40,8 @@ class MovieLibrary(Library):
         )
 
     def create(self) -> None:
-        super().create()
-        library = self.verify_and_get_library("CREATE")
+        library = self.get_library()
+
         library.add(
             name=self.name,
             type=self.library_type.value,
@@ -49,11 +51,11 @@ class MovieLibrary(Library):
             language=self.language.value,
         )
 
-        # This line triggers a refresh of the library
-        # self.plex_server.library.sections()
-
-        library = self.verify_and_get_library("CREATE")
+        library = self.get_library()
         library.editAdvanced(**self.preferences.movie)
+
+    def query(self) -> list[Video]:
+        return self.get_library().searchMovies()
 
     def delete(self) -> None:
         return super().delete()

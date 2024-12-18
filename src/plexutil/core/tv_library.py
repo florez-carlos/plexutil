@@ -103,6 +103,7 @@ class TVLibrary(Library):
 
     def get_shows(self) -> list[Video]:
         library = self.get_library()
+        # TODO: This fetches from ALL lib sections
         shows = library.all()
         return shows
 

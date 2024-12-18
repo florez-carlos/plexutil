@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 
-from plexapi.library import MusicSection
+from plexapi.audio import Audio
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -32,25 +32,19 @@ class MusicLibrary(Library):
         name: str = LibraryName.MUSIC.value,
         language: Language = Language.ENGLISH_US,
     ) -> None:
-        section = plex_server.library.section(name)
-        plex_locations = []
-        if isinstance(section, MusicSection):
-            plex_locations = section.locations
         super().__init__(
             plex_server,
             name,
             LibraryType.MUSIC,
             Agent.MUSIC,
             Scanner.MUSIC,
-            plex_locations or locations,
+            locations,
             language,
             preferences,
         )
 
     def create(self) -> None:
-        super().create()
-
-        library = self.verify_and_get_library("CREATE")
+        library = self.get_library()
 
         part = ""
 
@@ -87,9 +81,6 @@ class MusicLibrary(Library):
                 description=description,
             )
 
-        library = self.verify_and_get_library("CREATE")
-
-        # TODO: Should this be here?
         local_files = PathOps.get_local_files(self.locations)
 
         info = (
@@ -100,6 +91,9 @@ class MusicLibrary(Library):
         PlexUtilLogger.get_logger().info(info)
 
         self.poll(200, len(local_files), 10)
+
+    def query(self) -> list[Audio]:
+        return self.get_library().searchTracks()
 
     def delete(self) -> None:
         return super().delete()

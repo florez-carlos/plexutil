@@ -26,7 +26,6 @@ from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.service.song_music_playlist_composite_service import (
     SongMusicPlaylistCompositeService,
 )
-from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 
@@ -55,16 +54,16 @@ class Playlist(Library):
         self.music_playlists_dto = music_playlists_dto
 
     def create(self) -> None:
-        op = "CREATE"
-        library = self.verify_and_get_library("CREATE")
+        self.probe_library()
+
+        library = self.get_library()
         tracks = library.searchTracks()
-        # TODO: polling here, validate in poll method?
 
         for music_playlist_dto in self.music_playlists_dto:
             songs = music_playlist_dto.songs
             playlist_name = music_playlist_dto.name
 
-            info = (
+            debug = (
                 f"Creating a Playlist: \n"
                 f"Playlist Name: {playlist_name} \n"
                 f"Library Name: {self.name}\n"
@@ -75,20 +74,17 @@ class Playlist(Library):
                 f"Locations: {self.locations!s}\n"
                 f"Language: {self.language.value}\n"
             )
-            PlexUtilLogger.get_logger().info(info)
-            PlexUtilLogger.get_logger().debug(info)
+            PlexUtilLogger.get_logger().debug(debug)
 
             if self.exists():
-                description = (
+                info = (
                     f"Playlist {playlist_name} for "
                     f"Library {self.name} of "
-                    f"type {self.library_type} already exists"
+                    f"type {self.library_type} already exists\n"
+                    f"Skipping...\n"
                 )
-                raise LibraryOpError(
-                    op,
-                    self.library_type,
-                    description,
-                )
+                PlexUtilLogger.get_logger().info(info)
+                continue
 
             library.createPlaylist(
                 title=playlist_name,
@@ -96,28 +92,24 @@ class Playlist(Library):
             )
 
     def delete(self) -> None:
-        library = self.verify_and_get_library("DELETE")
+        library = self.get_library()
+        plex_playlists = library.playlists()
+
         playlist_names = [x.name for x in self.music_playlists_dto]
-        info = (
+        debug = (
             "Deleting music playlists: \n"
             f"Playlists: {playlist_names!s}\n"
             f"Location: {self.locations!s}\n"
+            f"Playlists available in server: {plex_playlists}"
         )
-        PlexUtilLogger.get_logger().info(info)
-        PlexUtilLogger.get_logger().debug(info)
-
-        playlists = library.playlists()
-
-        debug = f"Playlists available in server: {playlists}"
         PlexUtilLogger.get_logger().debug(debug)
 
-        for playlist in playlists:
-            if playlist.title in playlist_names:
-                playlist.delete()
+        for plex_playlist in plex_playlists:
+            if plex_playlist.title in playlist_names:
+                plex_playlist.delete()
 
     def exists(self) -> bool:
-        library = self.verify_and_get_library("EXISTS")
-
+        library = self.get_library()
         plex_playlists = library.playlists()
 
         debug = (
@@ -136,8 +128,6 @@ class Playlist(Library):
             if playlist_name in [x.title for x in plex_playlists]:
                 continue
             all_exist = False
-            debug = "Some or all do not exist"
-            PlexUtilLogger.get_logger().debug(debug)
             break
 
         debug = f"All exist: {all_exist}"
@@ -149,7 +139,7 @@ class Playlist(Library):
         self,
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
-        library = self.verify_and_get_library("EXPORT")
+        library = self.get_library()
         service = SongMusicPlaylistCompositeService(
             bootstrap_paths_dto.config_dir / "playlists.db"
         )
@@ -177,19 +167,11 @@ class Playlist(Library):
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
         op_type = "IMPORT"
-        library = self.verify_and_get_library(op_type)
         playlist_names = [x.name for x in self.music_playlists_dto]
 
-        local_track_count = len(PathOps.get_local_files(self.locations))
+        self.probe_library()
 
-        info = (
-            "Checking server track count "
-            f"meets expected "
-            f"count: {local_track_count!s}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
-        self.poll(10, local_track_count, 10)
-
+        library = self.get_library()
         tracks = library.searchTracks()
         plex_track_dict = {}
         plex_playlist = []
@@ -238,14 +220,14 @@ class Playlist(Library):
             plex_playlist = []
 
     def delete_songs(self, songs: list[SongDTO]) -> None:
-        library = self.verify_and_get_library("DELETE SONG")
+        library = self.get_library()
         playlist = library.playlist(self.name)
         tracks = playlist.items()
         known, _ = PlexOps.filter_tracks(tracks, songs)
         playlist.removeItems(known)
 
     def add_songs(self, songs: list[SongDTO]) -> None:
-        library = self.verify_and_get_library("ADD SONG")
+        library = self.get_library()
         library_tracks = library.searchTracks()
         known, _ = PlexOps.filter_tracks(library_tracks, songs)
         playlist = library.playlist(self.playlist_name)
