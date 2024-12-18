@@ -81,7 +81,6 @@ class Library(ABC):
             self.locations = locations
             self.language = language
 
-
     @abstractmethod
     def create(self) -> None:
         raise NotImplementedError
