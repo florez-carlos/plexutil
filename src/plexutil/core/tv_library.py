@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from plexapi.video import Video
-
 from plexutil.exception.library_op_error import LibraryOpError
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.server import PlexServer
+    from plexapi.video import Video
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
@@ -103,9 +102,7 @@ class TVLibrary(Library):
 
     def get_shows(self) -> list[Video]:
         library = self.get_library()
-        # TODO: This fetches from ALL lib sections
-        shows = library.all()
-        return shows
+        return library.searchShows()
 
     def get_filtered_shows(self) -> list[Video]:
         shows = self.get_shows()
@@ -120,16 +117,19 @@ class TVLibrary(Library):
 
         for show in shows:
             for guid in show.guids:
-                id = guid.id
-                if tvdb_prefix in id:
-                    tvdb = id.replace(tvdb_prefix, "")
+                _id = guid.id
+                if tvdb_prefix in _id:
+                    tvdb = _id.replace(tvdb_prefix, "")
                     id_shows[int(tvdb)] = show
 
         for tvdb_id in self.tvdb_ids:
             if tvdb_id in id_shows:
                 shows_filtered.append(id_shows[tvdb_id])
             else:
-                description = f"No show in server matches the supplied TVDB ID: {tvdb_id!s}"
+                description = (
+                    "No show in server matches "
+                    f"the supplied TVDB ID: {tvdb_id!s}\n"
+                )
                 PlexUtilLogger.get_logger().debug(description)
 
         return shows_filtered

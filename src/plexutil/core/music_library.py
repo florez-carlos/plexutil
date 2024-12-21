@@ -5,11 +5,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexapi.audio import Audio
     from plexapi.server import PlexServer
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-
-from plexapi.audio import Audio
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent

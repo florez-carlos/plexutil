@@ -7,8 +7,8 @@ from plexutil.dto.local_file_dto import LocalFileDTO
 from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.enums.file_type import FileType
-from plexutil.exception.unexpected_naming_pattern import (
-    UnexpectedNamingPattern,
+from plexutil.exception.unexpected_naming_pattern_error import (
+    UnexpectedNamingPatternError,
 )
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
@@ -75,7 +75,7 @@ class PathOps(Static):
                         candidate=child.stem,
                     )
                     episodes.append(tv_episode_dto)
-                except UnexpectedNamingPattern:
+                except UnexpectedNamingPatternError:
                     unknown.append(child.stem)
 
         return episodes, unknown
@@ -170,7 +170,7 @@ class PathOps(Static):
                 f"Could not extract show name, year from: {candidate}\n"
                 f"Expected to see a 'show_name (year)' pattern"
             )
-            raise UnexpectedNamingPattern(description)
+            raise UnexpectedNamingPatternError(description)
 
         return show_name.lower(), int(year)
 
@@ -208,7 +208,7 @@ class PathOps(Static):
 
         else:
             description = f"Did not understand this as an episode: {candidate}"
-            raise UnexpectedNamingPattern(description)
+            raise UnexpectedNamingPatternError(description)
 
     @staticmethod
     def get_project_root() -> Path:

@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from plexapi.video import Video
-
 if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.server import PlexServer
+    from plexapi.video import Video
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 

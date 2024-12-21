@@ -1,2 +1,0 @@
-class UnexpectedNamingPattern(Exception):
-    pass

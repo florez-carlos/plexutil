@@ -5,12 +5,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from plexapi.audio import Track
-from plexapi.video import Movie, Show
-
-from plexutil.dto.local_file_dto import LocalFileDTO
-from plexutil.dto.movie_dto import MovieDTO
-from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.scanner import Scanner
@@ -25,12 +19,15 @@ from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
-    from plexapi.audio import Audio
+    from plexapi.audio import Audio, Track
     from plexapi.library import LibrarySection
     from plexapi.server import PlexServer
-    from plexapi.video import Video
+    from plexapi.video import Movie, Show, Video
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+    from plexutil.dto.local_file_dto import LocalFileDTO
+    from plexutil.dto.movie_dto import MovieDTO
+    from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 
 from alive_progress import alive_bar
 
@@ -173,59 +170,6 @@ class Library(ABC):
     @abstractmethod
     def query(self) -> list[Video] | list[Audio]:
         raise NotImplementedError
-
-    # def query(
-    #     self,
-    #     tvdb_ids: list[int] | None = None,
-    # ) -> list[Audio] | list[Video]:
-    #     op_type = "QUERY"
-    #
-    #     if tvdb_ids is None:
-    #         tvdb_ids = []
-    #
-    #     try:
-    #         library = self.get_library_or_error("QUERY")
-    #         if self.library_type is LibraryType.MUSIC:
-    #             return library.searchTracks()
-    #
-    #         elif self.library_type is LibraryType.TV:
-    #             shows = library.all()
-    #             shows_filtered = []
-    #
-    #             if tvdb_ids:
-    #                 for show in shows:
-    #                     guids = show.guids
-    #                     tvdb_prefix = "tvdb://"
-    #                     for guid in guids:
-    #                         if tvdb_prefix in guid.id:
-    #                             tvdb = guid.id.replace(tvdb_prefix, "")
-    #                             if int(tvdb) in tvdb_ids:
-    #                                 shows_filtered.append(show)
-    #                         else:
-    #                             description = (
-    #                                 "Expected ("
-    #                                 + tvdb_prefix
-    #                                 + ") but show does not have any: "
-    #                                 + guid.id
-    #                             )
-    #                             LibraryOpError(
-    #                                 op_type=op_type,
-    #                                 library_type=self.library_type,
-    #                                 description=description,
-    #                             )
-    #
-    #             return shows_filtered
-    #
-    #         else:
-    #             raise LibraryUnsupportedError(
-    #                 op_type=op_type,
-    #                 library_type=self.library_type,
-    #             )
-    #
-    #     except NotFound:
-    #         debug = "Received Not Found on a Query operation"
-    #         PlexUtilLogger.get_logger().debug(debug)
-    #         return []
 
     def __log_library(
         self,

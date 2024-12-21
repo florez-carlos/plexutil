@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
-from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.song_dto import SongDTO
-from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -20,11 +19,12 @@ from plexutil.util.path_ops import PathOps
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.audio import Track
     from plexapi.server import Playlist, PlexServer
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.local_file_dto import LocalFileDTO
+    from plexutil.dto.movie_dto import MovieDTO
+    from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 
 
 class PlexOps(Static):
