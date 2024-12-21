@@ -90,11 +90,10 @@ class TVLibrary(Library):
         return self.get_section().searchShows()
 
     def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Video]:
-        
         shows = self.get_section().searchShows()
 
         tvdb_prefix = "tvdb://"
-        
+
         if not tvdb_ids:
             return []
 
