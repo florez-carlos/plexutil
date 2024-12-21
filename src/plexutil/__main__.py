@@ -15,6 +15,9 @@ from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.invalid_schema_error import InvalidSchemaError
+from plexutil.exception.library_illegal_state_error import (
+    LibraryIllegalStateError,
+)
 from plexutil.exception.server_config_error import ServerConfigError
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
@@ -216,6 +219,12 @@ def main() -> None:
     except UserError as e:
         sys.tracebacklimit = 0
         description = "\n=====User Error=====\n" f"{e!s}"
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
+    except LibraryIllegalStateError as e:
+        sys.tracebacklimit = 0
+        description = "\n=====Local Library Illegal State=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
