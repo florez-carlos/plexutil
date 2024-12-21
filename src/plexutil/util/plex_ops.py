@@ -146,7 +146,7 @@ class PlexOps(Static):
         if unknown:
             description = "These local files are unknown to the plex server:\n"
             for u in unknown:
-                description = description + f"-> {u}!s\n"
+                description = description + f"-> {u!s}\n"
 
             raise LibraryIllegalStateError(description)
 

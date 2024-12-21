@@ -86,7 +86,7 @@ class PathOps(Static):
 
         for path in paths:
             if not path.is_dir():
-                description = f"Expected to encounter a directory: {path}!s"
+                description = f"Expected to encounter a directory: {path!s}"
                 raise ValueError(description)
 
             name, year = PathOps.get_show_name_and_year_from_str(path.name)
