@@ -240,6 +240,22 @@ class Library(ABC):
         op_type = "GET_LIBRARY"
         raise LibraryOpError(op_type, self.library_type, description)
 
+    def __get_locations(self) -> list[Path]:
+        locations = self.locations
+        normalized = []
+        for location in locations:
+            if isinstance(location, str):
+                normalized.append(PathOps.get_path_from_str(location))
+            elif isinstance(location, Path):
+                normalized.append(location)
+            else:
+                description = (
+                    f"Expected a location but found: {type(location)}\n"
+                )
+                raise ValueError(description)
+
+        return normalized
+
     def __get_local_files(
         self,
     ) -> list[LocalFileDTO] | list[MovieDTO] | list[TVEpisodeDTO]:
