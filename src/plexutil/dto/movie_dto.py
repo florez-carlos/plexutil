@@ -9,6 +9,9 @@ class MovieDTO:
     extension: FileType = FileType.UNKNOWN
     year: int = 0
 
+    def __str__(self) -> str:
+        return f"{self.name} ({self.year}) "
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, MovieDTO):
             return False

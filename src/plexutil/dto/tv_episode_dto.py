@@ -8,6 +8,13 @@ class TVEpisodeDTO:
     season: int = 0
     episode: int = 0
 
+    def __str__(self) -> str:
+        return (
+            self.name + " "
+            f"({self.first_aired_year}): "
+            f"S{self.season:02}E{self.episode:02}"
+        )
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, TVEpisodeDTO):
             return False

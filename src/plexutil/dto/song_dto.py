@@ -8,6 +8,9 @@ class SongDTO:
     name: str = ""
     extension: FileType = FileType.UNKNOWN
 
+    def __str__(self) -> str:
+        return self.name + "." + self.extension.value
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SongDTO):
             return False
