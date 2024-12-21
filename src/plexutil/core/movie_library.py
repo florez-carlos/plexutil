@@ -39,7 +39,7 @@ class MovieLibrary(Library):
         )
 
     def create(self) -> None:
-        library = self.get_library()
+        library = self.get_section()
 
         library.add(
             name=self.name,
@@ -50,11 +50,11 @@ class MovieLibrary(Library):
             language=self.language.value,
         )
 
-        library = self.get_library()
+        library = self.get_section()
         library.editAdvanced(**self.preferences.movie)
 
     def query(self) -> list[Video]:
-        return self.get_library().searchMovies()
+        return self.get_section().searchMovies()
 
     def delete(self) -> None:
         return super().delete()

@@ -56,7 +56,7 @@ class Playlist(Library):
     def create(self) -> None:
         self.probe_library()
 
-        library = self.get_library()
+        library = self.get_section()
         tracks = library.searchTracks()
 
         for music_playlist_dto in self.music_playlists_dto:
@@ -92,7 +92,7 @@ class Playlist(Library):
             )
 
     def delete(self) -> None:
-        library = self.get_library()
+        library = self.get_section()
         plex_playlists = library.playlists()
 
         playlist_names = [x.name for x in self.music_playlists_dto]
@@ -109,7 +109,7 @@ class Playlist(Library):
                 plex_playlist.delete()
 
     def exists(self) -> bool:
-        library = self.get_library()
+        library = self.get_section()
         plex_playlists = library.playlists()
 
         debug = (
@@ -139,7 +139,7 @@ class Playlist(Library):
         self,
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
-        library = self.get_library()
+        library = self.get_section()
         service = SongMusicPlaylistCompositeService(
             bootstrap_paths_dto.config_dir / "playlists.db"
         )
@@ -171,7 +171,7 @@ class Playlist(Library):
 
         self.probe_library()
 
-        library = self.get_library()
+        library = self.get_section()
         tracks = library.searchTracks()
         plex_track_dict = {}
         plex_playlist = []
@@ -220,14 +220,14 @@ class Playlist(Library):
             plex_playlist = []
 
     def delete_songs(self, songs: list[SongDTO]) -> None:
-        library = self.get_library()
+        library = self.get_section()
         playlist = library.playlist(self.name)
         tracks = playlist.items()
         known, _ = PlexOps.filter_tracks(tracks, songs)
         playlist.removeItems(known)
 
     def add_songs(self, songs: list[SongDTO]) -> None:
-        library = self.get_library()
+        library = self.get_section()
         library_tracks = library.searchTracks()
         known, _ = PlexOps.filter_tracks(library_tracks, songs)
         playlist = library.playlist(self.playlist_name)

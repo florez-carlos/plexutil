@@ -43,7 +43,7 @@ class MusicLibrary(Library):
         )
 
     def create(self) -> None:
-        library = self.get_library()
+        library = self.get_section()
 
         part = ""
 
@@ -92,7 +92,7 @@ class MusicLibrary(Library):
         self.poll(200, len(local_files), 10)
 
     def query(self) -> list[Audio]:
-        return self.get_library().searchTracks()
+        return self.get_section().searchTracks()
 
     def delete(self) -> None:
         return super().delete()

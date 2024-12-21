@@ -61,7 +61,7 @@ class TVLibrary(Library):
 
         self.__log_library(operation=op_type, is_info=False, is_debug=True)
 
-        self.get_library().add(
+        self.get_section().add(
             name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
@@ -71,7 +71,7 @@ class TVLibrary(Library):
         )
 
         if self.preferences.tv:
-            self.get_library().editAdvanced(**self.preferences.tv)
+            self.get_section().editAdvanced(**self.preferences.tv)
 
         manifests_dto = self.tv_language_manifest_dto
         debug = f"Manifests: {manifests_dto}\n"
@@ -85,12 +85,6 @@ class TVLibrary(Library):
             if not ids:
                 continue
 
-            info = (
-                f"Checking server tv {language.value} language meets "
-                f"expected count {len(ids)!s}\n"
-            )
-            PlexUtilLogger.get_logger().info(info)
-
             for show in self.get_filtered_shows():
                 show.editAdvanced(languageOverride=language.value)
 
@@ -101,8 +95,7 @@ class TVLibrary(Library):
             return self.get_shows()
 
     def get_shows(self) -> list[Video]:
-        library = self.get_library()
-        return library.searchShows()
+        return  self.get_section().searchShows()
 
     def get_filtered_shows(self) -> list[Video]:
         shows = self.get_shows()

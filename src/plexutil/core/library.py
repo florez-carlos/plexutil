@@ -61,7 +61,7 @@ class Library(ABC):
 
         library = None
         try:
-            library = self.get_library()
+            library = self.get_section()
         except LibraryOpError:
             return
 
@@ -69,14 +69,11 @@ class Library(ABC):
             self.locations = library.locations
             self.agent = Agent.get_from_str(library.agent)
             self.scanner = Scanner.get_from_str(library.scanner)
-            self.locations = [Path(location) for location in library.locations]
+            self.locations = [
+                PathOps.get_path_from_str(location) 
+                for location in library.locations
+            ]
             self.language = Language.get_from_str(library.language)
-        else:
-            self.locations = locations
-            self.agent = agent
-            self.scanner = scanner
-            self.locations = locations
-            self.language = language
 
     @abstractmethod
     def create(self) -> None:
@@ -97,7 +94,7 @@ class Library(ABC):
         op_type = "DELETE"
         self.__log_library(operation=op_type, is_info=True, is_debug=True)
 
-        library = self.get_library()
+        library = self.get_section()
 
         if library:
             library.delete()
@@ -121,7 +118,7 @@ class Library(ABC):
         self.__log_library(
             operation="Check Exists", is_info=True, is_debug=True
         )
-        return bool(self.get_library())
+        return bool(self.get_section())
 
     def poll(
         self,
@@ -211,9 +208,9 @@ class Library(ABC):
         else:
             PlexUtilLogger.get_console_logger().info(info)
 
-    def get_library(self) -> LibrarySection:
+    def get_section(self) -> LibrarySection:
         """
-        Gets an up-to-date Plex Server Library
+        Gets an up-to-date Plex Server Library Section
 
         Returns:
             LibrarySection: A current LibrarySection
@@ -240,26 +237,10 @@ class Library(ABC):
         op_type = "GET_LIBRARY"
         raise LibraryOpError(op_type, self.library_type, description)
 
-    def __get_locations(self) -> list[Path]:
-        locations = self.locations
-        normalized = []
-        for location in locations:
-            if isinstance(location, str):
-                normalized.append(PathOps.get_path_from_str(location))
-            elif isinstance(location, Path):
-                normalized.append(location)
-            else:
-                description = (
-                    f"Expected a location but found: {type(location)}\n"
-                )
-                raise ValueError(description)
-
-        return normalized
-
     def __get_local_files(
         self,
     ) -> list[LocalFileDTO] | list[MovieDTO] | list[TVEpisodeDTO]:
-        library = self.get_library()
+        library = self.get_section()
 
         if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
             LibraryType.MUSIC_PLAYLIST, library
@@ -279,7 +260,7 @@ class Library(ABC):
         return local_files
 
     def __get_plex_files(self) -> list[Show] | list[Track] | list[Movie]:
-        library = self.get_library()
+        library = self.get_section()
 
         if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
             LibraryType.MUSIC_PLAYLIST, library
@@ -310,7 +291,7 @@ class Library(ABC):
             LibraryIllegalStateError: If local files do not match server
             LibraryUnsupportedError: If Library Type isn't supported
         """
-        library = self.get_library()
+        library = self.get_section()
         local_files = self.__get_local_files()
         plex_files = self.__get_plex_files()
         try:
