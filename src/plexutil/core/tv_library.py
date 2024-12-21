@@ -95,7 +95,7 @@ class TVLibrary(Library):
             return self.get_shows()
 
     def get_shows(self) -> list[Video]:
-        return  self.get_section().searchShows()
+        return self.get_section().searchShows()
 
     def get_filtered_shows(self) -> list[Video]:
         shows = self.get_shows()

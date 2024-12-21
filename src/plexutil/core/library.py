@@ -70,7 +70,7 @@ class Library(ABC):
             self.agent = Agent.get_from_str(library.agent)
             self.scanner = Scanner.get_from_str(library.scanner)
             self.locations = [
-                PathOps.get_path_from_str(location) 
+                PathOps.get_path_from_str(location)
                 for location in library.locations
             ]
             self.language = Language.get_from_str(library.language)
