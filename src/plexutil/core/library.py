@@ -63,6 +63,7 @@ class Library(ABC):
         try:
             library = self.get_section()
         except LibraryOpError:
+            # No need to continue if not an existing library
             return
 
         if library:

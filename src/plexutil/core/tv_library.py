@@ -28,7 +28,6 @@ class TVLibrary(Library):
         plex_server: PlexServer,
         locations: list[Path],
         preferences: LibraryPreferencesDTO,
-        tvdb_ids: list[int],
         tv_language_manifest_dto: list[TVLanguageManifestDTO],
         agent: Agent = Agent.TV,
         scanner: Scanner = Scanner.TV,
@@ -46,7 +45,6 @@ class TVLibrary(Library):
             preferences,
         )
         self.tv_language_manifest_dto = tv_language_manifest_dto
-        self.tvdb_ids = tvdb_ids
 
     def create(self) -> None:
         op_type = "CREATE"
@@ -85,24 +83,19 @@ class TVLibrary(Library):
             if not ids:
                 continue
 
-            for show in self.get_filtered_shows():
+            for show in self.get_shows_by_tvdb(ids):
                 show.editAdvanced(languageOverride=language.value)
 
     def query(self) -> list[Video]:
-        if self.tvdb_ids:
-            return self.get_filtered_shows()
-        else:
-            return self.get_shows()
-
-    def get_shows(self) -> list[Video]:
         return self.get_section().searchShows()
 
-    def get_filtered_shows(self) -> list[Video]:
-        shows = self.get_shows()
+    def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Video]:
+        
+        shows = self.get_section().searchShows()
 
         tvdb_prefix = "tvdb://"
-
-        if not self.tvdb_ids:
+        
+        if not tvdb_ids:
             return []
 
         id_shows = {}
@@ -115,7 +108,7 @@ class TVLibrary(Library):
                     tvdb = _id.replace(tvdb_prefix, "")
                     id_shows[int(tvdb)] = show
 
-        for tvdb_id in self.tvdb_ids:
+        for tvdb_id in tvdb_ids:
             if tvdb_id in id_shows:
                 shows_filtered.append(id_shows[tvdb_id])
             else:
