@@ -31,15 +31,13 @@ class PathOps(Static):
 
         Returns:
             A pathlib.Path
-            
+
         Raises:
             ValueError: If path_candidate is not supplied or path doesn't exist
             or path does not meet is_dir_expected/is_file_expected condition
         """
         if not path_candidate:
-            description = (
-                "Expected a path candidate but none supplied "
-            )
+            description = "Expected a path candidate but none supplied "
             raise ValueError(description)
 
         path = Path(path_candidate)
@@ -47,13 +45,13 @@ class PathOps(Static):
         if not path.exists():
             description = f"Path candidate ({path_candidate}) does not exist"
             raise ValueError(description)
-            
+
         if is_dir_expected and not path.is_dir():
             description = (
                 f"Expected a dir for ({path_candidate}) but this is not a dir"
             )
             raise ValueError(description)
-            
+
         if is_file_expected and not path.is_file():
             description = (
                 f"Expected a file for ({path_candidate}) but path not a file"
@@ -77,11 +75,11 @@ class PathOps(Static):
             show_name (str): The name of the TV show
             first_aired_year (int): The year of the TV show
             path (pathlib.Path): The parent directory of the TV show
-        
+
         Returns:
             A tuple of:
             1) [TVEpisodeDTO] for each file found and understood as an episode
-            2) [str] The name of the files encountered that were not 
+            2) [str] The name of the files encountered that were not
             understood as episodes
         """
         episodes = []
