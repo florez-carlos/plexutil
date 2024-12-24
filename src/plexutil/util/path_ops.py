@@ -18,34 +18,45 @@ class PathOps(Static):
     @staticmethod
     def get_path_from_str(
         path_candidate: str,
-        path_candidate_name: str = "",
-        is_dir: bool = False,
-        is_file: bool = False,
+        is_dir_expected: bool = False,
+        is_file_expected: bool = False,
     ) -> Path:
+        """
+        Get pathlib.Path from a str
+
+        Args:
+            path_candidate (str): The likely Path
+            is_dir_expected (bool): Is the path expected to be a dir?
+            is_file_expected (bool): Is the path expected to be a file?
+
+        Returns:
+            A pathlib.Path
+            
+        Raises:
+            ValueError: If path_candidate is not supplied or path doesn't exist
+            or path does not meet is_dir_expected/is_file_expected condition
+        """
         if not path_candidate:
             description = (
-                "Expected a path candidate "
-                f"for {path_candidate_name} but none supplied"
+                "Expected a path candidate but none supplied "
             )
             raise ValueError(description)
 
         path = Path(path_candidate)
 
         if not path.exists():
+            description = f"Path candidate ({path_candidate}) does not exist"
+            raise ValueError(description)
+            
+        if is_dir_expected and not path.is_dir():
             description = (
-                f"Path candidate for {path_candidate_name} does "
-                f"not exist {path_candidate}"
+                f"Expected a dir for ({path_candidate}) but this is not a dir"
             )
             raise ValueError(description)
-        elif is_dir and not path.is_dir():
+            
+        if is_file_expected and not path.is_file():
             description = (
-                f"Expected a dir for {path_candidate_name} but path candidate "
-                f"is not a dir {path_candidate}"
-            )
-            raise ValueError(description)
-        elif is_file and not path.is_file():
-            description = (
-                f"Expected a file for {path_candidate_name} but path "
+                f"Expected a file for ({path_candidate}) but path not a file"
                 f"candidate is not a file {path_candidate}"
             )
             raise ValueError(description)
@@ -56,6 +67,23 @@ class PathOps(Static):
     def __walk_tv_structure(
         show_name: str, first_aired_year: int, path: Path
     ) -> tuple[list[TVEpisodeDTO], list[str]]:
+        """
+        *Private refer to PathOps.get_local_tv()
+        Walks subdirectories in search of TV episodes
+        A TV episode is expected to have a file name with a pattern
+        of S##E##
+
+        Args:
+            show_name (str): The name of the TV show
+            first_aired_year (int): The year of the TV show
+            path (pathlib.Path): The parent directory of the TV show
+        
+        Returns:
+            A tuple of:
+            1) [TVEpisodeDTO] for each file found and understood as an episode
+            2) [str] The name of the files encountered that were not 
+            understood as episodes
+        """
         episodes = []
         unknown = []
 
@@ -82,6 +110,26 @@ class PathOps(Static):
 
     @staticmethod
     def get_local_tv(paths: list[Path]) -> list[TVEpisodeDTO]:
+        """
+        Scans local directories in search of TV episodes
+        A TV episode is expected to have a file name with a pattern of S##E##
+        and a parent directory with a pattern of <series_name> (<year>)
+
+        Expects to see:
+        <series_name> (<year>) *directory
+            |- S01E01
+            |- S01E02
+            ...
+
+        Args:
+            paths (pathlib.Path): The directories to scan
+
+        Returns:
+            [TVEpisodeDTO]: Found episodes
+
+        Raises:
+            ValueError: If any of the parent paths is not a directory
+        """
         episodes = []
 
         for path in paths:
@@ -104,6 +152,17 @@ class PathOps(Static):
 
     @staticmethod
     def get_local_movie(paths: list[Path]) -> list[MovieDTO]:
+        """
+        Scans local directories in search of movies
+        A movie is expected to have a file name or directory name
+        with a pattern of name (year) -optional arbitrary text-
+
+        Args:
+            paths (pathlib.Path): The directories to scan
+
+        Returns:
+            [MovieDTO]: Found movies
+        """
         movies = []
         for path in paths:
             if path.is_dir():
@@ -212,4 +271,10 @@ class PathOps(Static):
 
     @staticmethod
     def get_project_root() -> Path:
+        """
+        Gets the root of this project
+
+        Returns:
+            pathlib.Path: The project's root
+        """
         return Path(__file__).parent.parent.parent
