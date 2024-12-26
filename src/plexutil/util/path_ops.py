@@ -6,6 +6,7 @@ from pathlib import Path
 from plexutil.dto.local_file_dto import LocalFileDTO
 from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.tv_episode_dto import TVEpisodeDTO
+from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.unexpected_naming_pattern_error import (
     UnexpectedNamingPatternError,
@@ -180,7 +181,22 @@ class PathOps(Static):
         return movies
 
     @staticmethod
-    def get_local_files(paths: list[Path]) -> list[LocalFileDTO]:
+    def get_local_songs(paths: list[Path]) -> list[SongDTO]:
+        """
+        Scans local directories in search of songs
+        Songs are expected to be grouped in the same parent directory 
+
+        songs (dir)
+          |-> song.mp3
+          |-> another_song.flac
+
+        Args:
+            paths (pathlib.Path): The directories to scan
+
+        Returns:
+            [SongDTO]: Found songs
+
+        """
         files = []
 
         for path in paths:
@@ -189,33 +205,40 @@ class PathOps(Static):
                 file_extension = path.suffix.rsplit(".")[1]
 
                 files.append(
-                    LocalFileDTO(
+                    SongDTO(
                         name=file_name,
                         extension=FileType.get_file_type_from_str(
                             file_extension
                         ),
-                        location=path,
                     )
                 )
             else:
-                for item in path.iterdir():
-                    if item.is_file():
-                        file_name = item.stem
-                        file_extension = item.suffix.rsplit(".")[1]
-                        files.append(
-                            LocalFileDTO(
-                                name=file_name,
-                                extension=FileType.get_file_type_from_str(
-                                    file_extension
-                                ),
-                                location=item,
-                            )
-                        )
+                description = (
+                    f"Expected to find a file but got: {path!s}"
+                )
+                raise UnexpectedNamingPatternError(description)
 
         return files
 
     @staticmethod
     def get_show_name_and_year_from_str(candidate: str) -> tuple[str, int]:
+        """
+        Extracts Show name and year from a str,
+        expects to find <show_name> (<year>) pattern
+
+        Args:
+            candidate (str): The likely show_name,year
+
+        Returns:
+            A tuple of:
+            1) show name
+            2) year
+
+        Raises:
+            UnexpectedNamingPatternError: If candiate str does not match
+            the expected parttern
+        
+        """
         pattern = r"([a-zA-Z\s]+)\s\((\d{4})\)"
         match = re.search(pattern, candidate)
 
