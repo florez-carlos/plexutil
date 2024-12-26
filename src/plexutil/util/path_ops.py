@@ -3,10 +3,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from plexutil.dto.local_file_dto import LocalFileDTO
 from plexutil.dto.movie_dto import MovieDTO
-from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.dto.song_dto import SongDTO
+from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.unexpected_naming_pattern_error import (
     UnexpectedNamingPatternError,
@@ -184,7 +183,7 @@ class PathOps(Static):
     def get_local_songs(paths: list[Path]) -> list[SongDTO]:
         """
         Scans local directories in search of songs
-        Songs are expected to be grouped in the same parent directory 
+        Songs are expected to be grouped in the same parent directory
 
         songs (dir)
           |-> song.mp3
@@ -213,9 +212,7 @@ class PathOps(Static):
                     )
                 )
             else:
-                description = (
-                    f"Expected to find a file but got: {path!s}"
-                )
+                description = f"Expected to find a file but got: {path!s}"
                 raise UnexpectedNamingPatternError(description)
 
         return files
@@ -237,7 +234,7 @@ class PathOps(Static):
         Raises:
             UnexpectedNamingPatternError: If candiate str does not match
             the expected parttern
-        
+
         """
         pattern = r"([a-zA-Z\s]+)\s\((\d{4})\)"
         match = re.search(pattern, candidate)
