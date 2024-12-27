@@ -41,6 +41,9 @@ class MusicLibrary(Library):
             preferences,
         )
 
+    delete = Library.delete
+    exists = Library.exists
+
     def create(self) -> None:
         library = self.get_section()
 

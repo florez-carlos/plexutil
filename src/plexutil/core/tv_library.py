@@ -46,6 +46,9 @@ class TVLibrary(Library):
         )
         self.tv_language_manifest_dto = tv_language_manifest_dto
 
+    delete = Library.delete
+    exists = Library.exists
+
     def create(self) -> None:
         op_type = "CREATE"
 
