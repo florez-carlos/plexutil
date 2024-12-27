@@ -39,19 +39,19 @@ class MovieLibrary(Library):
         )
 
     def create(self) -> None:
-        library = self.get_section()
+        library = self.plex_server.library
 
         library.add(
             name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=self.locations,
+            location=self.locations, #pyright: ignore
             language=self.language.value,
         )
 
-        library = self.get_section()
-        library.editAdvanced(**self.preferences.movie)
+        section = self.get_section()
+        section.editAdvanced(**self.preferences.movie)
 
     def query(self) -> list[Video]:
         return self.get_section().searchMovies()
