@@ -18,7 +18,6 @@ from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.plex_util_logger import PlexUtilLogger
-from plexutil.util.path_ops import PathOps
 from plexutil.util.query_builder import QueryBuilder
 
 
@@ -80,22 +79,7 @@ class MusicLibrary(Library):
                 description=description,
             )
 
-        local_files = PathOps.get_local_files(self.locations)
-
-        info = (
-            "Checking server music "
-            "meets expected "
-            f"count: {len(local_files)!s}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
-
-        self.poll(200, len(local_files), 10)
+        self.probe_library()
 
     def query(self) -> list[Audio]:
         return self.get_section().searchTracks()
-
-    def delete(self) -> None:
-        return super().delete()
-
-    def exists(self) -> bool:
-        return super().exists()

@@ -56,8 +56,7 @@ class Playlist(Library):
     def create(self) -> None:
         self.probe_library()
 
-        library = self.get_section()
-        tracks = library.searchTracks()
+        tracks = self.get_section().searchTracks()
 
         for music_playlist_dto in self.music_playlists_dto:
             songs = music_playlist_dto.songs
@@ -86,14 +85,13 @@ class Playlist(Library):
                 PlexUtilLogger.get_logger().info(info)
                 continue
 
-            library.createPlaylist(
+            self.get_section().createPlaylist(
                 title=playlist_name,
                 items=tracks,
             )
 
     def delete(self) -> None:
-        library = self.get_section()
-        plex_playlists = library.playlists()
+        plex_playlists = self.get_section().playlists()
 
         playlist_names = [x.name for x in self.music_playlists_dto]
         debug = (
@@ -109,8 +107,7 @@ class Playlist(Library):
                 plex_playlist.delete()
 
     def exists(self) -> bool:
-        library = self.get_section()
-        plex_playlists = library.playlists()
+        plex_playlists = self.get_section().playlists()
 
         debug = (
             f"Checking playlists exist\n"

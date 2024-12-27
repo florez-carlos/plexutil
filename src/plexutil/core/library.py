@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from plexutil.enums.agent import Agent
@@ -19,14 +18,16 @@ from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from plexapi.audio import Audio, Track
     from plexapi.library import LibrarySection
     from plexapi.server import PlexServer
     from plexapi.video import Movie, Show, Video
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-    from plexutil.dto.local_file_dto import LocalFileDTO
     from plexutil.dto.movie_dto import MovieDTO
+    from plexutil.dto.song_dto import SongDTO
     from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 
 from alive_progress import alive_bar
@@ -117,7 +118,7 @@ class Library(ABC):
 
         """
         self.__log_library(
-            operation="Check Exists", is_info=True, is_debug=True
+            operation="CHECK EXISTS", is_info=True, is_debug=True
         )
         return bool(self.get_section())
 
@@ -127,6 +128,20 @@ class Library(ABC):
         expected_count: int = 0,
         interval_seconds: int = 0,
     ) -> None:
+        """
+        Performs a query based on the supplied parameters
+
+        Args:
+            requested_attempts (int): Amount of times to poll
+            expected_count (int): Polling terminates when reaching this amount
+            interval_seconds (int): timeout before making a new attempt
+
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryPollTimeoutError: If expected_count not reached
+        """
         current_count = len(self.query())
         init_offset = abs(expected_count - current_count)
 
@@ -240,19 +255,29 @@ class Library(ABC):
 
     def __get_local_files(
         self,
-    ) -> list[LocalFileDTO] | list[MovieDTO] | list[TVEpisodeDTO]:
+    ) -> list[SongDTO] | list[MovieDTO] | list[TVEpisodeDTO]:
+        """
+        Private method to get local files
+
+        Returns:
+            [SongDTO | MovieDTO | TVEpisodeDTO]: Local files
+
+        Raises:
+            LibraryUnsupportedError: If Library Type not of MUSIC,
+            MUSIC_PLAYLIST, TV or MOVIE
+        """
         library = self.get_section()
 
         if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
             LibraryType.MUSIC_PLAYLIST, library
         ):
-            local_files = PathOps.get_local_files(self.locations)
+            local_files = PathOps.get_local_songs(self.locations)
         elif LibraryType.is_eq(LibraryType.TV, library):
             local_files = PathOps.get_local_tv(self.locations)
         elif LibraryType.is_eq(LibraryType.MOVIE, library):
-            local_files = PathOps.get_local_movie(self.locations)
+            local_files = PathOps.get_local_movies(self.locations)
         else:
-            op_type = "GET_LOCAL_FILES"
+            op_type = "Get Local Files"
             raise LibraryUnsupportedError(
                 op_type,
                 LibraryType.get_from_section(library),
@@ -261,6 +286,16 @@ class Library(ABC):
         return local_files
 
     def __get_plex_files(self) -> list[Show] | list[Track] | list[Movie]:
+        """
+        Private method to get plex files
+
+        Returns:
+            [Show | Track | Movie]: Plex files
+
+        Raises:
+            LibraryUnsupportedError: If Library Type not of MUSIC,
+            MUSIC_PLAYLIST, TV or MOVIE
+        """
         library = self.get_section()
 
         if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
