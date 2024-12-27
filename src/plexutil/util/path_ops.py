@@ -149,7 +149,7 @@ class PathOps(Static):
         return episodes
 
     @staticmethod
-    def get_local_movie(paths: list[Path]) -> list[MovieDTO]:
+    def get_local_movies(paths: list[Path]) -> list[MovieDTO]:
         """
         Scans local directories in search of movies
         A movie is expected to have a file name or directory name
