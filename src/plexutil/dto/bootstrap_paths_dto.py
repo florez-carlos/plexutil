@@ -7,6 +7,7 @@ class BootstrapPathsDTO:
     config_dir: Path
     log_dir: Path
     plexutil_config_file: Path
+    plexutil_playlists_db_dir: Path
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BootstrapPathsDTO):
@@ -16,7 +17,16 @@ class BootstrapPathsDTO:
             self.config_dir == other.config_dir
             and self.log_dir == other.log_dir
             and self.plexutil_config_file == other.plexutil_config_file
+            and self.plexutil_playlists_db_dir
+            == other.plexutil_playlists_db_dir
         )
 
     def __hash__(self) -> int:
-        return hash((self.config_dir, self.log_dir, self.plexutil_config_file))
+        return hash(
+            (
+                self.config_dir,
+                self.log_dir,
+                self.plexutil_config_file,
+                self.plexutil_playlists_db_dir,
+            )
+        )
