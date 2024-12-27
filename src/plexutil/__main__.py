@@ -50,8 +50,7 @@ def main() -> None:
         config = ServerConfig(bootstrap_paths_dto, server_config_dto)
 
         song_paths = [PathOps.get_path_from_str(x) for x in songs]
-        local_files = PathOps.get_local_files(song_paths)
-        songs_dto = [PlexOps.local_file_to_song_dto(x) for x in local_files]
+        songs_dto = PathOps.get_local_songs(song_paths)
 
         music_playlist_dto = MusicPlaylistDTO(
             name=playlist_name,
