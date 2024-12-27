@@ -136,14 +136,14 @@ class Playlist(Library):
         self,
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
-        library = self.get_section()
         service = SongMusicPlaylistCompositeService(
-            bootstrap_paths_dto.config_dir / "playlists.db"
+            bootstrap_paths_dto.plexutil_playlists_db_dir
         )
         song_mapper = SongMapper()
         music_playlist_mapper = MusicPlaylistMapper()
 
-        plex_playlists = library.playlists()
+        section = self.get_section()
+        plex_playlists = section.playlists()
 
         to_save = []
         for plex_playlist in plex_playlists:
@@ -168,8 +168,7 @@ class Playlist(Library):
 
         self.probe_library()
 
-        library = self.get_section()
-        tracks = library.searchTracks()
+        tracks = self.get_section().searchTracks()
         plex_track_dict = {}
         plex_playlist = []
 
@@ -182,7 +181,7 @@ class Playlist(Library):
 
         entities = [MusicPlaylistEntity(name=x) for x in playlist_names]
         service = SongMusicPlaylistCompositeService(
-            bootstrap_paths_dto.config_dir / "playlists.db"
+            bootstrap_paths_dto.plexutil_playlists_db_dir
         )
         playlists = service.get(entities)
 
@@ -210,22 +209,42 @@ class Playlist(Library):
 
                 plex_playlist.append(plex_track_dict.get(song_name))
 
-            library.createPlaylist(
+            self.get_section().createPlaylist(
                 title=playlist_name,
                 items=plex_playlist,
             )
             plex_playlist = []
 
     def delete_songs(self, songs: list[SongDTO]) -> None:
-        library = self.get_section()
-        playlist = library.playlist(self.name)
-        tracks = playlist.items()
-        known, _ = PlexOps.filter_tracks(tracks, songs)
+        """
+        Matches provided Songs to Plex Tracks in the playlist and deletes
+        the tracks from the playlist
+
+        Args:
+            songs ([SongDTO]): Songs to be removed, these songs are first
+            matched to existing Tracks in the Plex library
+
+        Returns:
+            None: This method does not return a value
+        """
+        playlist = self.get_section().playlist(self.playlist_name)
+        playlist_tracks = playlist.items()
+        known, _ = PlexOps.filter_tracks(playlist_tracks, songs)
         playlist.removeItems(known)
 
     def add_songs(self, songs: list[SongDTO]) -> None:
-        library = self.get_section()
-        library_tracks = library.searchTracks()
+        """
+        Matches provided Songs to Plex Tracks in the library and adds
+        the tracks to the plex playlist
+
+        Args:
+            songs ([SongDTO]): Songs to be added, these songs are first
+            matched to existing Tracks in the Plex library
+
+        Returns:
+            None: This method does not return a value
+        """
+        playlist = self.get_section().playlist(self.playlist_name)
+        library_tracks = self.get_section().searchTracks()
         known, _ = PlexOps.filter_tracks(library_tracks, songs)
-        playlist = library.playlist(self.playlist_name)
         playlist.addItems(known)

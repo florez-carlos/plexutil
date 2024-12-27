@@ -327,7 +327,7 @@ class Library(ABC):
             LibraryIllegalStateError: If local files do not match server
             LibraryUnsupportedError: If Library Type isn't supported
         """
-        library = self.get_section()
+        section = self.get_section()
         local_files = self.__get_local_files()
         plex_files = self.__get_plex_files()
         try:
@@ -339,9 +339,9 @@ class Library(ABC):
                 "This process may take several minutes\n"
             )
             PlexUtilLogger.get_logger().info(description)
-            library.update()
+            section.update()
 
-        if LibraryType.is_eq(LibraryType.TV, library):
+        if LibraryType.is_eq(LibraryType.TV, section):
             episodes = []
             for show in plex_files:
                 episodes.extend(show.searchEpisodes())
