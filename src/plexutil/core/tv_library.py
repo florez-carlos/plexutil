@@ -46,9 +46,6 @@ class TVLibrary(Library):
         )
         self.tv_language_manifest_dto = tv_language_manifest_dto
 
-    delete = Library.delete
-    exists = Library.exists
-
     def create(self) -> None:
         op_type = "CREATE"
 
@@ -121,3 +118,9 @@ class TVLibrary(Library):
                 PlexUtilLogger.get_logger().debug(description)
 
         return shows_filtered
+
+    def delete(self) -> None:
+        return super().delete()
+
+    def exists(self) -> bool:
+        return super().exists()

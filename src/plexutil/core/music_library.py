@@ -41,9 +41,6 @@ class MusicLibrary(Library):
             preferences,
         )
 
-    delete = Library.delete
-    exists = Library.exists
-
     def create(self) -> None:
         library = self.get_section()
 
@@ -86,3 +83,9 @@ class MusicLibrary(Library):
 
     def query(self) -> list[Audio]:
         return self.get_section().searchTracks()
+
+    def delete(self) -> None:
+        return super().delete()
+
+    def exists(self) -> bool:
+        return super().exists()

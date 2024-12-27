@@ -38,9 +38,6 @@ class MovieLibrary(Library):
             preferences,
         )
 
-    delete = Library.delete
-    exists = Library.exists
-
     def create(self) -> None:
         library = self.get_section()
 
@@ -58,3 +55,9 @@ class MovieLibrary(Library):
 
     def query(self) -> list[Video]:
         return self.get_section().searchMovies()
+
+    def delete(self) -> None:
+        return super().delete()
+
+    def exists(self) -> bool:
+        return super().exists()
