@@ -250,7 +250,7 @@ class Library(ABC):
 
         description = f"Library: {self.name} does not exist"
 
-        op_type = "GET_LIBRARY"
+        op_type = "GET SECTION"
         raise LibraryOpError(op_type, self.library_type, description)
 
     def __get_local_files(
