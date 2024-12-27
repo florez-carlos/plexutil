@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexapi.audio import Audio
     from plexapi.server import PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
@@ -89,6 +90,9 @@ class Playlist(Library):
                 title=playlist_name,
                 items=tracks,
             )
+
+    def query(self) -> list[Audio]:
+        return self.get_section().playlist(self.playlist_name).items()
 
     def delete(self) -> None:
         plex_playlists = self.get_section().playlists()
