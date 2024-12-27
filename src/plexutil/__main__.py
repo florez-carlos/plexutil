@@ -18,6 +18,7 @@ from plexutil.exception.invalid_schema_error import InvalidSchemaError
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
+from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.exception.server_config_error import ServerConfigError
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
@@ -224,6 +225,12 @@ def main() -> None:
     except LibraryIllegalStateError as e:
         sys.tracebacklimit = 0
         description = "\n=====Local Library Illegal State=====\n" f"{e!s}"
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
+    except LibraryOpError as e:
+        sys.tracebacklimit = 0
+        description = "\n=====Library Operation=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
