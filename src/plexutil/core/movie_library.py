@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from plexapi.exceptions import NotFound
+
+from plexutil.plex_util_logger import PlexUtilLogger
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -50,8 +54,15 @@ class MovieLibrary(Library):
             language=self.language.value,
         )
 
-        section = self.get_section()
-        section.editAdvanced(**self.preferences.movie)
+        for key, value in self.preferences.movie.items():
+            try:
+                section = self.get_section()
+                section.editAdvanced(**{key: value})
+            except NotFound:  # noqa: PERF203
+                description = f"Preference not accepted by the server: {key}"
+                description = f"Skipping -> {key}:{value}"
+                PlexUtilLogger.get_logger().warning(description)
+                continue
 
     def query(self) -> list[Video]:
         return self.get_section().searchMovies()
