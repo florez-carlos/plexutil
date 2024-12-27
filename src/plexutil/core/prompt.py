@@ -9,7 +9,6 @@ from importlib.metadata import PackageNotFoundError, version
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
 from plexutil.enums.language import Language
-from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.unexpected_argument_error import (
@@ -88,8 +87,7 @@ class Prompt(Static):
             metavar="Library Name",
             type=str,
             nargs="?",
-            help="Library Type",
-            default=LibraryName.MUSIC.value,
+            help="Library Name",
         )
 
         parser.add_argument(
