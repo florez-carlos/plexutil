@@ -248,6 +248,7 @@ class FileImporter(Static):
                 config_dir=config_dir,
                 log_dir=log_dir,
                 plexutil_config_file=plexutil_config_file,
+                plexutil_playlists_db_dir=config_dir / "playlists.db",
             )
 
         except Exception as e:
