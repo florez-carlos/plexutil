@@ -59,8 +59,10 @@ class MovieLibrary(Library):
                 section = self.get_section()
                 section.editAdvanced(**{key: value})
             except NotFound:  # noqa: PERF203
-                description = f"Preference not accepted by the server: {key}"
-                description = f"Skipping -> {key}:{value}"
+                description = (
+                    f"Preference not accepted by the server: {key}"
+                    f"Skipping -> {key}:{value}"
+                )
                 PlexUtilLogger.get_logger().warning(description)
                 continue
 
