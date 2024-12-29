@@ -4,6 +4,8 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from plexapi.exceptions import NotFound
+
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.scanner import Scanner
@@ -12,6 +14,9 @@ from plexutil.exception.library_illegal_state_error import (
 )
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
+)
+from plexutil.exception.library_section_missing_error import (
+    LibrarySectionMissingError,
 )
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.path_ops import PathOps
@@ -60,22 +65,22 @@ class Library(ABC):
         self.language = language
         self.preferences = preferences
 
-        library = None
+        section = None
         try:
-            library = self.get_section()
-        except LibraryOpError:
+            section = self.get_section()
+        except LibrarySectionMissingError:
             # No need to continue if not an existing library
             return
 
-        if library:
-            self.locations = library.locations
-            self.agent = Agent.get_from_str(library.agent)
-            self.scanner = Scanner.get_from_str(library.scanner)
+        if section:
+            self.locations = section.locations
+            self.agent = Agent.get_from_str(section.agent)
+            self.scanner = Scanner.get_from_str(section.scanner)
             self.locations = [
                 PathOps.get_path_from_str(location)
-                for location in library.locations
+                for location in section.locations
             ]
-            self.language = Language.get_from_str(library.language)
+            self.language = Language.get_from_str(section.language)
 
     @abstractmethod
     def create(self) -> None:
@@ -111,16 +116,22 @@ class Library(ABC):
     @abstractmethod
     def exists(self) -> bool:
         """
-        Generic Library Exists
+        Generic LibrarySection Exists
 
         Returns:
-            bool: If Library exists
+            bool: If LibrarySection exists
 
         """
         self.__log_library(
             operation="CHECK EXISTS", is_info=True, is_debug=True
         )
-        return bool(self.get_section())
+
+        try:
+            self.get_section()
+        except LibrarySectionMissingError:
+            return False
+
+        return True
 
     def poll(
         self,
@@ -203,9 +214,11 @@ class Library(ABC):
         Returns:
             None: This method does not return a value.
         """
+        library = self.plex_server.library
+        library_id = library.key if library else ""
         info = (
             f"{operation} {self.library_type} library: \n"
-            f"ID: {self.library.key if self.library else ''}\n"
+            f"ID: {library_id}\n"
             f"Name: {self.name}\n"
             f"Type: {self.library_type.value}\n"
             f"Agent: {self.agent.value}\n"
@@ -227,12 +240,14 @@ class Library(ABC):
     def get_section(self) -> LibrarySection:
         """
         Gets an up-to-date Plex Server Library Section
+        Gets the first occuring Section, does not have conflict resolution
 
         Returns:
             LibrarySection: A current LibrarySection
 
         Raises:
-            LibraryOpError: If no library of the same type and name exist
+            LibrarySectionMissingError: If no library of the same
+            type and name exist
         """
 
         sections = self.plex_server.library.sections()
@@ -245,13 +260,9 @@ class Library(ABC):
 
         for filtered_section in filtered_sections:
             if filtered_section.title == self.name:
-                self.library = filtered_section
                 return filtered_section
 
-        description = f"Library: {self.name} does not exist"
-
-        op_type = "GET SECTION"
-        raise LibraryOpError(op_type, self.library_type, description)
+        raise LibrarySectionMissingError
 
     def __get_local_files(
         self,
@@ -352,3 +363,44 @@ class Library(ABC):
         self.poll(100, expected_count, 10)
         plex_files = self.__get_plex_files()
         PlexOps.validate_local_files(plex_files, self.locations)
+
+    def inject_preferences(self) -> None:
+        """
+        Sets Library Section Preferences
+        Logs a warning if preferences dont't exist or library type
+        not of movie,tv,music
+
+        Returns:
+            None: This method does not return a value
+        """
+
+        if not self.preferences:
+            description = "WARNING: Did not receive any Library Preferences"
+            PlexUtilLogger.get_logger().warning(description)
+            return
+
+        section_preferences = None
+
+        if (
+            LibraryType.is_eq(LibraryType.MOVIE, self.get_section())
+            or LibraryType.is_eq(LibraryType.TV, self.get_section())
+            or LibraryType.is_eq(LibraryType.MUSIC, self.get_section())
+        ):
+            section_preferences = self.preferences.movie
+
+        if not section_preferences:
+            description = "WARNING: Did not receive any Library Preferences"
+            PlexUtilLogger.get_logger().warning(description)
+            return
+
+        for key, value in section_preferences.items():
+            try:
+                section = self.get_section()
+                section.editAdvanced(**{key: value})
+            except NotFound:  # noqa: PERF203
+                description = (
+                    f"WARNING: Preference not accepted by the server: {key}\n"
+                    f"Skipping -> {key}:{value}"
+                )
+                PlexUtilLogger.get_logger().warning(description)
+                continue
