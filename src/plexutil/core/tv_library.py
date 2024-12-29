@@ -47,6 +47,19 @@ class TVLibrary(Library):
         self.tv_language_manifest_dto = tv_language_manifest_dto
 
     def create(self) -> None:
+        """
+        Creates a TV Library
+        Logs a warning if a specific tv preference is rejected by the server
+        Logs a warning if no TV Preferences available
+        This operation is expensive as it waits for all the tv files
+        to be recognized by the server
+
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryOpError: If Library already exists
+        """
         op_type = "CREATE"
 
         if self.exists():
@@ -68,8 +81,7 @@ class TVLibrary(Library):
             language=self.language.value,
         )
 
-        if self.preferences.tv:
-            self.get_section().editAdvanced(**self.preferences.tv)
+        self.inject_preferences()
 
         manifests_dto = self.tv_language_manifest_dto
         debug = f"Manifests: {manifests_dto}\n"

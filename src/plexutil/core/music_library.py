@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.audio import Audio
     from plexapi.server import PlexServer
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+
+from plexapi.audio import Audio
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -42,7 +43,28 @@ class MusicLibrary(Library):
         )
 
     def create(self) -> None:
-        library = self.get_section()
+        """
+        Creates a Music Library
+        This operation is expensive as it waits for all the music files
+        to be recognized by the server
+
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryOpError: If Library already exists
+            or when failure to create a Query
+        """
+        op_type = "CREATE"
+        if self.exists():
+            description = f"TV Library '{self.name}' already exists"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.TV,
+                description=description,
+            )
+
+        self.__log_library(operation=op_type, is_info=False, is_debug=True)
 
         part = ""
 
@@ -67,7 +89,7 @@ class MusicLibrary(Library):
 
         # This posts a music library
         if part:
-            library.query(
+            self.get_section().query(
                 part,
                 method=self.plex_server._session.post,
             )
@@ -82,7 +104,16 @@ class MusicLibrary(Library):
         self.probe_library()
 
     def query(self) -> list[Audio]:
-        return self.get_section().searchTracks()
+        """
+        Returns all tracks for the current LibrarySection
+
+        Returns:
+            list[plexapi.audio.Audio]: Tracks from the current Section
+        """
+        return cast(
+            list[Audio],
+            self.get_section().searchTracks(),
+        )
 
     def delete(self) -> None:
         return super().delete()

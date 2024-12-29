@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from plexapi.exceptions import NotFound
-
-from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.exception.library_op_error import LibraryOpError
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.server import PlexServer
-    from plexapi.video import Video
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+
+from plexapi.video import Video
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -43,9 +42,29 @@ class MovieLibrary(Library):
         )
 
     def create(self) -> None:
-        library = self.plex_server.library
+        """
+        Creates a Movie Library
+        Logs a warning if a specific movie preference is rejected by the server
+        Logs a warning if no Movie Preferences available
 
-        library.add(
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryOpError: If Library already exists
+        """
+        op_type = "CREATE"
+        if self.exists():
+            description = f"Movie Library '{self.name}' already exists"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MOVIE,
+                description=description,
+            )
+
+        self.__log_library(operation=op_type, is_info=False, is_debug=True)
+
+        self.plex_server.library.add(
             name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
@@ -54,20 +73,16 @@ class MovieLibrary(Library):
             language=self.language.value,
         )
 
-        for key, value in self.preferences.movie.items():
-            try:
-                section = self.get_section()
-                section.editAdvanced(**{key: value})
-            except NotFound:  # noqa: PERF203
-                description = (
-                    f"WARNING: Preference not accepted by the server: {key}\n"
-                    f"Skipping -> {key}:{value}"
-                )
-                PlexUtilLogger.get_logger().warning(description)
-                continue
+        self.inject_preferences()
 
     def query(self) -> list[Video]:
-        return self.get_section().searchMovies()
+        """
+        Returns all movies for the current LibrarySection
+
+        Returns:
+            list[plexapi.video.Video]: Movies from the current Section
+        """
+        return cast(list[Video], self.get_section().searchMovies())
 
     def delete(self) -> None:
         return super().delete()
