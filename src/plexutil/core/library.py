@@ -123,7 +123,7 @@ class Library(ABC):
 
         """
         self.__log_library(
-            operation="CHECK EXISTS", is_info=True, is_debug=True
+            operation="CHECK EXISTS", is_info=False, is_debug=True
         )
 
         try:
