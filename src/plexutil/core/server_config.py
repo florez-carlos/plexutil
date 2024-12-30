@@ -38,7 +38,8 @@ class ServerConfig:
                 f"Received a request to create a ServerConfig:\n"
                 f"Host: {self.server_config_dto.host}\n"
                 f"Port: {self.server_config_dto.port}\n"
-                f"Token supplied: {'YES' if self.server_config_dto.token else 'NO'}\n"
+                f"Token supplied: "
+                f"{'YES' if self.server_config_dto.token else 'NO'}\n"
             )
             PlexUtilLogger.get_logger().debug(description)
 
@@ -56,11 +57,6 @@ class ServerConfig:
         )
 
         self.service.save(self.mapper.get_entity(dto))
-
-        # if encrypted_token:
-        #     self.service.save(self.mapper.get_entity(dto))
-        # else:
-        #     self.service.save(self.mapper.get_entity(dto), only=["host","port"])
 
         entity = self.service.get()
         server_config_dto = self.mapper.get_dto(entity)
