@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ServerConfigDTO:
-    host: str = "localhost"
-    port: int = 32000
-    token: str = ""
+    host: str | None = None
+    port: int | None = None
+    token: str | None = None
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ServerConfigDTO):
