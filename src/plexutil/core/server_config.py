@@ -23,7 +23,7 @@ class ServerConfig:
         if server_config_dto.token:
             token = TokenManager.decrypt(server_config_dto.token)
         else:
-            token = ""
+            token = None
 
         return ServerConfigDTO(
             host=server_config_dto.host,
@@ -47,7 +47,7 @@ class ServerConfig:
                 self.server_config_dto.token
             )
         else:
-            encrypted_token = ""
+            encrypted_token = None
 
         dto = ServerConfigDTO(
             host=self.server_config_dto.host,
@@ -68,7 +68,7 @@ class ServerConfig:
         if server_config_dto.token:
             decrypted_token = TokenManager.decrypt(server_config_dto.token)
         else:
-            decrypted_token = ""
+            decrypted_token = None
 
         dto = ServerConfigDTO(
             host=server_config_dto.host,
