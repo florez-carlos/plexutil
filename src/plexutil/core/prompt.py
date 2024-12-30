@@ -107,7 +107,7 @@ class Prompt(Static):
             type=str,
             nargs="?",
             help="Plex server host e.g. localhost",
-            default="localhost",
+            default="",
         )
 
         parser.add_argument(
@@ -117,7 +117,7 @@ class Prompt(Static):
             type=int,
             nargs="?",
             help="Plex server port e.g. 32400",
-            default=32400,
+            default=0,
         )
 
         parser.add_argument(
