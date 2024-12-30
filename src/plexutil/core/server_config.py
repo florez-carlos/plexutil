@@ -1,6 +1,5 @@
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.server_config_dto import ServerConfigDTO
-from plexutil.exception.server_config_error import ServerConfigError
 from plexutil.mapper.server_config_mapper import ServerConfigMapper
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.service.server_config_service import ServerConfigService
@@ -21,7 +20,10 @@ class ServerConfig:
 
     def get(self) -> ServerConfigDTO:
         server_config_dto = self.mapper.get_dto(self.service.get())
-        token = TokenManager.decrypt(server_config_dto.token)
+        if server_config_dto.token:
+            token = TokenManager.decrypt(server_config_dto.token)
+        else:
+            token = None
 
         return ServerConfigDTO(
             host=server_config_dto.host,
@@ -30,31 +32,51 @@ class ServerConfig:
         )
 
     def save(self) -> ServerConfigDTO:
-        if not self.server_config_dto.token:
+        if not self.service.exists():
             description = (
-                "Token has not been supplied. Example: "
-                "plexutil config -host ... -port ... -token ..."
+                f"No current Server Config exists.\n"
+                f"Received a request to create a ServerConfig:\n"
+                f"Host: {self.server_config_dto.host}\n"
+                f"Port: {self.server_config_dto.port}\n"
+                f"Token supplied: {'YES' if self.server_config_dto.token else 'NO'}\n"
             )
-            raise ServerConfigError(description)
+            PlexUtilLogger.get_logger().debug(description)
 
-        encrypted_token = TokenManager.encrypt(self.server_config_dto.token)
+        if self.server_config_dto.token:
+            encrypted_token = TokenManager.encrypt(
+                self.server_config_dto.token
+            )
+        else:
+            encrypted_token = None
+
         dto = ServerConfigDTO(
             host=self.server_config_dto.host,
             port=self.server_config_dto.port,
             token=encrypted_token,
         )
+
         self.service.save(self.mapper.get_entity(dto))
+
+        # if encrypted_token:
+        #     self.service.save(self.mapper.get_entity(dto))
+        # else:
+        #     self.service.save(self.mapper.get_entity(dto), only=["host","port"])
+
         entity = self.service.get()
         server_config_dto = self.mapper.get_dto(entity)
-        token = TokenManager.decrypt(server_config_dto.token)
+
+        if server_config_dto.token:
+            decrypted_token = TokenManager.decrypt(server_config_dto.token)
+        else:
+            decrypted_token = None
 
         dto = ServerConfigDTO(
             host=server_config_dto.host,
             port=server_config_dto.port,
-            token=token,
+            token=decrypted_token,
         )
         description = (
-            f"Created a server config:\n"
+            f"Loaded a server config:\n"
             f"Host: {server_config_dto.host}\n"
             f"Port: {server_config_dto.port}\n"
             f"Token supplied: {'YES' if server_config_dto.token else 'NO'}\n"
