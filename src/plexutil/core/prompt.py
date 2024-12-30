@@ -72,16 +72,6 @@ class Prompt(Static):
         )
 
         parser.add_argument(
-            "-lib",
-            "--library_type",
-            metavar="Library Type",
-            type=str,
-            nargs="?",
-            help="Library Type",
-            default=LibraryType.MUSIC.value,
-        )
-
-        parser.add_argument(
             "-libn",
             "--library_name",
             metavar="Library Name",
