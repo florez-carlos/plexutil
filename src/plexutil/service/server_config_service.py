@@ -34,11 +34,21 @@ class ServerConfigService:
                 .get()
             )
 
-    def save(self, entity: ServerConfigEntity) -> int:
-        force_insert = self.exists()
+    def save(
+        self,
+        entity: ServerConfigEntity,
+        only: list[str] = None,  # pyright: ignore [reportArgumentType]
+    ) -> int:
+        force_insert = not self.exists()
 
         with db_manager(self.db_path, [ServerConfigEntity]):
-            return entity.save(force_insert=force_insert)
+            # if only is not None and only:
+            # return entity.save(force_insert=force_insert)
+            # else:
+            filtered_fields = [
+                k for k, v in entity.__data__.items() if v is not None
+            ]
+            return entity.save(force_insert=force_insert, only=filtered_fields)
 
     def exists(self) -> bool:
         with db_manager(self.db_path, [ServerConfigEntity]):
