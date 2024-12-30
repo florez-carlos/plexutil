@@ -45,9 +45,7 @@ class ServerConfigService:
             # if only is not None and only:
             # return entity.save(force_insert=force_insert)
             # else:
-            filtered_fields = [
-                k for k, v in entity.__data__.items() if v is not None
-            ]
+            filtered_fields = [k for k, v in entity.__data__.items() if v]
             return entity.save(force_insert=force_insert, only=filtered_fields)
 
     def exists(self) -> bool:
