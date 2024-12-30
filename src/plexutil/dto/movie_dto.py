@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from plexutil.enums.file_type import FileType
 
 
+# Frozen=True creates an implicit hash method, eq is created by default
 @dataclass(frozen=True)
 class MovieDTO:
     name: str = ""
@@ -11,16 +12,3 @@ class MovieDTO:
 
     def __str__(self) -> str:
         return f"{self.name} ({self.year}) "
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, MovieDTO):
-            return False
-
-        return (
-            self.name == other.name
-            and self.extension == other.extension
-            and self.year == other.year
-        )
-
-    def __hash__(self) -> int:
-        return hash((self.name, self.extension, self.year))

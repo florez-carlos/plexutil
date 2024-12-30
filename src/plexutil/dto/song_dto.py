@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from plexutil.enums.file_type import FileType
 
 
+# Frozen=True creates an implicit hash method, eq is created by default
 @dataclass(frozen=True)
 class SongDTO:
     name: str = ""
@@ -10,12 +11,3 @@ class SongDTO:
 
     def __str__(self) -> str:
         return self.name + "." + self.extension.value
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, SongDTO):
-            return False
-
-        return self.name == other.name and self.extension == other.extension
-
-    def __hash__(self) -> int:
-        return hash((self.name, self.extension))
