@@ -5,9 +5,9 @@ from plexutil.model.server_config_entity import ServerConfigEntity
 class ServerConfigMapper:
     def get_dto(self, entity: ServerConfigEntity) -> ServerConfigDTO:
         return ServerConfigDTO(
-            host=str(entity.host),
-            port=int(entity.port),  # pyright: ignore [reportArgumentType]
-            token=str(entity.token),
+            host=str(entity.host) if entity.host else None,
+            port=int(entity.port) if entity.port else None,  # pyright: ignore [reportArgumentType]
+            token=str(entity.token) if entity.token else None,
         )
 
     def get_entity(self, dto: ServerConfigDTO) -> ServerConfigEntity:
