@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ServerConfigDTO:
-    host: str = "localhost"
-    port: int = 32000
+    host: str = ""
+    port: int = 0
     token: str = ""
 
     def __eq__(self, other: object) -> bool:
