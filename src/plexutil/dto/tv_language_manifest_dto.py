@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from plexutil.enums.language import Language
 
+
 # Frozen=True creates an implicit hash method, eq is created by default
 @dataclass(frozen=True)
 class TVLanguageManifestDTO:
