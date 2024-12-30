@@ -34,12 +34,14 @@ class MusicPlaylistService:
                 .get()
             )
 
-    def save(self, entity: MusicPlaylistEntity) -> MusicPlaylistEntity:
-        force_insert = self.exists()
+    def save(self, entity: MusicPlaylistEntity) -> int:
+        force_insert = not self.exists()
 
         with db_manager(self.db_path, [MusicPlaylistEntity]):
-            entity.save(force_insert=force_insert)
-            return entity
+            filtered_fields = [
+                k for k, v in entity.__data__.items() if v and k != "id"
+            ]
+            return entity.save(force_insert=force_insert, only=filtered_fields)
 
     def exists(self) -> bool:
         with db_manager(self.db_path, [MusicPlaylistEntity]):

@@ -39,10 +39,13 @@ class SongService:
             )
 
     def save(self, entity: SongEntity) -> SongEntity:
-        force_insert = self.exists(entity)
+        force_insert = not self.exists(entity)
 
         with db_manager(self.db_path, [SongEntity]):
-            return entity.save(force_insert=force_insert)
+            filtered_fields = [
+                k for k, v in entity.__data__.items() if v and k != "id"
+            ]
+            return entity.save(force_insert=force_insert, only=filtered_fields)
 
     def exists(self, entity: SongEntity) -> bool:
         return (
