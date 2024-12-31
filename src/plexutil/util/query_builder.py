@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import urllib.parse
 
 
@@ -52,7 +53,10 @@ class QueryBuilder:
                 continue
 
             if isinstance(v, list):
-                v = ",".join(v)  # noqa: PLW2901
+                if all(isinstance(x, Path) for x in v):
+                    v = ",".join(str(x) for x in v)  # noqa: PLW2901
+                else:
+                    v = ",".join(v)  # noqa: PLW2901
 
             v = urllib.parse.quote(v)  # noqa: PLW2901
 
