@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import urllib.parse
+from pathlib import Path
 
 
 class QueryBuilder:
