@@ -206,7 +206,7 @@ def main() -> None:
             description = "Successful System Exit"
             PlexUtilLogger.get_logger().debug(description)
         else:
-            description = "\n=====Unexpected error=====\n" f"{e!s}"
+            description = "\n=====Unexpected Error=====\n" f"{e!s}"
             PlexUtilLogger.get_logger().exception(description)
             raise
 
@@ -224,13 +224,13 @@ def main() -> None:
 
     except LibraryIllegalStateError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Local Library Illegal State=====\n" f"{e!s}"
+        description = "\n=====Library Illegal State Error=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibraryOpError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Library Operation=====\n" f"{e!s}"
+        description = "\n=====Library Operation Error=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
@@ -247,17 +247,17 @@ def main() -> None:
 
     except InvalidSchemaError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Invalid schema error=====\n" f"{e!s}"
+        description = "\n=====Invalid Schema Error=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().error(description)
 
     # No regular logger can be expected to be initialized
     except BootstrapError as e:
-        description = "\n=====Program initialization error=====\n" f"{e!s}"
+        description = "\n=====Program Initialization Error=====\n" f"{e!s}"
         e.args = (description,)
         raise
 
     except Exception as e:  # noqa: BLE001
-        description = "\n=====Unexpected error=====\n" f"{e!s}"
+        description = "\n=====Unexpected Error=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().exception(description)
 
 
