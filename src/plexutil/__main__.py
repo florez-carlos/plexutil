@@ -179,8 +179,7 @@ def main() -> None:
                 | UserRequest.DELETE_MUSIC_LIBRARY
                 | UserRequest.DELETE_MUSIC_PLAYLIST
             ):
-                if library.exists():
-                    library.delete()
+                library.delete()
 
             case UserRequest.SET_SERVER_SETTINGS:
                 PlexOps.set_server_settings(plex_server, preferences_dto)
