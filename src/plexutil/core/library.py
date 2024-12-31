@@ -104,10 +104,7 @@ class Library(ABC):
         try:
             self.get_section().delete()
         except LibrarySectionMissingError as e:
-            description = (
-                f"Does not exist: {self.name}. "
-                f"Library type: {self.library_type.value}"
-            )
+            description = f"Does not exist: {self.name}"
             raise LibraryOpError(
                 op_type=op_type,
                 description=description,
