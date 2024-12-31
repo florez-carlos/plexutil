@@ -99,7 +99,7 @@ class Library(ABC):
 
         """
         op_type = "DELETE"
-        self.__log_library(operation=op_type, is_info=True, is_debug=True)
+        self.log_library(operation=op_type, is_info=True, is_debug=True)
 
         library = self.get_section()
 
@@ -122,7 +122,7 @@ class Library(ABC):
             bool: If LibrarySection exists
 
         """
-        self.__log_library(
+        self.log_library(
             operation="CHECK EXISTS", is_info=False, is_debug=True
         )
 
@@ -195,7 +195,7 @@ class Library(ABC):
     def query(self) -> list[Video] | list[Audio]:
         raise NotImplementedError
 
-    def __log_library(
+    def log_library(
         self,
         operation: str,
         is_info: bool = True,

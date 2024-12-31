@@ -62,7 +62,7 @@ class MovieLibrary(Library):
                 description=description,
             )
 
-        self.__log_library(operation=op_type, is_info=False, is_debug=True)
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         self.plex_server.library.add(
             name=self.name,
