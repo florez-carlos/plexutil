@@ -57,7 +57,7 @@ class MusicLibrary(Library):
         """
         op_type = "CREATE"
         if self.exists():
-            description = f"TV Library '{self.name}' already exists"
+            description = f"Music Library '{self.name}' already exists"
             raise LibraryOpError(
                 op_type=op_type,
                 library_type=LibraryType.TV,
@@ -89,7 +89,7 @@ class MusicLibrary(Library):
 
         # This posts a music library
         if part:
-            self.get_section().query(
+            self.plex_server.query(
                 part,
                 method=self.plex_server._session.post,
             )
