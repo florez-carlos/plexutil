@@ -101,17 +101,18 @@ class Library(ABC):
         op_type = "DELETE"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        library = self.get_section()
-
-        if library:
-            library.delete()
-        else:
-            description = "Nothing found"
+        try:
+            self.get_section().delete()
+        except LibrarySectionMissingError as e:
+            description = (
+                    f"Does not exist: {self.name}. " 
+                    f"Library type: {self.library_type.value}"
+            )
             raise LibraryOpError(
                 op_type=op_type,
                 description=description,
                 library_type=self.library_type,
-            )
+            ) from e
 
     @abstractmethod
     def exists(self) -> bool:
