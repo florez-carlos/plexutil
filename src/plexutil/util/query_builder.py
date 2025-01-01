@@ -41,6 +41,7 @@ class QueryBuilder:
             for value in path:
                 k = "location"
                 v = str(value)
+                v = urllib.parse.quote(v)
                 result += k + "=" + v + "&"
 
         else:
@@ -62,7 +63,7 @@ class QueryBuilder:
                     result += self.__walk__(v)
                     continue
 
-                v = urllib.parse.quote(str(v))  # noqa: PLW2901
+                v = urllib.parse.quote(v)  # noqa: PLW2901
 
                 if nested_parent_name:
                     bracket_open = urllib.parse.quote("[")
