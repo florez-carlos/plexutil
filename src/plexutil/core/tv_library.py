@@ -77,7 +77,7 @@ class TVLibrary(Library):
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=self.locations,  # pyright: ignore [reportArgumentType]
+            location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
             language=self.language.value,
         )
 
