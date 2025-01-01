@@ -211,6 +211,8 @@ class PathOps(Static):
                         ),
                     )
                 )
+            elif path.is_dir():
+                return PathOps.get_local_songs(list(path.iterdir()))
             else:
                 description = f"Expected to find a file but got: {path!s}"
                 raise UnexpectedNamingPatternError(description)
