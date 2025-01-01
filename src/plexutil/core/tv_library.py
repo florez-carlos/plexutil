@@ -72,7 +72,7 @@ class TVLibrary(Library):
 
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        self.get_section().add(
+        self.plex_server.library.add(
             name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
