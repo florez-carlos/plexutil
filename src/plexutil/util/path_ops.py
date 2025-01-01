@@ -202,20 +202,21 @@ class PathOps(Static):
             if path.is_file():
                 file_name = path.stem
                 file_extension = path.suffix.rsplit(".")[1]
-
-                files.append(
-                    SongDTO(
-                        name=file_name,
-                        extension=FileType.get_file_type_from_str(
-                            file_extension
-                        ),
+                try:
+                    extension = FileType.get_musical_file_type_from_str(
+                        file_extension
                     )
-                )
+                except ValueError:
+                    description = (
+                        f"Encountered an unsupported file "
+                        f"when scanning for local songs: {file_extension}"
+                    )
+                    PlexUtilLogger.get_logger().debug(description)
+                    continue
+
+                files.append(SongDTO(name=file_name, extension=extension))
             elif path.is_dir():
                 files.extend(PathOps.get_local_songs(list(path.iterdir())))
-            else:
-                description = f"Expected to find a file but got: {path!s}"
-                raise UnexpectedNamingPatternError(description)
 
         return files
 
