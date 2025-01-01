@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import urllib.parse
-from pathlib import Path
 
 
 class QueryBuilder:
@@ -29,6 +28,7 @@ class QueryBuilder:
         | dict[str, bool]
         | dict[str, int]
         | dict[str, dict]
+        | list[str]
         | None = None,
         nested_parent_name: str = "",
     ) -> str:
@@ -37,38 +37,47 @@ class QueryBuilder:
         if path is None:
             path = {}
 
-        for k, v in path.items():
-            if k.startswith("location"):
-                k = "location"  # noqa: PLW2901
-            if k == "the_type":
-                k = "type"  # noqa: PLW2901
+        if isinstance(path, list):
+            for value in path:
+                k = "location"
+                v = str(value)
+                result += k + "=" + v + "&"
 
-            if isinstance(v, bool):
-                v = "1" if v else "0"  # noqa: PLW2901
+        else:
+            for k, v in path.items():
+                if k == "the_type":
+                    k = "type"  # noqa: PLW2901
 
-            if isinstance(v, int) | isinstance(v, Path):
-                v = str(v)  # noqa: PLW2901
+                if isinstance(v, bool):
+                    v = "1" if v else "0"  # noqa: PLW2901
 
-            if isinstance(v, dict):
-                result += self.__walk__(v, k)
-                continue
+                if isinstance(v, int):
+                    v = str(v)  # noqa: PLW2901
 
-            v = urllib.parse.quote(str(v))  # noqa: PLW2901
+                if isinstance(v, dict):
+                    result += self.__walk__(v, k)
+                    continue
 
-            if nested_parent_name:
-                bracket_open = urllib.parse.quote("[")
-                bracket_close = urllib.parse.quote("]")
-                result += (
-                    nested_parent_name
-                    + bracket_open
-                    + k
-                    + bracket_close
-                    + "="
-                    + v
-                    + "&"
-                )
-                continue
+                if isinstance(v, list):
+                    result += self.__walk__(v)
+                    continue
 
-            result += k + "=" + v + "&"
+                v = urllib.parse.quote(str(v))  # noqa: PLW2901
+
+                if nested_parent_name:
+                    bracket_open = urllib.parse.quote("[")
+                    bracket_close = urllib.parse.quote("]")
+                    result += (
+                        nested_parent_name
+                        + bracket_open
+                        + k
+                        + bracket_close
+                        + "="
+                        + v
+                        + "&"
+                    )
+                    continue
+
+                result += k + "=" + v + "&"
 
         return result
