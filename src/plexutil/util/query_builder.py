@@ -39,7 +39,7 @@ class QueryBuilder:
 
         for k, v in path.items():
             if k.startswith("location"):
-                k = "location" # noqa: PLW2901
+                k = "location"  # noqa: PLW2901
             if k == "the_type":
                 k = "type"  # noqa: PLW2901
 
@@ -53,8 +53,7 @@ class QueryBuilder:
                 result += self.__walk__(v, k)
                 continue
 
-
-            v = urllib.parse.quote(str(v))  # noqa: PLW2901 
+            v = urllib.parse.quote(str(v))  # noqa: PLW2901
 
             if nested_parent_name:
                 bracket_open = urllib.parse.quote("[")
