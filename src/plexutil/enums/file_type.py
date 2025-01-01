@@ -33,3 +33,14 @@ class FileType(Enum):
                 return file_type
 
         raise ValueError("File Type not supported: " + file_type_candidate)
+
+    @staticmethod
+    def get_musical_file_type_from_str(file_type_candidate: str) -> FileType:
+        file_type_candidate = file_type_candidate.lower()
+
+        if file_type_candidate == FileType.MP3.value.lower():
+            return FileType.MP3
+        elif file_type_candidate == FileType.FLAC.value.lower():
+            return FileType.FLAC
+
+        raise ValueError("File Type not supported: " + file_type_candidate)
