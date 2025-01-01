@@ -133,11 +133,17 @@ class PathOps(Static):
         for path in paths:
             for tv_dir in path.iterdir():
                 if not tv_dir.is_dir():
-                    description = f"Expected to encounter a directory: {tv_dir!s}"
+                    description = (
+                        f"Expected to encounter a directory: {tv_dir!s}"
+                    )
                     raise ValueError(description)
 
-                name, year = PathOps.get_show_name_and_year_from_str(tv_dir.name)
-                known, unknown = PathOps.__walk_tv_structure(name, year, tv_dir)
+                name, year = PathOps.get_show_name_and_year_from_str(
+                    tv_dir.name
+                )
+                known, unknown = PathOps.__walk_tv_structure(
+                    name, year, tv_dir
+                )
                 description = (
                     f"Evaluated TV Series: {name}\n"
                     f"Understood {len(known)} episodes\n"
