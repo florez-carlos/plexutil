@@ -29,7 +29,6 @@ class QueryBuilder:
         | dict[str, bool]
         | dict[str, int]
         | dict[str, dict]
-        | dict[str, list]
         | None = None,
         nested_parent_name: str = "",
     ) -> str:
@@ -39,26 +38,23 @@ class QueryBuilder:
             path = {}
 
         for k, v in path.items():
+            if k.startswith("location"):
+                k = "location" # noqa: PLW2901
             if k == "the_type":
                 k = "type"  # noqa: PLW2901
 
             if isinstance(v, bool):
                 v = "1" if v else "0"  # noqa: PLW2901
 
-            if isinstance(v, int):
+            if isinstance(v, int) | isinstance(v, Path):
                 v = str(v)  # noqa: PLW2901
 
             if isinstance(v, dict):
                 result += self.__walk__(v, k)
                 continue
 
-            if isinstance(v, list):
-                if all(isinstance(x, Path) for x in v):
-                    v = ",".join(str(x) for x in v)  # noqa: PLW2901
-                else:
-                    v = ",".join(v)  # noqa: PLW2901
 
-            v = urllib.parse.quote(v)  # noqa: PLW2901
+            v = urllib.parse.quote(str(v))  # noqa: PLW2901 
 
             if nested_parent_name:
                 bracket_open = urllib.parse.quote("[")
