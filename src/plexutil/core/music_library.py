@@ -67,11 +67,6 @@ class MusicLibrary(Library):
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         part = ""
-        locations = {}
-        count = 1
-        for location in self.locations:
-            locations[f"location{count}"] = location
-            count = count + 1
 
         query_builder = QueryBuilder(
             "/library/sections",
@@ -82,7 +77,7 @@ class MusicLibrary(Library):
             language=self.language.value,
             importFromiTunes="",
             enableAutoPhotoTags="",
-            location=locations,
+            location=self.locations,
             prefs=self.preferences.music,
         )
 
