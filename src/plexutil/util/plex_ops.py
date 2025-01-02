@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, cast
 from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
+from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -23,7 +24,6 @@ if TYPE_CHECKING:
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.movie_dto import MovieDTO
     from plexutil.dto.song_dto import SongDTO
-    from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 
 
 class PlexOps(Static):
@@ -188,10 +188,19 @@ class PlexOps(Static):
             name = show.originalTitle
             year = int(show.year)
             for episode in show.episodes():
-                episode_number = episode.seasonEpisode
-                plex_tv_episodes.append(
-                    PathOps.get_episode_from_str(name, year, episode_number)
+                name = episode.grandparentTitle.lower()
+                episode_number = episode.index
+                season_number = episode.parentIndex
+                year = episode.grandparentYear
+
+                plex_episode = TVEpisodeDTO(
+                    name=name,
+                    first_aired_year=year,
+                    episode=episode_number,
+                    season=season_number,
                 )
+
+                plex_tv_episodes.append(plex_episode)
 
         for episode in episodes:
             if episode not in plex_tv_episodes:
