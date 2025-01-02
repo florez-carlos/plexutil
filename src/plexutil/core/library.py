@@ -350,13 +350,7 @@ class Library(ABC):
             PlexUtilLogger.get_logger().info(description)
             section.update()
 
-        if LibraryType.is_eq(LibraryType.TV, section):
-            episodes = []
-            for show in plex_files:
-                episodes.extend(show.searchEpisodes())
-            expected_count = len(episodes)
-        else:
-            expected_count = len(local_files)
+        expected_count = len(local_files)
 
         self.poll(100, expected_count, 10)
         plex_files = self.__get_plex_files()
