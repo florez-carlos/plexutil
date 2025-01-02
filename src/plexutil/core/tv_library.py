@@ -99,7 +99,16 @@ class TVLibrary(Library):
                 show.editAdvanced(languageOverride=language.value)
 
     def query(self) -> list[Video]:
-        return self.get_section().searchShows()
+        shows = self.get_section().searchShows()
+        episodes = []
+        for show in shows:
+            episodes.extend(show.searchEpisodes())
+
+        for episode in episodes:
+            if not episode.isFullObject():
+                episode.reload()
+
+        return [x for x in episodes if x.isFullObject()]
 
     def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Video]:
         shows = self.get_section().searchShows()
