@@ -150,7 +150,7 @@ class PathOps(Static):
                     f"Did not understand: {len(unknown)} episodes:\n"
                     f"{unknown}"
                 )
-                PlexUtilLogger.get_logger().debug(unknown)
+                PlexUtilLogger.get_logger().debug(description)
                 episodes.extend(known)
 
         return episodes
