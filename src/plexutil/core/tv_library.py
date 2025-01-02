@@ -87,6 +87,9 @@ class TVLibrary(Library):
         debug = f"Manifests: {manifests_dto}\n"
         PlexUtilLogger.get_logger().debug(debug)
 
+        for show in self.get_section().searchShows():
+            show.reload()
+
         self.probe_library()
 
         for manifest_dto in manifests_dto:
@@ -102,6 +105,8 @@ class TVLibrary(Library):
         shows = self.get_section().searchShows()
         episodes = []
         for show in shows:
+            if not show.isFullObject():
+                continue
             episodes.extend(show.searchEpisodes())
 
         for episode in episodes:
