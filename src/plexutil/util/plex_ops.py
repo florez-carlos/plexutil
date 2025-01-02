@@ -185,9 +185,9 @@ class PlexOps(Static):
         unknown_episodes = []
 
         for show in shows:
-            name = show.originalTitle
-            year = int(show.year)
-            for episode in show.episodes():
+            for episode in show.searchEpisodes():
+                if not episode.isFullObject():
+                    continue
                 name = episode.grandparentTitle.lower()
                 episode_number = episode.index
                 season_number = episode.parentIndex
