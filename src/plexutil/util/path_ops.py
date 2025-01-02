@@ -246,7 +246,7 @@ class PathOps(Static):
             the expected parttern
 
         """
-        pattern = r"([a-zA-Z\s]+)\s\((\d{4})\)"
+        pattern = r"([\w\s'']+?)\s*\((\d{4})\)"
         match = re.search(pattern, candidate)
 
         if match:
