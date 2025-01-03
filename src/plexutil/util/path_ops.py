@@ -6,6 +6,7 @@ from pathlib import Path
 from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.dto.tv_episode_dto import TVEpisodeDTO
+from plexutil.dto.tv_series_dto import TVSeriesDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.unexpected_naming_pattern_error import (
     UnexpectedNamingPatternError,
@@ -107,28 +108,26 @@ class PathOps(Static):
         return episodes, unknown
 
     @staticmethod
-    def get_local_tv(paths: list[Path]) -> list[TVEpisodeDTO]:
+    def get_local_tv(paths: list[Path]) -> list[TVSeriesDTO]:
         """
-        Scans local directories in search of TV episodes
-        A TV episode is expected to have a file name with a pattern of S##E##
-        and a parent directory with a pattern of <series_name> (<year>)
+        Scans local directories in search of TV Series
+        Expects to find directories with a pattern of <series_name> (<year>)
 
         Expects to see:
         <series_name> (<year>) *directory
-            |- S01E01
-            |- S01E02
-            ...
+        <series_name> (<year>) *directory
+        ...
 
         Args:
             paths (pathlib.Path): The directories to scan
 
         Returns:
-            [TVEpisodeDTO]: Found episodes
+            [TVSeriesDTO]: Found series
 
         Raises:
             ValueError: If any of the parent paths is not a directory
         """
-        episodes = []
+        series = []
 
         for path in paths:
             for tv_dir in path.iterdir():
@@ -138,22 +137,28 @@ class PathOps(Static):
                     )
                     raise ValueError(description)
 
-                name, year = PathOps.get_show_name_and_year_from_str(
-                    tv_dir.name
-                )
-                known, unknown = PathOps.__walk_tv_structure(
-                    name, year, tv_dir
-                )
+                known = []
+                unknown = []
+
+                try:
+                    name, year = PathOps.get_show_name_and_year_from_str(
+                        tv_dir.name
+                    )
+                    tv_series_dto = TVSeriesDTO(name=name, year=year)
+                    known.append(tv_series_dto)
+                except UnexpectedNamingPatternError:
+                    unknown.append(tv_dir.name)
+
                 description = (
-                    f"Evaluated TV Series: {name}\n"
-                    f"Understood {len(known)} episodes\n"
-                    f"Did not understand: {len(unknown)} episodes:\n"
+                    f"Evaluated Local TV:\n"
+                    f"Understood {len(known)} shows\n"
+                    f"Did not understand: {len(unknown)} shows:\n"
                     f"{unknown}"
                 )
                 PlexUtilLogger.get_logger().debug(description)
-                episodes.extend(known)
+                series.extend(known)
 
-        return episodes
+        return series
 
     @staticmethod
     def get_local_movies(paths: list[Path]) -> list[MovieDTO]:

@@ -87,9 +87,6 @@ class TVLibrary(Library):
         debug = f"Manifests: {manifests_dto}\n"
         PlexUtilLogger.get_logger().debug(debug)
 
-        for show in self.get_section().searchShows():
-            show.reload()
-
         self.probe_library()
 
         for manifest_dto in manifests_dto:
@@ -103,17 +100,14 @@ class TVLibrary(Library):
 
     def query(self) -> list[Video]:
         shows = self.get_section().searchShows()
-        episodes = []
+        ready_shows = []
         for show in shows:
-            if not show.isFullObject():
-                continue
-            episodes.extend(show.searchEpisodes())
+            if hasattr(show, "title") and hasattr(show, "year"):
+                ready_shows.append(show)
+            else:
+                show.reload()
 
-        for episode in episodes:
-            if not episode.isFullObject():
-                episode.reload()
-
-        return [x for x in episodes if x.isFullObject()]
+        return ready_shows
 
     def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Video]:
         shows = self.get_section().searchShows()

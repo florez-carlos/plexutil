@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.movie_dto import MovieDTO
     from plexutil.dto.song_dto import SongDTO
-    from plexutil.dto.tv_episode_dto import TVEpisodeDTO
+    from plexutil.dto.tv_series_dto import TVSeriesDTO
 
 from alive_progress import alive_bar
 
@@ -264,7 +264,7 @@ class Library(ABC):
 
     def __get_local_files(
         self,
-    ) -> list[SongDTO] | list[MovieDTO] | list[TVEpisodeDTO]:
+    ) -> list[SongDTO] | list[MovieDTO] | list[TVSeriesDTO]:
         """
         Private method to get local files
 

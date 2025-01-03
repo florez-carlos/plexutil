@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, cast
 from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
-from plexutil.dto.tv_episode_dto import TVEpisodeDTO
+from plexutil.dto.tv_series_dto import TVSeriesDTO
 from plexutil.enums.file_type import FileType
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -111,7 +111,7 @@ class PlexOps(Static):
             )
         elif all(isinstance(plex_file, Show) for plex_file in plex_files):
             tv = PathOps.get_local_tv(locations)
-            _, unknown = PlexOps.filter_episodes(
+            _, unknown = PlexOps.filter_series(
                 cast(list[Show], plex_files), tv
             )
         elif all(isinstance(plex_file, Movie) for plex_file in plex_files):
@@ -164,51 +164,38 @@ class PlexOps(Static):
         return filtered_tracks, unknown_songs
 
     @staticmethod
-    def filter_episodes(
+    def filter_series(
         shows: list[Show],
-        episodes: list[TVEpisodeDTO],
-    ) -> tuple[list[Show], list[TVEpisodeDTO]]:
+        series: list[TVSeriesDTO],
+    ) -> tuple[list[Show], list[TVSeriesDTO]]:
         """
         Filters the provided Shows with the provided episodes
 
         Args:
             shows ([plexapi.video.Show]): plexapi shows
-            episodes ([TVEpisodeDTO]): TVEpisodeDTOs to match against shows
+            episodes ([TVSeriesDTO]): TVSeriesDTOs to match against shows
 
         Returns:
             A tuple of:
-            1) Shows that match the provided episodes
-            2) Episodes that did not match to any Shows
+            1) Shows that match the provided series
+            2) Series that did not match to any Shows
         """
-        plex_tv_episodes = []
-        filtered_episodes = []
-        unknown_episodes = []
+        plex_shows = []
+        filtered_series = []
+        unknown_series = []
 
         for show in shows:
-            for episode in show.searchEpisodes():
-                if not episode.isFullObject():
-                    continue
-                name = episode.grandparentTitle.lower()
-                episode_number = episode.index
-                season_number = episode.parentIndex
-                year = episode.grandparentYear
+            plex_show = TVSeriesDTO(name=show.title, year=cast(int, show.year))
 
-                plex_episode = TVEpisodeDTO(
-                    name=name,
-                    first_aired_year=year,
-                    episode=episode_number,
-                    season=season_number,
-                )
+            plex_shows.append(plex_show)
 
-                plex_tv_episodes.append(plex_episode)
-
-        for episode in episodes:
-            if episode not in plex_tv_episodes:
-                unknown_episodes.append(episode)
+        for a_series in series:
+            if a_series not in plex_shows:
+                unknown_series.append(a_series)
             else:
-                filtered_episodes.append(plex_tv_episodes)
+                filtered_series.append(a_series)
 
-        return filtered_episodes, unknown_episodes
+        return filtered_series, unknown_series
 
     @staticmethod
     def filter_movies(

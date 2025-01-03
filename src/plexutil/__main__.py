@@ -50,13 +50,19 @@ def main() -> None:
 
         config = ServerConfig(bootstrap_paths_dto, server_config_dto)
 
-        song_paths = [PathOps.get_path_from_str(x) for x in songs]
-        songs_dto = PathOps.get_local_songs(song_paths)
+        songs_dto = []
+        music_playlist_dto = MusicPlaylistDTO()
+        if (
+            library_type is LibraryType.MUSIC
+            or library_type is LibraryType.MUSIC_PLAYLIST
+        ):
+            song_paths = [PathOps.get_path_from_str(x) for x in songs]
+            songs_dto = PathOps.get_local_songs(song_paths)
 
-        music_playlist_dto = MusicPlaylistDTO(
-            name=playlist_name,
-            songs=songs_dto,
-        )
+            music_playlist_dto = MusicPlaylistDTO(
+                name=playlist_name,
+                songs=songs_dto,
+            )
 
         if request == UserRequest.CONFIG:
             server_config_dto = config.save()
