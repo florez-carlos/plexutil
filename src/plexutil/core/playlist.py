@@ -156,7 +156,7 @@ class Playlist(Library):
             )
 
             for track in plex_playlist.items():
-                song_dto = song_mapper.get_dto(PlexOps.get_song_entity(track))
+                song_dto = PlexOps.get_song_dto(track)
                 music_playlist_dto.songs.append(song_dto)
 
             to_save.append(music_playlist_dto)
@@ -190,8 +190,8 @@ class Playlist(Library):
         playlists = service.get(entities)
 
         for track in tracks:
-            song_entity = PlexOps.get_song_entity(track)
-            plex_track_dict[str(song_entity.name)] = track
+            song_dto = PlexOps.get_song_dto(track)
+            plex_track_dict[song_dto.name] = track
 
         for playlist in playlists:
             playlist_name = playlist.name
