@@ -308,4 +308,3 @@ class PlexOps(Static):
                 unknown_movies.append(movie)
 
         return filtered_movies, unknown_movies
-
