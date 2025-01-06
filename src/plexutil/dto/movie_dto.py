@@ -1,14 +1,13 @@
-from dataclasses import dataclass
-
-from plexutil.enums.file_type import FileType
+from dataclasses import dataclass, field
+from pathlib import Path
 
 
 # Frozen=True creates an implicit hash method, eq is created by default
 @dataclass(frozen=True)
 class MovieDTO:
     name: str = ""
-    extension: FileType = FileType.UNKNOWN
     year: int = 0
+    locations: list[Path] = field(default_factory=list)
 
     def __str__(self) -> str:
         return f"{self.name} ({self.year}) "
