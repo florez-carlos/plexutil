@@ -7,7 +7,6 @@ from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.dto.tv_series_dto import TVSeriesDTO
-from plexutil.enums.file_type import FileType
 from plexutil.exception.unexpected_naming_pattern_error import (
     UnexpectedNamingPatternError,
 )
@@ -177,17 +176,11 @@ class PathOps(Static):
         for path in paths:
             if path.is_dir():
                 file_name = path.name
-                file_extension = FileType.UNKNOWN
             else:
                 file_name = path.stem
-                file_extension = FileType.get_file_type_from_str(
-                    path.suffix.replace(".", "")
-                )
 
             name, year = PathOps.get_show_name_and_year_from_str(file_name)
-            movies.append(
-                MovieDTO(name=name, year=year, extension=file_extension)
-            )
+            movies.append(MovieDTO(name=name, year=year, locations=paths))
 
         return movies
 
@@ -213,20 +206,8 @@ class PathOps(Static):
         for path in paths:
             if path.is_file():
                 file_name = path.stem
-                file_extension = path.suffix.rsplit(".")[1]
-                try:
-                    extension = FileType.get_musical_file_type_from_str(
-                        file_extension
-                    )
-                except ValueError:
-                    description = (
-                        f"Encountered an unsupported file "
-                        f"when scanning for local songs: {file_extension}"
-                    )
-                    PlexUtilLogger.get_logger().debug(description)
-                    continue
 
-                files.append(SongDTO(name=file_name, extension=extension))
+                files.append(SongDTO(name=file_name, locations=paths))
             elif path.is_dir():
                 files.extend(PathOps.get_local_songs(list(path.iterdir())))
 
