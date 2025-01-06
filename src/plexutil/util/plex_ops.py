@@ -6,13 +6,11 @@ from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
 from plexutil.dto.tv_series_dto import TVSeriesDTO
-from plexutil.enums.file_type import FileType
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
 from plexutil.mapper.song_mapper import SongMapper
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
-from plexutil.model.song_entity import SongEntity
 from plexutil.static import Static
 from plexutil.util.path_ops import PathOps
 
@@ -63,26 +61,108 @@ class PlexOps(Static):
         return MusicPlaylistEntity(name=playlist.title)
 
     @staticmethod
-    def get_song_entity(track: Track) -> SongEntity:
+    def get_song_dto(track: Track) -> SongDTO:
         """
-        Maps a plexapi.server.Track to a SongEntity
+        Maps a plexapi.server.Track to a SongDTO
 
         Args:
             track (plexapi.server.Track): A plex track
 
         Returns:
-            MusicPlaylistEntity
+            SongDTO
+        Raises:
+            ValueError: If track has no locations or any location points
+            to a dir and not a file
         """
-        plex_track_absolute_location = track.locations[0]
-        plex_track_path = PathOps.get_path_from_str(
-            plex_track_absolute_location,
-        )
-        plex_track_full_name = plex_track_path.name
-        plex_track_name = plex_track_full_name.rsplit(".", 1)[0]
-        plex_track_ext = FileType.get_file_type_from_str(
-            plex_track_full_name.rsplit(".", 1)[1],
-        )
-        return SongEntity(name=plex_track_name, extension=plex_track_ext.value)
+        locations = track.locations
+        if not locations:
+            description = (
+                f"Encountered a track without locations: {track.title}"
+            )
+            raise ValueError(description)
+
+        path_locations = [PathOps.get_path_from_str(x) for x in locations]
+
+        for path_location in path_locations:
+            if path_location.is_dir():
+                description = (
+                    f"Expected to find a file not a dir:{path_location}"
+                )
+                raise ValueError(description)
+
+        plex_track = PathOps.get_path_from_str(track.locations[0])
+        plex_track_name = plex_track.stem
+
+        return SongDTO(name=plex_track_name, locations=path_locations)
+
+    @staticmethod
+    def get_movie_dto(movie: Movie) -> MovieDTO:
+        """
+        Maps a plexapi.server.Movie to a MovieDTO
+
+        Args:
+            track (plexapi.server.Movie): A plex movie
+
+        Returns:
+            MovieDTO
+        Raises:
+            ValueError: If movie has no locations or any location points
+            to... TODO
+        """
+        locations = movie.locations
+        if not locations:
+            description = (
+                f"Encountered a movie without locations: {movie.title}"
+            )
+            raise ValueError(description)
+
+        path_locations = [PathOps.get_path_from_str(x) for x in locations]
+
+        # TODO:what do I expect here?
+        for path_location in path_locations:
+            print(f"MOVIE PATH LOCATION TODO: {path_location}")
+            # if path_location.is_dir():
+            #     description = (
+            #         f"Expected to find a file not a dir:{path_location}"
+            #     )
+            #     raise ValueError(description)
+
+        plex_movie = PathOps.get_path_from_str(movie.locations[0])
+        name, year = PathOps.get_show_name_and_year_from_str(str(plex_movie))
+
+        return MovieDTO(name=name, year=year, locations=path_locations)
+
+    @staticmethod
+    def get_tv_series_dto(show: Show) -> TVSeriesDTO:
+        """
+        Maps a plexapi.server.Show to a TVSeriesDTO
+
+        Args:
+            show (plexapi.server.Show): A plex show
+
+        Returns:
+            TVSeriesDTO
+        """
+        locations = show.locations
+        if not locations:
+            description = f"Encountered a show without locations: {show.title}"
+            raise ValueError(description)
+
+        path_locations = [PathOps.get_path_from_str(x) for x in locations]
+
+        # TODO:what do I expect here?
+        for path_location in path_locations:
+            print(f"TV PATH LOCATION TODO: {path_location}")
+            # if path_location.is_dir():
+            #     description = (
+            #         f"Expected to find a file not a dir:{path_location}"
+            #     )
+            #     raise ValueError(description)
+
+        plex_show = PathOps.get_path_from_str(show.locations[0])
+        name, year = PathOps.get_show_name_and_year_from_str(str(plex_show))
+
+        return TVSeriesDTO(name=name, year=year, locations=path_locations)
 
     @staticmethod
     def validate_local_files(
@@ -104,6 +184,10 @@ class PlexOps(Static):
             LibraryIllegalStateError: if local files do not match plex files
             LibraryOpError: If plex_file type is not supported
         """
+        if not plex_files:
+            description = "Did not receive any Plex Files\n"
+            raise LibraryIllegalStateError(description)
+
         if all(isinstance(plex_file, Track) for plex_file in plex_files):
             songs = PathOps.get_local_songs(locations)
             _, unknown = PlexOps.filter_tracks(
@@ -152,7 +236,7 @@ class PlexOps(Static):
         mapper = SongMapper()
         track_song = {}
         for track in tracks:
-            song_dto = mapper.get_dto(PlexOps.get_song_entity(track))
+            song_dto = PlexOps.get_song_dto(track)
             track_song[song_dto] = track
 
         for song in songs:
@@ -185,8 +269,7 @@ class PlexOps(Static):
         unknown_series = []
 
         for show in shows:
-            plex_show = TVSeriesDTO(name=show.title, year=cast(int, show.year))
-
+            plex_show = PlexOps.get_tv_series_dto(show)
             plex_shows.append(plex_show)
 
         for a_series in series:
@@ -225,3 +308,4 @@ class PlexOps(Static):
                 unknown_movies.append(movie)
 
         return filtered_movies, unknown_movies
+
