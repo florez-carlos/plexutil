@@ -74,26 +74,18 @@ class PlexOps(Static):
             ValueError: If track has no locations or any location points
             to a dir and not a file
         """
-        locations = track.locations
-        if not locations:
-            description = (
-                f"Encountered a track without locations: {track.title}"
-            )
+        location = track.locations[0]
+
+        path_location = PathOps.get_path_from_str(location)
+
+        if path_location.is_dir():
+            description = f"Expected to find a file not a dir:{path_location}"
             raise ValueError(description)
 
-        path_locations = [PathOps.get_path_from_str(x) for x in locations]
-
-        for path_location in path_locations:
-            if path_location.is_dir():
-                description = (
-                    f"Expected to find a file not a dir:{path_location}"
-                )
-                raise ValueError(description)
-
-        plex_track = PathOps.get_path_from_str(track.locations[0])
+        plex_track = PathOps.get_path_from_str(location)
         plex_track_name = plex_track.stem
 
-        return SongDTO(name=plex_track_name, locations=path_locations)
+        return SongDTO(name=plex_track_name, location=path_location)
 
     @staticmethod
     def get_movie_dto(movie: Movie) -> MovieDTO:
