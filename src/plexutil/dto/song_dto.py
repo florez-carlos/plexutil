@@ -6,7 +6,7 @@ from pathlib import Path
 @dataclass(frozen=True)
 class SongDTO:
     name: str = ""
-    locations: list[Path] = field(default_factory=list)
+    location: Path = Path()
 
     def __str__(self) -> str:
         return f"{self.name}"
