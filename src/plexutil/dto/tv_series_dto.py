@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -7,7 +7,7 @@ from pathlib import Path
 class TVSeriesDTO:
     name: str = ""
     year: int = 0
-    locations: list[Path] = field(default_factory=list)
+    location: Path = Path()
 
     def __str__(self) -> str:
         return f"{self.name} ({int(self.year)})"
