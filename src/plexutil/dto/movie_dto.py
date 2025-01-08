@@ -10,4 +10,4 @@ class MovieDTO:
     location: Path = Path()
 
     def __str__(self) -> str:
-        return f"{self.name} ({self.year}) "
+        return f"{self.name} ({self.year}) [{self.location!s}]"
