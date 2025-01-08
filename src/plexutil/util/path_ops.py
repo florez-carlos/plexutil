@@ -273,7 +273,7 @@ class PathOps(Static):
         match = re.search(pattern, candidate)
 
         if match:
-            show_name = match.group(1)
+            show_name = match.group(1).strip()
             year = match.group(2)
         else:
             description = (
