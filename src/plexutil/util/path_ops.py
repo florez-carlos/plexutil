@@ -163,7 +163,6 @@ class PathOps(Static):
 
         for path in paths:
             for tv_dir in path.iterdir():
-                
                 if not tv_dir.is_dir():
                     description = (
                         "WARNING: Expected to see a TV Series directory "
