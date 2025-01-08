@@ -225,7 +225,7 @@ class PathOps(Static):
                     )
                 except UnexpectedNamingPatternError:
                     description = (
-                        f"Could not extract name, year from a movie: {child}\n"
+                        f"Could not extract name, year from a movie: {child} "
                         f"Proceeding with default MovieDTO"
                     )
                     PlexUtilLogger.get_logger().debug(description)
