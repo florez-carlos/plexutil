@@ -31,6 +31,14 @@ formatters:
             ERROR: red
             CRITICAL: red,bg_white
         datefmt: '%Y-%m-%dT%H:%M:%SZ'
+
+    simple:
+        format: '%(log_color)s%(asctime)s %(levelname)-8s%(reset)s  %(message)s'
+        datefmt: '%Y-%m-%dT%H:%M:%SZ'
+            
+    detailed:
+        format: '%(log_color)s%(asctime)s | %(process)d | %(levelname)s | %(filename)s | %(lineno)d | %(funcName)s | %(message)s%(reset)s'
+        datefmt: '%Y-%m-%dT%H:%M:%SZ'
         
 handlers:
     console_color:
@@ -43,7 +51,7 @@ handlers:
         filename: 'fallback_regular.log'
         class: logging.FileHandler
         level: DEBUG
-        formatter: detailed_color
+        formatter: detailed
         encoding: utf8
 
 loggers:
