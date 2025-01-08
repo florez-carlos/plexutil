@@ -9,4 +9,4 @@ class SongDTO:
     location: Path = Path()
 
     def __str__(self) -> str:
-        return f"{self.name}"
+        return f"{self.name} [{self.location!s}]"

@@ -10,4 +10,4 @@ class TVSeriesDTO:
     location: Path = Path()
 
     def __str__(self) -> str:
-        return f"{self.name} ({int(self.year)})"
+        return f"{self.name} ({self.year!s} [{self.location!s}])"
