@@ -168,7 +168,8 @@ class PathOps(Static):
                         "WARNING: Expected to see a TV Series directory "
                         f"but found this: {tv_dir!s}\n"
                     )
-                    PlexUtilLogger.get_logger().debug(description)
+                    PlexUtilLogger.get_logger().warning(description)
+                    series.append(TVSeriesDTO(location=tv_dir))
                     continue
 
                 try:
