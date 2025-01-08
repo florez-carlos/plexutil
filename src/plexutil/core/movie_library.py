@@ -82,6 +82,14 @@ class MovieLibrary(Library):
         Returns:
             list[plexapi.video.Video]: Movies from the current Section
         """
+        op_type = "QUERY"
+        if not self.exists():
+            description = f"Movie Library '{self.name}' does not exist"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MOVIE,
+                description=description,
+            )
         return cast(list[Video], self.get_section().searchMovies())
 
     def delete(self) -> None:
