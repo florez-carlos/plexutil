@@ -216,8 +216,20 @@ class PathOps(Static):
                 else:
                     file_name = child.stem
 
-                name, year = PathOps.get_show_name_and_year_from_str(file_name)
-                movies.append(MovieDTO(name=name, year=year, location=child))
+                try:
+                    name, year = PathOps.get_show_name_and_year_from_str(
+                        file_name
+                    )
+                    movies.append(
+                        MovieDTO(name=name, year=year, location=child)
+                    )
+                except UnexpectedNamingPatternError:
+                    description = (
+                        f"Could not extract name, year from a movie: {child}\n"
+                        f"Proceeding with default MovieDTO"
+                    )
+                    PlexUtilLogger.get_logger().debug(description)
+                    movies.append(MovieDTO(location=child))
 
         return movies
 
