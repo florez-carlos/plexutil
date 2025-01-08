@@ -167,6 +167,7 @@ class PathOps(Static):
                     description = (
                         "WARNING: Expected to see a TV Series directory "
                         f"but found this: {tv_dir!s}\n"
+                        f"https://support.plex.tv/articles/naming-and-organizing-your-tv-show-files/\n"
                     )
                     PlexUtilLogger.get_logger().warning(description)
                     series.append(TVSeriesDTO(location=tv_dir))
