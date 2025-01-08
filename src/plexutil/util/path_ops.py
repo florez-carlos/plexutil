@@ -7,6 +7,7 @@ from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.dto.tv_episode_dto import TVEpisodeDTO
 from plexutil.dto.tv_series_dto import TVSeriesDTO
+from plexutil.enums.file_type import FileType
 from plexutil.exception.unexpected_naming_pattern_error import (
     UnexpectedNamingPatternError,
 )
@@ -107,6 +108,41 @@ class PathOps(Static):
         return episodes, unknown
 
     @staticmethod
+    def __walk_music_structure(path: Path) -> tuple[list[SongDTO], list[str]]:
+        """
+        *Private, refer to PathOps.get_local_songs()
+        Walks subdirectories in search of songs
+
+        Args:
+            path (pathlib.Path): The parent directory of the TV show
+
+        Returns:
+            A tuple of:
+            1) [SongDTO] for each file found
+            2) [str] The name of the files encountered that were not
+            understood as songs
+        """
+        songs = []
+        unknown = []
+
+        children = path.rglob("*")
+        for child in children:
+            if child.is_dir():
+                sub_songs, sub_unknown = PathOps.__walk_music_structure(child)
+                songs.extend(sub_songs)
+                unknown.extend(sub_unknown)
+            elif child.is_file():
+                try:
+                    extension = child.suffix.replace(".", "")
+                    FileType.get_musical_file_type_from_str(extension)
+                    song_dto = SongDTO(name=child.stem, location=child)
+                    songs.append(song_dto)
+                except ValueError:
+                    unknown.append(child.name)
+
+        return songs, unknown
+
+    @staticmethod
     def get_local_tv(paths: list[Path]) -> list[TVSeriesDTO]:
         """
         Scans local directories in search of TV Series
@@ -180,19 +216,16 @@ class PathOps(Static):
                 file_name = path.stem
 
             name, year = PathOps.get_show_name_and_year_from_str(file_name)
-            movies.append(MovieDTO(name=name, year=year, locations=paths))
+            movies.append(MovieDTO(name=name, year=year, location=path))
 
         return movies
 
     @staticmethod
     def get_local_songs(paths: list[Path]) -> list[SongDTO]:
         """
-        Scans local directories in search of songs
-        Songs are expected to be grouped in the same parent directory
-
-        songs (dir)
-          |-> song.mp3
-          |-> another_song.flac
+        Scans local directories recursively in search of songs
+        A warning will be logged for each unsupported file type
+        see FileType.get_musical_file_type_from_str()
 
         Args:
             paths (pathlib.Path): The directories to scan
@@ -201,17 +234,20 @@ class PathOps(Static):
             [SongDTO]: Found songs
 
         """
-        files = []
+        songs = []
 
         for path in paths:
-            if path.is_file():
-                file_name = path.stem
+            known, unknown = PathOps.__walk_music_structure(path)
+            songs.extend(known)
+            description = (
+                "WARNING: The following songs are of unsupported file type:\n"
+            )
+            for unknown_song in unknown:
+                description = description + f"-> {unknown_song}\n"
 
-                files.append(SongDTO(name=file_name, locations=paths))
-            elif path.is_dir():
-                files.extend(PathOps.get_local_songs(list(path.iterdir())))
+            PlexUtilLogger.get_logger().warning(description)
 
-        return files
+        return songs
 
     @staticmethod
     def get_show_name_and_year_from_str(candidate: str) -> tuple[str, int]:
@@ -232,7 +268,7 @@ class PathOps(Static):
             the expected parttern
 
         """
-        pattern = r"([\w\s'']+?)\s*\((\d{4})\)"
+        pattern = r"([\w\s'’:\-.,·àáâäèéêëìíîïòóôöùúûüçñ]+?)\s*\((\d{4})\)"
         match = re.search(pattern, candidate)
 
         if match:
