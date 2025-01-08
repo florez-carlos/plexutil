@@ -210,13 +210,14 @@ class PathOps(Static):
         """
         movies = []
         for path in paths:
-            if path.is_dir():
-                file_name = path.name
-            else:
-                file_name = path.stem
+            for child in path.iterdir():
+                if child.is_dir():
+                    file_name = child.name
+                else:
+                    file_name = child.stem
 
-            name, year = PathOps.get_show_name_and_year_from_str(file_name)
-            movies.append(MovieDTO(name=name, year=year, location=path))
+                name, year = PathOps.get_show_name_and_year_from_str(file_name)
+                movies.append(MovieDTO(name=name, year=year, location=child))
 
         return movies
 
