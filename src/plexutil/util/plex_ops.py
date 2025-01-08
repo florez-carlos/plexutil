@@ -5,12 +5,13 @@ from typing import TYPE_CHECKING, cast
 from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
+from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.tv_series_dto import TVSeriesDTO
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
-from plexutil.mapper.song_mapper import SongMapper
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
+from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.path_ops import PathOps
 
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
     from plexapi.server import Playlist, PlexServer
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-    from plexutil.dto.movie_dto import MovieDTO
     from plexutil.dto.song_dto import SongDTO
 
 
@@ -61,100 +61,43 @@ class PlexOps(Static):
         return MusicPlaylistEntity(name=playlist.title)
 
     @staticmethod
-    def get_song_dto(track: Track) -> SongDTO:
+    def get_dto_from_plex_media(
+        media: Track | Movie | Show,
+    ) -> SongDTO | MovieDTO | TVSeriesDTO:
         """
-        Maps a plexapi.server.Track to a SongDTO
+        Converts Track,Movie,Show to a corresponding DTO
 
         Args:
-            track (plexapi.server.Track): A plex track
+            media (Track|Movie|Show): The plex media object
 
         Returns:
-            SongDTO
-        Raises:
-            ValueError: If track has no locations or any location points
-            to a dir and not a file
+            SongDTO | MovieDTO | TVSeriesDTO: The converted DTO from media
+
+        Raise:
+            ValueError: If Track/Movie location is not a file
+            or Show location is a dir or media is not a Track/Movie/Show
         """
-        location = track.locations[0]
+        location = PathOps.get_path_from_str(media.locations[0])
 
-        path_location = PathOps.get_path_from_str(location)
-
-        if path_location.is_dir():
-            description = f"Expected to find a file not a dir:{path_location}"
+        if location.is_dir() and not isinstance(media, Show):
+            description = f"Expected to find a file not a dir:{location!s}"
+            raise ValueError(description)
+        elif location.is_file() and isinstance(media, Show):
+            description = f"Expected to find a dir not a file:{location!s}"
             raise ValueError(description)
 
-        plex_track = PathOps.get_path_from_str(location)
-        plex_track_name = plex_track.stem
-
-        return SongDTO(name=plex_track_name, location=path_location)
-
-    @staticmethod
-    def get_movie_dto(movie: Movie) -> MovieDTO:
-        """
-        Maps a plexapi.server.Movie to a MovieDTO
-
-        Args:
-            track (plexapi.server.Movie): A plex movie
-
-        Returns:
-            MovieDTO
-        Raises:
-            ValueError: If movie has no locations or any location points
-            to... TODO
-        """
-        locations = movie.locations
-        if not locations:
-            description = (
-                f"Encountered a movie without locations: {movie.title}"
-            )
+        if isinstance(media, Track):
+            name = location.stem
+            return SongDTO(name=name, location=location)
+        elif isinstance(media, Movie):
+            name, year = PathOps.get_show_name_and_year_from_str(str(location))
+            return MovieDTO(name=name, year=year, location=location)
+        elif isinstance(media, Show):
+            name, year = PathOps.get_show_name_and_year_from_str(str(location))
+            return TVSeriesDTO(name=name, year=year, location=location)
+        else:
+            description = f"unsupported media: {type(media)}"
             raise ValueError(description)
-
-        path_locations = [PathOps.get_path_from_str(x) for x in locations]
-
-        # TODO:what do I expect here?
-        for path_location in path_locations:
-            print(f"MOVIE PATH LOCATION TODO: {path_location}")
-            # if path_location.is_dir():
-            #     description = (
-            #         f"Expected to find a file not a dir:{path_location}"
-            #     )
-            #     raise ValueError(description)
-
-        plex_movie = PathOps.get_path_from_str(movie.locations[0])
-        name, year = PathOps.get_show_name_and_year_from_str(str(plex_movie))
-
-        return MovieDTO(name=name, year=year, locations=path_locations)
-
-    @staticmethod
-    def get_tv_series_dto(show: Show) -> TVSeriesDTO:
-        """
-        Maps a plexapi.server.Show to a TVSeriesDTO
-
-        Args:
-            show (plexapi.server.Show): A plex show
-
-        Returns:
-            TVSeriesDTO
-        """
-        locations = show.locations
-        if not locations:
-            description = f"Encountered a show without locations: {show.title}"
-            raise ValueError(description)
-
-        path_locations = [PathOps.get_path_from_str(x) for x in locations]
-
-        # TODO:what do I expect here?
-        for path_location in path_locations:
-            print(f"TV PATH LOCATION TODO: {path_location}")
-            # if path_location.is_dir():
-            #     description = (
-            #         f"Expected to find a file not a dir:{path_location}"
-            #     )
-            #     raise ValueError(description)
-
-        plex_show = PathOps.get_path_from_str(show.locations[0])
-        name, year = PathOps.get_show_name_and_year_from_str(str(plex_show))
-
-        return TVSeriesDTO(name=name, year=year, locations=path_locations)
 
     @staticmethod
     def validate_local_files(
@@ -182,17 +125,17 @@ class PlexOps(Static):
 
         if all(isinstance(plex_file, Track) for plex_file in plex_files):
             songs = PathOps.get_local_songs(locations)
-            _, unknown = PlexOps.filter_tracks(
+            _, unknown = PlexOps.filter_plex_media(
                 cast(list[Track], plex_files), songs
             )
         elif all(isinstance(plex_file, Show) for plex_file in plex_files):
             tv = PathOps.get_local_tv(locations)
-            _, unknown = PlexOps.filter_series(
+            _, unknown = PlexOps.filter_plex_media(
                 cast(list[Show], plex_files), tv
             )
         elif all(isinstance(plex_file, Movie) for plex_file in plex_files):
             movies = PathOps.get_local_movies(locations)
-            _, unknown = PlexOps.filter_movies(
+            _, unknown = PlexOps.filter_plex_media(
                 cast(list[Movie], plex_files), movies
             )
         else:
@@ -203,100 +146,49 @@ class PlexOps(Static):
             description = "These local files are unknown to the plex server:\n"
             for u in unknown:
                 description = description + f"-> {u!s}\n"
+            PlexUtilLogger.get_logger().debug(description)
 
             raise LibraryIllegalStateError(description)
 
     @staticmethod
-    def filter_tracks(
-        tracks: list[Track],
-        songs: list[SongDTO],
-    ) -> tuple[list[Track], list[SongDTO]]:
+    def filter_plex_media(
+        plex_media: list[Movie] | list[Track] | list[Show],
+        dtos: list[MovieDTO] | list[SongDTO] | list[TVSeriesDTO],
+    ) -> tuple[
+        list[MovieDTO] | list[SongDTO] | list[TVSeriesDTO],
+        list[MovieDTO] | list[SongDTO] | list[TVSeriesDTO],
+    ]:
         """
-        Filters the provided tracks with the provided songs
+        Filters the provided Plex media with the provided dtos
 
         Args:
-            tracks ([plexapi.audio.Track]): plexapi tracks
-            songs ([SongDTO]): SongDTOs to match against tracks
+            plex_media ([
+            plexapi.video.Movie |
+            plexapi.video.Show |
+            plexapi.audio.Track]): A list of plex media to compare against
+
+            plexapi movies
+            dtos ([
+            MovieDTO |
+            SongDTO |
+            TVSeriesDTO]): Dtos to match against plex media
 
         Returns:
             A tuple of:
-            1) Tracks that match the provided songs
-            2) Songs that did not match to any tracks
+            1) DTOs that match the provided plex media
+            2) DTOS that did not match to any plex media
         """
-        filtered_tracks = []
-        unknown_songs = []
-        mapper = SongMapper()
-        track_song = {}
-        for track in tracks:
-            song_dto = PlexOps.get_song_dto(track)
-            track_song[song_dto] = track
+        filtered_media = []
+        unknown_media = []
 
-        for song in songs:
-            if song in track_song:
-                filtered_tracks.append(track_song[song])
+        plex_media_dto = []
+        for media in plex_media:
+            plex_media_dto.append(PlexOps.get_dto_from_plex_media(media))
+
+        for dto in dtos:
+            if dto not in plex_media_dto:
+                unknown_media.append(dto)
             else:
-                unknown_songs.append(song)
+                filtered_media.append(dto)
 
-        return filtered_tracks, unknown_songs
-
-    @staticmethod
-    def filter_series(
-        shows: list[Show],
-        series: list[TVSeriesDTO],
-    ) -> tuple[list[Show], list[TVSeriesDTO]]:
-        """
-        Filters the provided Shows with the provided episodes
-
-        Args:
-            shows ([plexapi.video.Show]): plexapi shows
-            episodes ([TVSeriesDTO]): TVSeriesDTOs to match against shows
-
-        Returns:
-            A tuple of:
-            1) Shows that match the provided series
-            2) Series that did not match to any Shows
-        """
-        plex_shows = []
-        filtered_series = []
-        unknown_series = []
-
-        for show in shows:
-            plex_show = PlexOps.get_tv_series_dto(show)
-            plex_shows.append(plex_show)
-
-        for a_series in series:
-            if a_series not in plex_shows:
-                unknown_series.append(a_series)
-            else:
-                filtered_series.append(a_series)
-
-        return filtered_series, unknown_series
-
-    @staticmethod
-    def filter_movies(
-        plex_movies: list[Movie], movies: list[MovieDTO]
-    ) -> tuple[list[Movie], list[MovieDTO]]:
-        """
-        Filters the provided Plex Movies with the provided Movies
-
-        Args:
-            plex_movies ([plexapi.video.Movie]): plexapi movies
-            movies ([MovieDTO]): MovieDTOs to match against plex movies
-
-        Returns:
-            A tuple of:
-            1) Plex movies that match the provided movies
-            2) Movies that did not match to any Plex Movies
-        """
-        filtered_movies = []
-        unknown_movies = []
-
-        for movie in movies:
-            found = [x for x in plex_movies if movie.name == x.title]
-            if found:
-                found = found[0]
-                filtered_movies.append(found)
-            else:
-                unknown_movies.append(movie)
-
-        return filtered_movies, unknown_movies
+        return filtered_media, unknown_media
