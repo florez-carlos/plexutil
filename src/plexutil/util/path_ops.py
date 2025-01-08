@@ -176,7 +176,9 @@ class PathOps(Static):
                     name, year = PathOps.get_show_name_and_year_from_str(
                         tv_dir.name
                     )
-                    tv_series_dto = TVSeriesDTO(name=name, year=year)
+                    tv_series_dto = TVSeriesDTO(
+                        name=name, year=year, location=tv_dir
+                    )
                 except UnexpectedNamingPatternError:
                     description = (
                         f"Could not extract name, year from a series: {tv_dir} "
@@ -205,10 +207,7 @@ class PathOps(Static):
         movies = []
         for path in paths:
             for child in path.iterdir():
-                if child.is_dir():
-                    file_name = child.name
-                else:
-                    file_name = child.stem
+                file_name = child.name if child.is_dir() else child.stem
 
                 try:
                     name, year = PathOps.get_show_name_and_year_from_str(
