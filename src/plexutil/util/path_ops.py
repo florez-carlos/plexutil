@@ -253,7 +253,8 @@ class PathOps(Static):
             known, unknown = PathOps.__walk_music_structure(path)
             songs.extend(known)
             description = (
-                "WARNING: The following songs are of unsupported file type:\n"
+                "WARNING: The following song extension types "
+                "are not supported by plexutil:\n"
             )
             for unknown_song in unknown:
                 description = description + f"-> {unknown_song}\n"
