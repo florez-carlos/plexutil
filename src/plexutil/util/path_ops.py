@@ -158,40 +158,34 @@ class PathOps(Static):
 
         Returns:
             [TVSeriesDTO]: Found series
-
-        Raises:
-            ValueError: If any of the parent paths is not a directory
         """
         series = []
 
         for path in paths:
             for tv_dir in path.iterdir():
+                
                 if not tv_dir.is_dir():
                     description = (
-                        f"Expected to encounter a directory: {tv_dir!s}"
+                        "WARNING: Expected to see a TV Series directory "
+                        f"but found this: {tv_dir!s}\n"
                     )
-                    raise ValueError(description)
-
-                known = []
-                unknown = []
+                    PlexUtilLogger.get_logger().debug(description)
+                    continue
 
                 try:
                     name, year = PathOps.get_show_name_and_year_from_str(
                         tv_dir.name
                     )
                     tv_series_dto = TVSeriesDTO(name=name, year=year)
-                    known.append(tv_series_dto)
                 except UnexpectedNamingPatternError:
-                    unknown.append(tv_dir.name)
+                    description = (
+                        f"Could not extract name, year from a series: {tv_dir} "
+                        f"Proceeding with default TVSeriesDTO"
+                    )
+                    PlexUtilLogger.get_logger().debug(description)
+                    tv_series_dto = TVSeriesDTO(location=tv_dir)
 
-                description = (
-                    f"Evaluated Local TV:\n"
-                    f"Understood {len(known)} shows\n"
-                    f"Did not understand: {len(unknown)} shows:\n"
-                    f"{unknown}"
-                )
-                PlexUtilLogger.get_logger().debug(description)
-                series.extend(known)
+                series.append(tv_series_dto)
 
         return series
 
