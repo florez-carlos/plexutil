@@ -160,17 +160,18 @@ class PathOps(Static):
             [TVSeriesDTO]: Found series
         """
         series = []
+        unknown = []
 
         for path in paths:
             for tv_dir in path.iterdir():
                 if not tv_dir.is_dir():
                     description = (
-                        "WARNING: Expected to see a TV Series directory "
-                        f"but found this: {tv_dir!s}\n"
-                        f"https://support.plex.tv/articles/naming-and-organizing-your-tv-show-files/\n"
+                        f"Could not extract name, year from a series: {tv_dir}"
+                        f"Proceeding with default TVSeriesDTO"
                     )
-                    PlexUtilLogger.get_logger().warning(description)
+                    PlexUtilLogger.get_logger().debug(description)
                     series.append(TVSeriesDTO(location=tv_dir))
+                    unknown.append(tv_dir)
                     continue
 
                 try:
@@ -187,8 +188,28 @@ class PathOps(Static):
                     )
                     PlexUtilLogger.get_logger().debug(description)
                     tv_series_dto = TVSeriesDTO(location=tv_dir)
+                    unknown.append(tv_series_dto)
 
                 series.append(tv_series_dto)
+
+        description = (
+            f"Evaluated local TV.\n"
+            f"Understood: {len(series)-len(unknown)!s}\n"
+            f"Unknown: {len(unknown)!s}\n"
+        )
+        PlexUtilLogger.get_logger().debug(description)
+        if unknown:
+            description = (
+                "WARNING: Plexutil failed to understand some path as series:\n"
+            )
+            for unk in unknown:
+                description = description + f"-> {unk}\n"
+            description = description + (
+                "https://support.plex.tv/articles/"
+                "naming-and-organizing-your-tv-show-files/"
+            )
+
+            PlexUtilLogger.get_logger().warning(description)
 
         return series
 
