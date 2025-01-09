@@ -220,8 +220,7 @@ class PathOps(Static):
                     )
                 except UnexpectedNamingPatternError:
                     description = (
-                        f"WARNING: Could not extract name, year "
-                        f"from a movie: {child} "
+                        f"Could not extract name, year from a movie: {child} "
                         f"Proceeding with default MovieDTO"
                     )
                     unknown.append(child)
@@ -236,7 +235,7 @@ class PathOps(Static):
         PlexUtilLogger.get_logger().debug(description)
         if unknown:
             description = (
-                "Plexutil failed to understand some paths as movies:\n"
+                "WARNING: Plexutil failed to understand some path as movies:\n"
             )
             for unk in unknown:
                 description = description + f"-> {unk}\n"
