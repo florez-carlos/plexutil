@@ -188,7 +188,7 @@ class PathOps(Static):
                     )
                     PlexUtilLogger.get_logger().debug(description)
                     tv_series_dto = TVSeriesDTO(location=tv_dir)
-                    unknown.append(tv_series_dto)
+                    unknown.append(tv_dir)
 
                 series.append(tv_series_dto)
 
