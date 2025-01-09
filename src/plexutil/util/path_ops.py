@@ -166,7 +166,7 @@ class PathOps(Static):
             for tv_dir in path.iterdir():
                 if not tv_dir.is_dir():
                     description = (
-                        f"Could not extract name, year from a series: {tv_dir}"
+                        f"Found a file but expected a dir: {tv_dir} "
                         f"Proceeding with default TVSeriesDTO"
                     )
                     PlexUtilLogger.get_logger().debug(description)
@@ -183,7 +183,7 @@ class PathOps(Static):
                     )
                 except UnexpectedNamingPatternError:
                     description = (
-                        f"Could not extract name, year from a series: {tv_dir}"
+                        f"Could not extract name, year from series: {tv_dir} "
                         f"Proceeding with default TVSeriesDTO"
                     )
                     PlexUtilLogger.get_logger().debug(description)
