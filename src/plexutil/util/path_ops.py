@@ -108,7 +108,7 @@ class PathOps(Static):
         return episodes, unknown
 
     @staticmethod
-    def __walk_music_structure(path: Path) -> tuple[list[SongDTO], list[str]]:
+    def __walk_music_structure(path: Path) -> tuple[list[SongDTO], list[Path]]:
         """
         *Private, refer to PathOps.get_local_songs()
         Walks subdirectories in search of songs
@@ -119,7 +119,7 @@ class PathOps(Static):
         Returns:
             A tuple of:
             1) [SongDTO] for each file found
-            2) [str] The name of the files encountered that were not
+            2) [pathlib.Path] The path of the files encountered that were not
             understood as songs
         """
         songs = []
@@ -138,7 +138,7 @@ class PathOps(Static):
                     song_dto = SongDTO(name=child.stem, location=child)
                     songs.append(song_dto)
                 except ValueError:
-                    unknown.append(child.name)
+                    unknown.append(child)
 
         return songs, unknown
 
@@ -290,15 +290,17 @@ class PathOps(Static):
             known, unk = PathOps.__walk_music_structure(path)
             songs.extend(known)
             unknown.extend(unk)
-            description = "Unknown to __walk_music_structure:\n"
-            for unknown_song in unknown:
-                description = description + f"-> {unknown_song}\n"
-
-            PlexUtilLogger.get_logger().debug(description)
+            for unk in unknown:
+                description = (
+                    f"Could not extract song: {unk!s} "
+                    f"Proceeding with default SongDTO"
+                )
+                PlexUtilLogger.get_logger().debug(description)
+                songs.append(SongDTO(location=unk))
 
         description = (
             f"Evaluated local songs.\n"
-            f"Understood: {len(songs)-len(unknown)!s}\n"
+            f"Understood: {(len(songs)-len(unknown))!s}\n"
             f"Unknown: {len(unknown)!s}\n"
         )
         PlexUtilLogger.get_logger().debug(description)
