@@ -182,7 +182,7 @@ class PathOps(Static):
                     )
                 except UnexpectedNamingPatternError:
                     description = (
-                        f"Could not extract name, year from a series: {tv_dir} "
+                        f"Could not extract name, year from a series: {tv_dir}"
                         f"Proceeding with default TVSeriesDTO"
                     )
                     PlexUtilLogger.get_logger().debug(description)
@@ -206,6 +206,7 @@ class PathOps(Static):
             [MovieDTO]: Found movies
         """
         movies = []
+        unknown = []
         for path in paths:
             for child in path.iterdir():
                 file_name = child.name if child.is_dir() else child.stem
@@ -222,8 +223,28 @@ class PathOps(Static):
                         f"Could not extract name, year from a movie: {child} "
                         f"Proceeding with default MovieDTO"
                     )
+                    unknown.append(child)
                     PlexUtilLogger.get_logger().debug(description)
                     movies.append(MovieDTO(location=child))
+
+        description = (
+            f"Evaluated local movies.\n"
+            f"Understood: {len(movies)}\n"
+            f"Unknown: {len(unknown)}\n"
+        )
+        PlexUtilLogger.get_logger().debug(description)
+        if unknown:
+            description = (
+                "Plexutil failed to understand some paths as movies:\n"
+            )
+            for unk in unknown:
+                description = description + f"-> {unk}\n"
+            description = description + (
+                "https://support.plex.tv/articles/"
+                "naming-and-organizing-your-movie-media-files/"
+            )
+
+            PlexUtilLogger.get_logger().warning(description)
 
         return movies
 
