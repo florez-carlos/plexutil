@@ -25,10 +25,10 @@ from plexutil.util.plex_ops import PlexOps
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.audio import Audio, Track
+    from plexapi.audio import Track
     from plexapi.library import LibrarySection
     from plexapi.server import PlexServer
-    from plexapi.video import Movie, Show, Video
+    from plexapi.video import Movie, Show
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.movie_dto import MovieDTO
@@ -190,7 +190,7 @@ class Library(ABC):
                     raise LibraryPollTimeoutError
 
     @abstractmethod
-    def query(self) -> list[Video] | list[Audio]:
+    def query(self) -> list[Track] | list[Show] | list[Movie]:
         raise NotImplementedError
 
     def log_library(
@@ -294,36 +294,6 @@ class Library(ABC):
 
         return local_files
 
-    def __get_plex_files(self) -> list[Show] | list[Track] | list[Movie]:
-        """
-        Private method to get plex files
-
-        Returns:
-            [Show | Track | Movie]: Plex files
-
-        Raises:
-            LibraryUnsupportedError: If Library Type not of MUSIC,
-            MUSIC_PLAYLIST, TV or MOVIE
-        """
-        library = self.get_section()
-
-        if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
-            LibraryType.MUSIC_PLAYLIST, library
-        ):
-            plex_files = library.searchTracks()
-        elif LibraryType.is_eq(LibraryType.TV, library):
-            plex_files = library.searchShows()
-        elif LibraryType.is_eq(LibraryType.MOVIE, library):
-            plex_files = library.searchMovies()
-        else:
-            op_type = "GET_PLEX_FILES"
-            raise LibraryUnsupportedError(
-                op_type,
-                LibraryType.get_from_section(library),
-            )
-
-        return plex_files
-
     def probe_library(self) -> None:
         """
         Verifies local files match server files, if not then it issues a
@@ -338,7 +308,7 @@ class Library(ABC):
         """
         section = self.get_section()
         local_files = self.__get_local_files()
-        plex_files = self.__get_plex_files()
+        plex_files = self.query()
         try:
             PlexOps.validate_local_files(plex_files, self.locations)
         except LibraryIllegalStateError:
@@ -353,7 +323,7 @@ class Library(ABC):
         expected_count = len(local_files)
 
         self.poll(100, expected_count, 10)
-        plex_files = self.__get_plex_files()
+        plex_files = self.query()
         PlexOps.validate_local_files(plex_files, self.locations)
 
     def inject_preferences(self) -> None:

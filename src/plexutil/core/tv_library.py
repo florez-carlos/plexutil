@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.server import PlexServer
-    from plexapi.video import Video
+    from plexapi.video import Show, Video
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
@@ -98,16 +98,16 @@ class TVLibrary(Library):
             for show in self.get_shows_by_tvdb(ids):
                 show.editAdvanced(languageOverride=language.value)
 
-    def query(self) -> list[Video]:
-        shows = self.get_section().searchShows()
-        ready_shows = []
-        for show in shows:
-            if hasattr(show, "title") and hasattr(show, "year"):
-                ready_shows.append(show)
-            else:
-                show.reload()
-
-        return ready_shows
+    def query(self) -> list[Show]:
+        op_type = "QUERY"
+        if not self.exists():
+            description = f"TV Library '{self.name}' does not exist"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.TV,
+                description=description,
+            )
+        return self.get_section().searchShows()
 
     def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Video]:
         shows = self.get_section().searchShows()

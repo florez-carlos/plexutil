@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.audio import Audio
+    from plexapi.audio import Track
     from plexapi.server import PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
     from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
-    from plexutil.dto.song_dto import SongDTO
 
 from plexutil.core.library import Library
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -21,7 +21,6 @@ from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
-from plexutil.mapper.song_mapper import SongMapper
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.service.song_music_playlist_composite_service import (
@@ -91,7 +90,7 @@ class Playlist(Library):
                 items=tracks,
             )
 
-    def query(self) -> list[Audio]:
+    def query(self) -> list[Track]:
         return self.get_section().playlist(self.playlist_name).items()
 
     def delete(self) -> None:
@@ -143,7 +142,6 @@ class Playlist(Library):
         service = SongMusicPlaylistCompositeService(
             bootstrap_paths_dto.plexutil_playlists_db_dir
         )
-        song_mapper = SongMapper()
         music_playlist_mapper = MusicPlaylistMapper()
 
         section = self.get_section()
@@ -156,7 +154,9 @@ class Playlist(Library):
             )
 
             for track in plex_playlist.items():
-                song_dto = PlexOps.get_song_dto(track)
+                song_dto = cast(
+                    SongDTO, PlexOps.get_dto_from_plex_media(track)
+                )
                 music_playlist_dto.songs.append(song_dto)
 
             to_save.append(music_playlist_dto)
@@ -190,7 +190,7 @@ class Playlist(Library):
         playlists = service.get(entities)
 
         for track in tracks:
-            song_dto = PlexOps.get_song_dto(track)
+            song_dto = cast(SongDTO, PlexOps.get_dto_from_plex_media(track))
             plex_track_dict[song_dto.name] = track
 
         for playlist in playlists:
@@ -233,7 +233,7 @@ class Playlist(Library):
         """
         playlist = self.get_section().playlist(self.playlist_name)
         playlist_tracks = playlist.items()
-        known, _ = PlexOps.filter_tracks(playlist_tracks, songs)
+        known, _ = PlexOps.filter_plex_media(playlist_tracks, songs)
         playlist.removeItems(known)
 
     def add_songs(self, songs: list[SongDTO]) -> None:
@@ -250,5 +250,5 @@ class Playlist(Library):
         """
         playlist = self.get_section().playlist(self.playlist_name)
         library_tracks = self.get_section().searchTracks()
-        known, _ = PlexOps.filter_tracks(library_tracks, songs)
+        known, _ = PlexOps.filter_plex_media(library_tracks, songs)
         playlist.addItems(known)

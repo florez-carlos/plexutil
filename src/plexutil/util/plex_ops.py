@@ -6,6 +6,7 @@ from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
 from plexutil.dto.movie_dto import MovieDTO
+from plexutil.dto.song_dto import SongDTO
 from plexutil.dto.tv_series_dto import TVSeriesDTO
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -21,7 +22,6 @@ if TYPE_CHECKING:
     from plexapi.server import Playlist, PlexServer
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-    from plexutil.dto.song_dto import SongDTO
 
 
 class PlexOps(Static):
@@ -181,9 +181,9 @@ class PlexOps(Static):
         filtered_media = []
         unknown_media = []
 
-        plex_media_dto = []
-        for media in plex_media:
-            plex_media_dto.append(PlexOps.get_dto_from_plex_media(media))
+        plex_media_dto = [
+            PlexOps.get_dto_from_plex_media(media) for media in plex_media
+        ]
 
         for dto in dtos:
             if dto not in plex_media_dto:

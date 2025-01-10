@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from plexutil.exception.library_op_error import LibraryOpError
 
@@ -8,10 +8,9 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.server import PlexServer
+    from plexapi.video import Movie
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-
-from plexapi.video import Video
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -75,7 +74,7 @@ class MovieLibrary(Library):
 
         self.inject_preferences()
 
-    def query(self) -> list[Video]:
+    def query(self) -> list[Movie]:
         """
         Returns all movies for the current LibrarySection
 
@@ -90,7 +89,7 @@ class MovieLibrary(Library):
                 library_type=LibraryType.MOVIE,
                 description=description,
             )
-        return cast(list[Video], self.get_section().searchMovies())
+        return self.get_section().searchMovies()
 
     def delete(self) -> None:
         return super().delete()

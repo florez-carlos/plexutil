@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexapi.audio import Track
     from plexapi.server import PlexServer
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-
-from plexapi.audio import Audio
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -103,17 +102,23 @@ class MusicLibrary(Library):
 
         self.probe_library()
 
-    def query(self) -> list[Audio]:
+    def query(self) -> list[Track]:
         """
         Returns all tracks for the current LibrarySection
 
         Returns:
             list[plexapi.audio.Audio]: Tracks from the current Section
         """
-        return cast(
-            list[Audio],
-            self.get_section().searchTracks(),
-        )
+        op_type = "QUERY"
+        if not self.exists():
+            description = f"Music Library '{self.name}' does not exist"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MUSIC,
+                description=description,
+            )
+
+        return self.get_section().searchTracks()
 
     def delete(self) -> None:
         return super().delete()
