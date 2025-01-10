@@ -187,7 +187,11 @@ class Library(ABC):
                 time.sleep(interval_seconds)
                 attempts = attempts + 1
                 if attempts >= requested_attempts:
-                    raise LibraryPollTimeoutError
+                    description = (
+                        "Did not reach the expected"
+                        f"library count: {expected_count}"
+                    )
+                    raise LibraryPollTimeoutError(description)
 
     @abstractmethod
     def query(self) -> list[Track] | list[Show] | list[Movie]:
@@ -306,7 +310,6 @@ class Library(ABC):
             LibraryIllegalStateError: If local files do not match server
             LibraryUnsupportedError: If Library Type isn't supported
         """
-        section = self.get_section()
         local_files = self.__get_local_files()
         plex_files = self.query()
         try:
@@ -318,8 +321,6 @@ class Library(ABC):
                 "This process may take several minutes\n"
             )
             PlexUtilLogger.get_logger().info(description)
-            # TODO: why is this here?
-            # section.update()
 
         expected_count = len(local_files)
 
