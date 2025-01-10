@@ -318,7 +318,8 @@ class Library(ABC):
                 "This process may take several minutes\n"
             )
             PlexUtilLogger.get_logger().info(description)
-            section.update()
+            #TODO: why is this here?
+            # section.update()
 
         expected_count = len(local_files)
 
