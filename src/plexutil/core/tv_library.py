@@ -135,7 +135,7 @@ class TVLibrary(Library):
             else:
                 description = (
                     "WARNING: No show in server matches "
-                    f"the supplied TVDB ID: {tvdb_id!s}\n"
+                    f"the supplied TVDB ID: {tvdb_id!s} in language manifest"
                 )
                 PlexUtilLogger.get_logger().warning(description)
 
