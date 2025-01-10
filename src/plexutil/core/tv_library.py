@@ -95,6 +95,8 @@ class TVLibrary(Library):
             if not ids:
                 continue
 
+            description = f"Language override {language.value} for: {ids}"
+            PlexUtilLogger.get_logger().debug(description)
             for show in self.get_shows_by_tvdb(ids):
                 show.editAdvanced(languageOverride=language.value)
 
@@ -132,10 +134,10 @@ class TVLibrary(Library):
                 shows_filtered.append(id_shows[tvdb_id])
             else:
                 description = (
-                    "No show in server matches "
+                    "WARNING: No show in server matches "
                     f"the supplied TVDB ID: {tvdb_id!s}\n"
                 )
-                PlexUtilLogger.get_logger().debug(description)
+                PlexUtilLogger.get_logger().warning(description)
 
         return shows_filtered
 
