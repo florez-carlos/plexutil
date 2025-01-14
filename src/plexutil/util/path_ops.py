@@ -125,20 +125,20 @@ class PathOps(Static):
         songs = []
         unknown = []
 
-        children = path.rglob("*")
-        for child in children:
-            if child.is_dir():
+        if path.is_file():
+            try:
+                extension = path.suffix.replace(".", "")
+                FileType.get_musical_file_type_from_str(extension)
+                song_dto = SongDTO(name=path.stem, location=path)
+                songs.append(song_dto)
+            except ValueError:
+                unknown.append(path)
+        elif path.is_dir():
+            children = path.rglob("*")
+            for child in children:
                 sub_songs, sub_unknown = PathOps.__walk_music_structure(child)
                 songs.extend(sub_songs)
                 unknown.extend(sub_unknown)
-            elif child.is_file():
-                try:
-                    extension = child.suffix.replace(".", "")
-                    FileType.get_musical_file_type_from_str(extension)
-                    song_dto = SongDTO(name=child.stem, location=child)
-                    songs.append(song_dto)
-                except ValueError:
-                    unknown.append(child)
 
         return songs, unknown
 
