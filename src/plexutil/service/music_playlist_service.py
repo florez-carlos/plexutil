@@ -34,6 +34,12 @@ class MusicPlaylistService:
                 .get()
             )
 
+    def get_all(
+        self,
+    ) -> list[MusicPlaylistEntity]:
+        with db_manager(self.db_path, [MusicPlaylistEntity]):
+            return MusicPlaylistEntity.select().get()
+
     def save(self, entity: MusicPlaylistEntity) -> int:
         force_insert = not self.exists()
 
