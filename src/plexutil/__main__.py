@@ -28,6 +28,10 @@ from plexutil.exception.unexpected_argument_error import (
 )
 from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.service.music_playlist_service import MusicPlaylistService
+from plexutil.service.song_music_playlist_composite_service import (
+    SongMusicPlaylistCompositeService,
+)
 from plexutil.util.file_importer import FileImporter
 from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
@@ -147,11 +151,11 @@ def main() -> None:
                 library = Playlist(
                     plex_server=plex_server,
                     language=language,
-                    music_playlists_dto=[music_playlist_dto],
+                    songs=music_playlist_dto.songs,
                     library_type=LibraryType.MUSIC,
                     name=library_name,
-                    playlist_name=playlist_name,
-                    locations=locations,
+                    playlist_name=music_playlist_dto.name,
+                    # locations=locations,
                 )
             case LibraryType.MOVIE:
                 library = MovieLibrary(
@@ -180,6 +184,7 @@ def main() -> None:
                 UserRequest.CREATE_MUSIC_LIBRARY
                 | UserRequest.CREATE_MOVIE_LIBRARY
                 | UserRequest.CREATE_TV_LIBRARY
+                | UserRequest.CREATE_MUSIC_PLAYLIST
             ):
                 library.create()
 
@@ -195,14 +200,35 @@ def main() -> None:
                 PlexOps.set_server_settings(plex_server, preferences_dto)
 
             case UserRequest.EXPORT_MUSIC_PLAYLIST:
-                cast(Playlist, library).export_music_playlists(
-                    bootstrap_paths_dto
+                music_playlist_dtos = cast(
+                    Playlist, library
+                ).get_all_playlists()
+                service = SongMusicPlaylistCompositeService(
+                    bootstrap_paths_dto.plexutil_playlists_db_dir
                 )
+                service.add_many(music_playlist_dtos)
 
             case UserRequest.IMPORT_MUSIC_PLAYLIST:
-                cast(Playlist, library).import_music_playlists(
-                    bootstrap_paths_dto
+                composite_service = SongMusicPlaylistCompositeService(
+                    bootstrap_paths_dto.plexutil_playlists_db_dir
                 )
+                playlist_service = MusicPlaylistService(
+                    bootstrap_paths_dto.plexutil_playlists_db_dir
+                )
+                music_playlist_dtos = composite_service.get(
+                    playlist_service.get_all()
+                )
+
+                for dto in music_playlist_dtos:
+                    library = Playlist(
+                        plex_server=plex_server,
+                        language=language,
+                        songs=dto.songs,
+                        library_type=LibraryType.MUSIC,
+                        name=library_name,
+                        playlist_name=dto.name,
+                    )
+                    library.create()
 
             case UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST:
                 cast(Playlist, library).add_songs(songs_dto)
