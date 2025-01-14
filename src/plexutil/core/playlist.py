@@ -81,7 +81,7 @@ class Playlist(Library):
 
     def query(self) -> list[Track]:
         op_type = "QUERY"
-        if not self.exists():
+        if not super().exists():
             description = f"Music Library '{self.name}' does not exist"
             raise LibraryOpError(
                 op_type=op_type,
