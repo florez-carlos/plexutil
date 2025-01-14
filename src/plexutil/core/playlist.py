@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from plexutil.service.music_playlist_service import MusicPlaylistService
+from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from plexapi.audio import Track
     from plexapi.server import PlexServer
 
-    from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 
 from plexutil.core.library import Library
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
@@ -23,9 +20,6 @@ from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
 from plexutil.plex_util_logger import PlexUtilLogger
-from plexutil.service.song_music_playlist_composite_service import (
-    SongMusicPlaylistCompositeService,
-)
 from plexutil.util.plex_ops import PlexOps
 
 
@@ -33,7 +27,7 @@ class Playlist(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        locations: list[Path],
+        # locations: list[Path],
         playlist_name: str,
         songs: list[SongDTO],
         # music_playlists_dto: list[MusicPlaylistDTO],
@@ -47,7 +41,7 @@ class Playlist(Library):
             library_type,
             Agent.MUSIC,
             Scanner.MUSIC,
-            locations,
+            [],
             language,
             LibraryPreferencesDTO(),
         )
@@ -132,19 +126,13 @@ class Playlist(Library):
 
         return exists
 
-    def export_music_playlists(
-        self,
-        bootstrap_paths_dto: BootstrapPathsDTO,
-    ) -> None:
-        service = SongMusicPlaylistCompositeService(
-            bootstrap_paths_dto.plexutil_playlists_db_dir
-        )
+    def get_all_playlists(self) -> list[MusicPlaylistDTO]:
         music_playlist_mapper = MusicPlaylistMapper()
 
         section = self.get_section()
         plex_playlists = section.playlists()
 
-        to_save = []
+        playlists = []
         for plex_playlist in plex_playlists:
             music_playlist_dto = music_playlist_mapper.get_dto(
                 PlexOps.get_music_playlist_entity(plex_playlist)
@@ -156,64 +144,9 @@ class Playlist(Library):
                 )
                 music_playlist_dto.songs.append(song_dto)
 
-            to_save.append(music_playlist_dto)
+            playlists.append(music_playlist_dto)
 
-        service.add_many(to_save)
-
-    def import_many_music_playlist(
-        self,
-        bootstrap_paths_dto: BootstrapPathsDTO,
-    ) -> None:
-        op_type = "IMPORT"
-        # playlist_names = [x.name for x in self.music_playlists_dto]
-
-        self.probe_library()
-
-        tracks = self.get_section().searchTracks()
-        plex_track_dict = {}
-        plex_playlist = []
-
-        info = f"Importing playlist: {self.playlist_name}\n"
-        PlexUtilLogger.get_logger().info(info)
-
-        # entities = [MusicPlaylistEntity(name=x) for x in playlist_names]
-        composite_service = SongMusicPlaylistCompositeService(
-            bootstrap_paths_dto.plexutil_playlists_db_dir
-        )
-        playlist_service = MusicPlaylistService(
-            bootstrap_paths_dto.plexutil_playlists_db_dir
-        )
-        playlists = composite_service.get(playlist_service.get_all())
-
-        for track in tracks:
-            song_dto = cast(SongDTO, PlexOps.get_dto_from_plex_media(track))
-            plex_track_dict[song_dto.name] = track
-
-        for playlist in playlists:
-            playlist_name = playlist.name
-            songs = playlist.songs
-
-            for song in songs:
-                song_name = song.name
-
-                if plex_track_dict.get(song_name) is None:
-                    description = (
-                        f"File in music playlist: '{song_name}' "
-                        "does not exist in server"
-                    )
-                    raise LibraryOpError(
-                        op_type=op_type,
-                        library_type=self.library_type,
-                        description=description,
-                    )
-
-                plex_playlist.append(plex_track_dict.get(song_name))
-
-            self.get_section().createPlaylist(
-                title=playlist_name,
-                items=plex_playlist,
-            )
-            plex_playlist = []
+        return playlists
 
     def delete_songs(self, songs: list[SongDTO]) -> None:
         """
@@ -239,7 +172,14 @@ class Playlist(Library):
                 description = description + f"->{u!s}\n"
 
             PlexUtilLogger.get_logger().warning(description)
-        playlist.removeItems(known)
+
+        filtered_tracks = []
+        for track in playlist_tracks:
+            dto = PlexOps.get_dto_from_plex_media(track)
+            if dto in known:
+                filtered_tracks.append(track)
+
+        playlist.removeItems(filtered_tracks)
 
     def add_songs(self, songs: list[SongDTO]) -> None:
         """
@@ -266,4 +206,10 @@ class Playlist(Library):
 
             PlexUtilLogger.get_logger().warning(description)
 
-        playlist.addItems(known)
+        filtered_tracks = []
+        for track in library_tracks:
+            dto = PlexOps.get_dto_from_plex_media(track)
+            if dto in known:
+                filtered_tracks.append(track)
+
+        playlist.addItems(filtered_tracks)
