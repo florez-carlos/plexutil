@@ -80,7 +80,16 @@ class Playlist(Library):
         self.add_songs(self.songs)
 
     def query(self) -> list[Track]:
-        return self.get_section().playlist(self.playlist_name).items()
+        op_type = "QUERY"
+        if not self.exists():
+            description = f"Music Library '{self.name}' does not exist"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MUSIC,
+                description=description,
+            )
+
+        return self.get_section().searchTracks()
 
     def delete(self) -> None:
         plex_playlists = self.get_section().playlists()
