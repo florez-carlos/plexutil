@@ -75,9 +75,9 @@ class Playlist(Library):
             PlexUtilLogger.get_logger().info(info)
             return
 
-        self.get_section().createPlaylist(title=self.playlist_name)
-        self.get_section()
-        self.add_songs(self.songs)
+        self.get_section().createPlaylist(
+            title=self.playlist_name, items=self.__get_filtered_tracks()
+        )
 
     def query(self) -> list[Track]:
         op_type = "QUERY"
@@ -157,54 +157,39 @@ class Playlist(Library):
 
         return playlists
 
-    def delete_songs(self, songs: list[SongDTO]) -> None:
+    def delete_songs(self) -> None:
         """
         Matches provided Songs to Plex Tracks in the playlist and deletes
         the tracks from the playlist
 
-        Args:
-            songs ([SongDTO]): Songs to be removed, these songs are first
-            matched to existing Tracks in the Plex library
-
         Returns:
             None: This method does not return a value
         """
+        filtered_tracks = self.__get_filtered_tracks(is_playlist_tracks=False)
         playlist = self.get_section().playlist(self.playlist_name)
-        playlist_tracks = playlist.items()
-        known, unknown = PlexOps.filter_plex_media(playlist_tracks, songs)
-        if unknown:
-            description = (
-                f"WARNING: These songs were not found "
-                f"in the plex server library: {self.name}\n"
-            )
-            for u in unknown:
-                description = description + f"->{u!s}\n"
-
-            PlexUtilLogger.get_logger().warning(description)
-
-        filtered_tracks = []
-        for track in playlist_tracks:
-            dto = PlexOps.get_dto_from_plex_media(track)
-            if dto in known:
-                filtered_tracks.append(track)
-
         playlist.removeItems(filtered_tracks)
 
-    def add_songs(self, songs: list[SongDTO]) -> None:
+    def add_songs(self) -> None:
         """
         Matches provided Songs to Plex Tracks in the library and adds
         the tracks to the plex playlist
 
-        Args:
-            songs ([SongDTO]): Songs to be added, these songs are first
-            matched to existing Tracks in the Plex library
-
         Returns:
             None: This method does not return a value
         """
+        filtered_tracks = self.__get_filtered_tracks()
         playlist = self.get_section().playlist(self.playlist_name)
-        library_tracks = self.get_section().searchTracks()
-        known, unknown = PlexOps.filter_plex_media(library_tracks, songs)
+        playlist.addItems(filtered_tracks)
+
+    def __get_filtered_tracks(self, is_playlist_tracks=False) -> list[Track]:
+        if is_playlist_tracks:
+            all_tracks = (
+                self.get_section().playlist(self.playlist_name).items()
+            )
+        else:
+            all_tracks = self.get_section().searchTracks()
+
+        known, unknown = PlexOps.filter_plex_media(all_tracks, self.songs)
         if unknown:
             description = (
                 f"WARNING: These songs were not found "
@@ -216,9 +201,9 @@ class Playlist(Library):
             PlexUtilLogger.get_logger().warning(description)
 
         filtered_tracks = []
-        for track in library_tracks:
+        for track in all_tracks:
             dto = PlexOps.get_dto_from_plex_media(track)
             if dto in known:
                 filtered_tracks.append(track)
 
-        playlist.addItems(filtered_tracks)
+        return filtered_tracks
