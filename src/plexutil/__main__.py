@@ -231,10 +231,10 @@ def main() -> None:
                     library.create()
 
             case UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST:
-                cast(Playlist, library).add_songs(songs_dto)
+                cast(Playlist, library).add_songs()
 
             case UserRequest.DELETE_SONGS_FROM_MUSIC_PLAYLIST:
-                cast(Playlist, library).delete_songs(songs_dto)
+                cast(Playlist, library).delete_songs()
 
     except SystemExit as e:
         if e.code == 0:
