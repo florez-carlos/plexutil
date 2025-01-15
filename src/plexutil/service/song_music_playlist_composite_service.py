@@ -103,7 +103,9 @@ class SongMusicPlaylistCompositeService:
             ]
 
             flattened_songs = [item for sublist in songs for item in sublist]
-            song_service.add_many(flattened_songs)
+            unique_songs = set(flattened_songs)
+
+            song_service.add_many(list(unique_songs))
 
             for music_playlist_dto in music_playlist_dtos:
                 playlist = music_playlist_service.get(
