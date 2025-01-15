@@ -98,14 +98,17 @@ class SongMusicPlaylistCompositeService:
             music_playlist_service.add_many(playlists)
 
             songs = [
-                [song_mapper.get_entity(x) for x in music_playlist_dto.songs]
+                [x for x in music_playlist_dto.songs]
                 for music_playlist_dto in music_playlist_dtos
             ]
 
             flattened_songs = [item for sublist in songs for item in sublist]
-            unique_songs = set(flattened_songs)
+            unique_song_dtos = set(flattened_songs)
+            unique_song_entities = [
+                song_mapper.get_entity(x) for x in unique_song_dtos
+            ]
 
-            song_service.add_many(list(unique_songs))
+            song_service.add_many(unique_song_entities)
 
             for music_playlist_dto in music_playlist_dtos:
                 playlist = music_playlist_service.get(
