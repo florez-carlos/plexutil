@@ -28,10 +28,8 @@ class MusicPlaylistService:
     ) -> list[MusicPlaylistEntity]:
         with db_manager(self.db_path, [MusicPlaylistEntity]):
             names = [x.name for x in entities]
-            return (
-                MusicPlaylistEntity.select()
-                .where(MusicPlaylistEntity.name.in_(names))
-                .get()
+            return MusicPlaylistEntity.select().where(
+                MusicPlaylistEntity.name.in_(names)
             )
 
     def get_all(
