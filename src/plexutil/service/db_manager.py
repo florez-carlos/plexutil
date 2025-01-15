@@ -9,15 +9,13 @@ from peewee import SqliteDatabase
 def db_manager(
     db_path: Path, entities: list, is_atomic: bool = False
 ) -> Generator[SqliteDatabase, None, None]:
+    db = SqliteDatabase(db_path, pragmas={"foreign_keys": 1})
+    db.bind(entities)
+    db.create_tables(entities)
+
     if is_atomic:
-        with SqliteDatabase(
-            db_path, pragmas={"foreign_keys": 1}
-        ).atomic() as db:
-            db.bind(entities)
-            db.create_tables(entities)
-            yield db
+        with db.atomic() as transaction:
+            yield transaction
     else:
-        with SqliteDatabase(db_path, pragmas={"foreign_keys": 1}) as db:
-            db.bind(entities)
-            db.create_tables(entities)
+        with db:
             yield db
