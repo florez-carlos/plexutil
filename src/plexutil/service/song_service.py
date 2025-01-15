@@ -18,24 +18,15 @@ class SongService:
         with db_manager(self.db_path, [SongEntity]):
             return (
                 SongEntity.select()
-                .where(
-                    (SongEntity.name == entity.name)
-                    & (SongEntity.extension == entity.extension)
-                )
+                .where(SongEntity.name == entity.name)
                 .get()
             )
 
     def get_many(self, entities: list[SongEntity]) -> list[SongEntity]:
         with db_manager(self.db_path, [SongEntity]):
             names = [x.name for x in entities]
-            extensions = [x.extension for x in entities]
             return (
-                SongEntity.select()
-                .where(
-                    (SongEntity.name.in_(names))
-                    & (SongEntity.extension.in_(extensions))
-                )
-                .get()
+                SongEntity.select().where(SongEntity.name.in_(names)).get()
             )
 
     def save(self, entity: SongEntity) -> SongEntity:
@@ -50,19 +41,16 @@ class SongService:
     def exists(self, entity: SongEntity) -> bool:
         return (
             SongEntity.select()
-            .where(
-                (SongEntity.name == entity.name)
-                & (SongEntity.extension == entity.extension)
-            )
+            .where(SongEntity.name == entity.name)
             .exists()
         )
 
     def add_many(self, entities: list[SongEntity]) -> None:
         with db_manager(self.db_path, [SongEntity], is_atomic=True):
-            bulk = [(song.name, song.extension) for song in entities]
+            bulk = [(song.name,) for song in entities]
 
             for idx in range(0, len(bulk), 100):
                 SongEntity.insert_many(
                     bulk[idx : idx + 100],
-                    fields=[SongEntity.name, SongEntity.extension],
+                    fields=[SongEntity.name],
                 ).execute()
