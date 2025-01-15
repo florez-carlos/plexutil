@@ -17,17 +17,13 @@ class SongService:
     def get(self, entity: SongEntity) -> SongEntity:
         with db_manager(self.db_path, [SongEntity]):
             return (
-                SongEntity.select()
-                .where(SongEntity.name == entity.name)
-                .get()
+                SongEntity.select().where(SongEntity.name == entity.name).get()
             )
 
     def get_many(self, entities: list[SongEntity]) -> list[SongEntity]:
         with db_manager(self.db_path, [SongEntity]):
             names = [x.name for x in entities]
-            return (
-                SongEntity.select().where(SongEntity.name.in_(names)).get()
-            )
+            return SongEntity.select().where(SongEntity.name.in_(names)).get()
 
     def save(self, entity: SongEntity) -> SongEntity:
         force_insert = not self.exists(entity)
@@ -40,9 +36,7 @@ class SongService:
 
     def exists(self, entity: SongEntity) -> bool:
         return (
-            SongEntity.select()
-            .where(SongEntity.name == entity.name)
-            .exists()
+            SongEntity.select().where(SongEntity.name == entity.name).exists()
         )
 
     def add_many(self, entities: list[SongEntity]) -> None:
