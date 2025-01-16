@@ -337,7 +337,7 @@ class PathOps(Static):
             the expected parttern
 
         """
-        pattern = r"([\w\s'’:\-.,·àáâäèéêëìíîïòóôöùúûüçñ]+?)\s*\((\d{4})\)"
+        pattern = r"([\w\s'’:\-.,·àáâäèéêëìíîïòóôöùúûüçñ]+?)\s*\((\d{4})\)"  # noqa: RUF001
         match = re.search(pattern, candidate)
 
         if match:
