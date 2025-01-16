@@ -61,6 +61,47 @@ class PlexOps(Static):
         return MusicPlaylistEntity(name=playlist.title)
 
     @staticmethod
+    def normalize_dto(
+        dto: SongDTO | MovieDTO | TVSeriesDTO,
+        media: list[Track] | list[Movie] | list[Show],
+    ) -> SongDTO | MovieDTO | TVSeriesDTO:
+        """
+        Adds the missing properties to a DTO based on the information
+        from a Plex Media in the server
+
+        Args:
+            dto (SongDTO, MovieDTO, TVSeriesDTO): The DTO to match against
+            media ([Track|Movie|Show]): The plex media objects
+
+        Returns:
+            SongDTO | MovieDTO | TVSeriesDTO: A normalized DTO
+        """
+
+        for m in media:
+            location = PathOps.get_path_from_str(m.locations[0])
+            if isinstance(m, Track) and isinstance(dto, SongDTO):
+                name = location.stem
+                if name == dto.name:
+                    return SongDTO(name=dto.name, location=location)
+            elif isinstance(m, Movie) and isinstance(dto, MovieDTO):
+                name, year = PathOps.get_show_name_and_year_from_str(
+                    str(location)
+                )
+                if name == dto.name and year == dto.year:
+                    return MovieDTO(name=name, year=year, location=location)
+            elif isinstance(m, Show) and isinstance(dto, TVSeriesDTO):
+                name, year = PathOps.get_show_name_and_year_from_str(
+                    str(location)
+                )
+                if name == dto.name and year == dto.year:
+                    return TVSeriesDTO(name=name, year=year, location=location)
+
+        description = (
+            f"Could not match a provided DTO to any Plex Media:\n{dto}\n"
+        )
+        raise ValueError(description)
+
+    @staticmethod
     def get_dto_from_plex_media(
         media: Track | Movie | Show,
     ) -> SongDTO | MovieDTO | TVSeriesDTO:
