@@ -1,11 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
+
+from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
+from plexutil.dto.song_dto import SongDTO
+from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
+    from plexapi.audio import Track
+
 
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
 from plexutil.mapper.song_mapper import SongMapper
@@ -24,6 +29,7 @@ class SongMusicPlaylistCompositeService:
     def get(
         self,
         entities: list[MusicPlaylistEntity],
+        tracks: list[Track],
     ) -> list[MusicPlaylistDTO]:
         with db_manager(
             self.db_path,
@@ -31,23 +37,12 @@ class SongMusicPlaylistCompositeService:
         ):
             playlist_names = [x.name for x in entities]
             song_playlists = (
-                SongEntity.select(
-                    SongEntity.id.alias("song_id"),
-                    SongEntity.name.alias("song_name"),
-                    MusicPlaylistEntity.name.alias("playlist_id"),
-                    MusicPlaylistEntity.name.alias("playlist_name"),
+                SongMusicPlaylistEntity.select(
+                    SongMusicPlaylistEntity, SongEntity, MusicPlaylistEntity
                 )
-                .join(
-                    SongMusicPlaylistEntity,
-                    on=(SongEntity.id == SongMusicPlaylistEntity.song),
-                )
-                .join(
-                    MusicPlaylistEntity,
-                    on=(
-                        SongMusicPlaylistEntity.playlist
-                        == MusicPlaylistEntity.id
-                    ),
-                )
+                .join(MusicPlaylistEntity)
+                .switch(SongMusicPlaylistEntity)
+                .join(SongEntity)
                 .where(MusicPlaylistEntity.name.in_(playlist_names))
             )
 
@@ -57,13 +52,13 @@ class SongMusicPlaylistCompositeService:
                 song_mapper = SongMapper()
 
                 song_entity = SongEntity(
-                    id=song_playlist.song_id,
-                    name=song_playlist.song_name,
+                    id=song_playlist.song.id,
+                    name=song_playlist.song.name,
                 )
 
                 music_playlist_entity = MusicPlaylistEntity(
-                    id=song_playlist.playlist_id,
-                    name=song_playlist.playlist_name,
+                    id=song_playlist.playlist.id,
+                    name=song_playlist.playlist.name,
                 )
 
                 song_dto = song_mapper.get_dto(song_entity)
@@ -75,8 +70,20 @@ class SongMusicPlaylistCompositeService:
                     playlists[music_playlist_dto.name] = music_playlist_dto
 
                 playlists[music_playlist_dto.name].songs.append(song_dto)
+            raw_playlist_dtos = list(playlists.values())
 
-            return list(playlists.values())
+            normalized_music_playlist_dtos = []
+            for dto in raw_playlist_dtos:
+                normalized_songs = [
+                    PlexOps.normalize_dto(song, tracks) for song in dto.songs
+                ]
+                normalized_music_playlist_dtos.append(
+                    MusicPlaylistDTO(
+                        name=dto.name,
+                        songs=cast(list[SongDTO], normalized_songs),
+                    )
+                )
+            return normalized_music_playlist_dtos
 
     def add(self, music_playlist_dto: MusicPlaylistDTO) -> None:
         self.add_many([music_playlist_dto])
@@ -98,7 +105,7 @@ class SongMusicPlaylistCompositeService:
             music_playlist_service.add_many(playlists)
 
             songs = [
-                [x for x in music_playlist_dto.songs]
+                list(music_playlist_dto.songs)
                 for music_playlist_dto in music_playlist_dtos
             ]
 
