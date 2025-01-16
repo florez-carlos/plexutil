@@ -2,6 +2,7 @@ import sys
 from typing import cast
 
 from peewee import DoesNotExist
+from plexapi.audio import Track
 from plexapi.server import PlexServer
 
 from plexutil.core.movie_library import MovieLibrary
@@ -96,7 +97,7 @@ def main() -> None:
                     f"plexutil -sc OR plexutil -sct to show the token\n"
                 )
 
-                raise UserError(description)
+                raise UserError(description)  # noqa: TRY301
 
             description = (
                 "\n=====Server Configuration=====\n"
@@ -124,7 +125,7 @@ def main() -> None:
                 "Plex Token has not been supplied, cannot continue\n"
                 "Set a token -> plexutil config -token ..."
             )
-            raise ServerConfigError(description)
+            raise ServerConfigError(description)  # noqa: TRY301
 
         preferences_dto = FileImporter.get_library_preferences_dto(
             config_dir,
@@ -155,7 +156,7 @@ def main() -> None:
                     library_type=LibraryType.MUSIC,
                     name=library_name,
                     playlist_name=music_playlist_dto.name,
-                    # locations=locations,
+                    locations=locations,
                 )
             case LibraryType.MOVIE:
                 library = MovieLibrary(
@@ -216,7 +217,8 @@ def main() -> None:
                     bootstrap_paths_dto.plexutil_playlists_db_dir
                 )
                 music_playlist_dtos = composite_service.get(
-                    playlist_service.get_all()
+                    entities=playlist_service.get_all(),
+                    tracks=cast(list[Track], library.query()),
                 )
 
                 for dto in music_playlist_dtos:
@@ -227,6 +229,7 @@ def main() -> None:
                         library_type=LibraryType.MUSIC,
                         name=library_name,
                         playlist_name=dto.name,
+                        locations=locations,
                     )
                     library.create()
 
