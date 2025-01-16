@@ -323,6 +323,7 @@ class Library(ABC):
             PlexUtilLogger.get_logger().info(description)
 
         expected_count = len(local_files)
+        self.get_section().update()
 
         self.poll(100, expected_count, 10)
         plex_files = self.query()
