@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
-
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from plexapi.audio import Track
     from plexapi.server import PlexServer
+
+    from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 
 
 from plexutil.core.library import Library
@@ -27,10 +29,9 @@ class Playlist(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        # locations: list[Path],
+        locations: list[Path],
         playlist_name: str,
         songs: list[SongDTO],
-        # music_playlists_dto: list[MusicPlaylistDTO],
         name: str = LibraryName.MUSIC.value,
         library_type: LibraryType = LibraryType.MUSIC_PLAYLIST,
         language: Language = Language.ENGLISH_US,
@@ -41,15 +42,24 @@ class Playlist(Library):
             library_type,
             Agent.MUSIC,
             Scanner.MUSIC,
-            [],
+            locations,
             language,
             LibraryPreferencesDTO(),
         )
         self.playlist_name = playlist_name
         self.songs = songs
-        # self.music_playlists_dto = music_playlists_dto
 
     def create(self) -> None:
+        if self.exists():
+            info = (
+                f"WARNING: Playlist '{self.playlist_name}' for "
+                f"Library '{self.name}' of "
+                f"type {self.library_type.value} already exists."
+                f"Skipping create..."
+            )
+            PlexUtilLogger.get_logger().warning(info)
+            return
+
         self.probe_library()
 
         debug = (
@@ -64,16 +74,6 @@ class Playlist(Library):
             f"Language: {self.language.value}\n"
         )
         PlexUtilLogger.get_logger().debug(debug)
-
-        if self.exists():
-            info = (
-                f"Playlist {self.playlist_name} for "
-                f"Library {self.name} of "
-                f"type {self.library_type} already exists\n"
-                f"Skipping...\n"
-            )
-            PlexUtilLogger.get_logger().info(info)
-            return
 
         self.get_section().createPlaylist(
             title=self.playlist_name, items=self.__get_filtered_tracks()
@@ -92,6 +92,7 @@ class Playlist(Library):
         return self.get_section().searchTracks()
 
     def delete(self) -> None:
+        op_type = "DELETE"
         plex_playlists = self.get_section().playlists()
 
         debug = (
@@ -112,7 +113,7 @@ class Playlist(Library):
         description = (
             f"Playlist not found in server library: {self.playlist_name}"
         )
-        raise LibraryOpError("DELETE", self.library_type, description)
+        raise LibraryOpError(op_type, self.library_type, description)
 
     def exists(self) -> bool:
         plex_playlists = self.get_section().playlists()
@@ -181,7 +182,9 @@ class Playlist(Library):
         playlist = self.get_section().playlist(self.playlist_name)
         playlist.addItems(filtered_tracks)
 
-    def __get_filtered_tracks(self, is_playlist_tracks=False) -> list[Track]:
+    def __get_filtered_tracks(
+        self, is_playlist_tracks: bool = False
+    ) -> list[Track]:
         if is_playlist_tracks:
             all_tracks = (
                 self.get_section().playlist(self.playlist_name).items()
