@@ -24,22 +24,7 @@ class UserRequest(Enum):
     @staticmethod
     # Forward Reference used here in type hint
     def get_all() -> list[UserRequest]:
-        return [
-            UserRequest.CONFIG,
-            UserRequest.SET_SERVER_SETTINGS,
-            UserRequest.CREATE_MOVIE_LIBRARY,
-            UserRequest.DELETE_MOVIE_LIBRARY,
-            UserRequest.CREATE_TV_LIBRARY,
-            UserRequest.DELETE_TV_LIBRARY,
-            UserRequest.CREATE_MUSIC_LIBRARY,
-            UserRequest.DELETE_MUSIC_LIBRARY,
-            UserRequest.CREATE_MUSIC_PLAYLIST,
-            UserRequest.DELETE_MUSIC_PLAYLIST,
-            UserRequest.EXPORT_MUSIC_PLAYLIST,
-            UserRequest.IMPORT_MUSIC_PLAYLIST,
-            UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST,
-            UserRequest.DELETE_SONGS_FROM_MUSIC_PLAYLIST,
-        ]
+        return list(UserRequest)
 
     @staticmethod
     def get_user_request_from_str(

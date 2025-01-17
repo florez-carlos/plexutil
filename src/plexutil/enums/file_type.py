@@ -20,20 +20,7 @@ class FileType(Enum):
     @staticmethod
     # Forward Reference used here in type hint
     def get_all() -> list[FileType]:
-        return [
-            FileType.MP3,
-            FileType.MP4,
-            FileType.AAC,
-            FileType.OGG,
-            FileType.WMA,
-            FileType.ALAC,
-            FileType.WAV,
-            FileType.OPUS,
-            FileType.FLAC,
-            FileType.MKV,
-            FileType.JSON,
-            FileType.UNKNOWN,
-        ]
+        return list(FileType)
 
     @staticmethod
     def get_file_type_from_str(file_type_candidate: str) -> FileType:

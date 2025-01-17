@@ -10,7 +10,7 @@ class Scanner(Enum):
 
     @staticmethod
     def get_all() -> list[Scanner]:
-        return [Scanner.MUSIC, Scanner.TV, Scanner.MOVIE]
+        return list(Scanner)
 
     @staticmethod
     def get_from_str(candidate: str) -> Scanner:
