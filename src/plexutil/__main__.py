@@ -1,6 +1,7 @@
 import sys
 from typing import cast
 
+from jsonschema.exceptions import ValidationError
 from peewee import DoesNotExist
 from plexapi.audio import Track
 from plexapi.server import PlexServer
@@ -15,7 +16,6 @@ from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
-from plexutil.exception.invalid_schema_error import InvalidSchemaError
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
@@ -289,7 +289,7 @@ def main() -> None:
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
-    except InvalidSchemaError as e:
+    except ValidationError as e:
         sys.tracebacklimit = 0
         description = "\n=====Invalid Schema Error=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().error(description)
