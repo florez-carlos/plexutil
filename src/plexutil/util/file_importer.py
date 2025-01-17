@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 import toml
+from jsonschema import validate
 
 from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 from plexutil.enums.language import Language
@@ -52,11 +53,24 @@ class FileImporter(Static):
         tv_prefs = {}
         plex_server_setting_prefs = {}
 
+        preferences_schema_file_location = (
+            PathOps.get_project_root()
+            / "plexutil"
+            / "schemas"
+            / "v1"
+            / "preferences_schema.json"
+        )
+        with preferences_schema_file_location.open(
+            encoding=FileImporter.encoding
+        ) as file:
+            schema_dict = json.load(file)
+
         try:
             with music_preferences_file_location.open(
                 encoding=FileImporter.encoding,
             ) as file:
                 music_prefs = json.load(file)
+                validate(instance=music_prefs, schema=schema_dict)
         except FileNotFoundError:
             description = (
                 "Music Library Preferences not found. "
@@ -71,6 +85,7 @@ class FileImporter(Static):
                 encoding=FileImporter.encoding,
             ) as file:
                 movie_prefs = json.load(file)
+                validate(instance=movie_prefs, schema=schema_dict)
         except FileNotFoundError:
             description = (
                 "Movie Library Preferences not found. "
@@ -85,6 +100,7 @@ class FileImporter(Static):
                 encoding=FileImporter.encoding
             ) as file:
                 tv_prefs = json.load(file)
+                validate(instance=tv_prefs, schema=schema_dict)
         except FileNotFoundError:
             description = (
                 "TV Library Preferences not found. "
@@ -99,6 +115,9 @@ class FileImporter(Static):
                 encoding=FileImporter.encoding,
             ) as file:
                 plex_server_setting_prefs = json.load(file)
+                validate(
+                    instance=plex_server_setting_prefs, schema=schema_dict
+                )
         except FileNotFoundError:
             description = (
                 "Plex Server Setting Preferences not found. "
@@ -122,40 +141,38 @@ class FileImporter(Static):
         tv_language_manifest_file_location = (
             config_dir / "tv_language_manifest.json"
         )
+        tv_language_manifest_schema_file_location = (
+            PathOps.get_project_root()
+            / "plexutil"
+            / "schemas"
+            / "v1"
+            / "tv_language_manifest_schema.json"
+        )
+        with tv_language_manifest_schema_file_location.open(
+            encoding=FileImporter.encoding
+        ) as file:
+            schema_dict = json.load(file)
 
         try:
             with tv_language_manifest_file_location.open(
                 encoding=FileImporter.encoding
             ) as file:
                 file_dict = json.load(file)
-
+                validate(instance=file_dict, schema=schema_dict)
                 tv_language_manifests_dto = []
-                languages = file_dict["languages"]
-
-                for language_dict in languages:
-                    language_name = language_dict["name"]
-                    regions = language_dict["regions"]
-                    for region in regions:
-                        region_name = region["name"]
-                        ids = region["tvdbIds"]
-                        language = Language.get_from_str(
-                            language_name + "-" + region_name,
-                        )
-                        tv_language_manifests_dto.append(
-                            TVLanguageManifestDTO(language, ids),
-                        )
-
+                for language, ids in file_dict.items():
+                    lang = Language.get_from_str(language)
+                    tv_language_manifests_dto.append(
+                        TVLanguageManifestDTO(language=lang, ids=ids)
+                    )
                 return tv_language_manifests_dto
+
         except FileNotFoundError:
             description = (
-                "TV Language Manifest File not found. "
-                "Proceeding with no tv language manifest file\n"
+                "TV Language Manifest not found. "
+                "Proceeding with no language manifest\n"
             )
             PlexUtilLogger.get_logger().info(description)
-            description = (
-                "Supplied location: " f"{tv_language_manifest_file_location}"
-            )
-            PlexUtilLogger.get_logger().debug(description)
             time.sleep(2)
 
         return []
