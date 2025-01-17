@@ -1,10 +1,16 @@
-from pathlib import Path
+from __future__ import annotations
 
-from plexapi.server import PlexServer
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from plexapi.audio import Track
+    from plexapi.server import PlexServer
+
+    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 
 from plexutil.core.library import Library
-from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -19,57 +25,65 @@ class MusicLibrary(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        location: Path,
-        language: Language,
+        locations: list[Path],
         preferences: LibraryPreferencesDTO,
-        music_playlist_file_dto: MusicPlaylistFileDTO,
+        name: str = LibraryName.MUSIC.value,
+        language: Language = Language.ENGLISH_US,
     ) -> None:
         super().__init__(
             plex_server,
-            LibraryName.MUSIC,
+            name,
             LibraryType.MUSIC,
             Agent.MUSIC,
             Scanner.MUSIC,
-            location,
+            locations,
             language,
             preferences,
         )
-        self.music_playlist_file_dto = music_playlist_file_dto
 
     def create(self) -> None:
+        """
+        Creates a Music Library
+        This operation is expensive as it waits for all the music files
+        to be recognized by the server
+
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryOpError: If Library already exists
+            or when failure to create a Query
+        """
         op_type = "CREATE"
+        if self.exists():
+            description = f"Music Library '{self.name}' already exists"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.TV,
+                description=description,
+            )
+
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         part = ""
 
         query_builder = QueryBuilder(
             "/library/sections",
-            name=LibraryName.MUSIC.value,
-            the_type=LibraryType.MUSIC.value,
+            name=self.name,
+            the_type="music",
             agent=Agent.MUSIC.value,
             scanner=Scanner.MUSIC.value,
-            language=Language.ENGLISH_US.value,
+            language=self.language.value,
             importFromiTunes="",
             enableAutoPhotoTags="",
-            location=str(self.location),
+            location=self.locations,
             prefs=self.preferences.music,
         )
 
         part = query_builder.build()
 
-        info = (
-            "Creating music library: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.music}\n"
-        )
-
         debug = f"Query: {part}\n"
 
-        PlexUtilLogger.get_logger().info(info)
         PlexUtilLogger.get_logger().debug(debug)
 
         # This posts a music library
@@ -81,22 +95,30 @@ class MusicLibrary(Library):
         else:
             description = "Query Builder has not built a part!"
             raise LibraryOpError(
-                op_type=op_type,
+                op_type="CREATE",
                 library_type=self.library_type,
                 description=description,
             )
 
-        # This triggers a refresh of the library
-        self.plex_server.library.sections()
+        self.probe_library()
 
-        info = (
-            "Checking server music "
-            "meets expected "
-            f"count: {self.music_playlist_file_dto.track_count!s}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
+    def query(self) -> list[Track]:
+        """
+        Returns all tracks for the current LibrarySection
 
-        self.poll(200, self.music_playlist_file_dto.track_count, 10)
+        Returns:
+            list[plexapi.audio.Audio]: Tracks from the current Section
+        """
+        op_type = "QUERY"
+        if not self.exists():
+            description = f"Music Library '{self.name}' does not exist"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MUSIC,
+                description=description,
+            )
+
+        return self.get_section().searchTracks()
 
     def delete(self) -> None:
         return super().delete()

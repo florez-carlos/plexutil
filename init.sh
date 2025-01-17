@@ -43,7 +43,6 @@ mkdir -p "$HOME"/plexutil/config
 mkdir -p "$HOME"/plexutil/log
 
 cp src/plexutil/sample/manifests/* "$HOME"/plexutil/config
-cp src/plexutil/sample/playlists/* "$HOME"/plexutil/config
 cp src/plexutil/sample/preferences/* "$HOME"/plexutil/config
 
 

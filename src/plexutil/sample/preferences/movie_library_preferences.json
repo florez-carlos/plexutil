@@ -13,6 +13,5 @@
   "includeAdultContent": 0,
   "autoCollectionThreshold": 0,
   "enableBIFGeneration": 1,
-  "augmentWithProviderContent": 1,
   "collectionMode": 2
 }

@@ -1,15 +1,20 @@
+from __future__ import annotations
+
 import ctypes.wintypes
 import json
 import logging
 import os
 import platform
+import shutil
 import time
 from pathlib import Path
 
-from jsonschema import ValidationError, validate
+import toml
+from jsonschema import validate
 
+from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
+from plexutil.enums.language import Language
 from plexutil.exception.bootstrap_error import BootstrapError
-from plexutil.exception.invalid_schema_error import InvalidSchemaError
 
 if platform.system() == "Windows":
     import win32evtlog  # pyright: ignore # noqa: PGH003
@@ -19,20 +24,7 @@ import yaml
 
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.music_playlist_file_dto import MusicPlaylistFileDTO
-from plexutil.dto.plex_config_dto import PlexConfigDTO
-from plexutil.dto.tv_language_manifest_file_dto import (
-    TVLanguageManifestFileDTO,
-)
-from plexutil.exception.plex_util_config_error import PlexUtilConfigError
 from plexutil.plex_util_logger import PlexUtilLogger
-from plexutil.serializer.music_playlist_file_serializer import (
-    MusicPlaylistFileSerializer,
-)
-from plexutil.serializer.plex_config_serializer import PlexConfigSerializer
-from plexutil.serializer.tv_language_manifest_serializer import (
-    TVLanguageManifestSerializer,
-)
 from plexutil.static import Static
 from plexutil.util.path_ops import PathOps
 
@@ -61,11 +53,24 @@ class FileImporter(Static):
         tv_prefs = {}
         plex_server_setting_prefs = {}
 
+        preferences_schema_file_location = (
+            PathOps.get_project_root()
+            / "plexutil"
+            / "schemas"
+            / "v1"
+            / "preferences_schema.json"
+        )
+        with preferences_schema_file_location.open(
+            encoding=FileImporter.encoding
+        ) as file:
+            schema_dict = json.load(file)
+
         try:
             with music_preferences_file_location.open(
                 encoding=FileImporter.encoding,
             ) as file:
                 music_prefs = json.load(file)
+                validate(instance=music_prefs, schema=schema_dict)
         except FileNotFoundError:
             description = (
                 "Music Library Preferences not found. "
@@ -80,6 +85,7 @@ class FileImporter(Static):
                 encoding=FileImporter.encoding,
             ) as file:
                 movie_prefs = json.load(file)
+                validate(instance=movie_prefs, schema=schema_dict)
         except FileNotFoundError:
             description = (
                 "Movie Library Preferences not found. "
@@ -94,6 +100,7 @@ class FileImporter(Static):
                 encoding=FileImporter.encoding
             ) as file:
                 tv_prefs = json.load(file)
+                validate(instance=tv_prefs, schema=schema_dict)
         except FileNotFoundError:
             description = (
                 "TV Library Preferences not found. "
@@ -108,6 +115,9 @@ class FileImporter(Static):
                 encoding=FileImporter.encoding,
             ) as file:
                 plex_server_setting_prefs = json.load(file)
+                validate(
+                    instance=plex_server_setting_prefs, schema=schema_dict
+                )
         except FileNotFoundError:
             description = (
                 "Plex Server Setting Preferences not found. "
@@ -125,141 +135,47 @@ class FileImporter(Static):
         )
 
     @staticmethod
-    def get_plex_config_dto(plex_config_file_location: Path) -> PlexConfigDTO:
-        serializer = PlexConfigSerializer()
-
-        try:
-            with plex_config_file_location.open(
-                encoding=FileImporter.encoding
-            ) as file:
-                file_dict = json.load(file)
-                return serializer.to_dto(file_dict)
-        except FileNotFoundError:
-            description = (
-                "\n\n=====plexutil config file not found=====\n\n"
-                "A plexutil configuration file must exist prior to use.\n"
-                "\nplexutil config  \\\n"
-                "-music <path/to/music/folder> \\\n"
-                "-movie <path/to/movie/folder> \\\n"
-                "-tv <path/to/tv/folder> \\\n"
-                "-host <plex server host> \\\n"
-                "-port <plex server port> \\\n"
-                "-token <plex server token>\n\n"
-                "*Replace placeholder brackets with the appropriate values"
-            )
-            raise PlexUtilConfigError(description) from FileNotFoundError
-
-    @staticmethod
-    def save_plex_config_dto(
-        plex_config_file_location: Path,
-        plex_config_dto: PlexConfigDTO,
-        is_overwrite: bool = True,
-    ) -> None:
-        mode = "w" if is_overwrite else "x"
-
-        with plex_config_file_location.open(
-            encoding=FileImporter.encoding,
-            mode=mode,
-        ) as f:
-            serializer = PlexConfigSerializer()
-            json.dump(serializer.to_json(plex_config_dto), f, indent=4)
-
-    @staticmethod
-    def get_music_playlist_file_dto(
+    def get_tv_language_manifest(
         config_dir: Path,
-    ) -> MusicPlaylistFileDTO:
-        serializer = MusicPlaylistFileSerializer()
-
-        music_playlist_file_location = config_dir / "music_playlists.json"
-        music_playlist_schema_location = (
+    ) -> list[TVLanguageManifestDTO]:
+        tv_language_manifest_file_location = (
+            config_dir / "tv_language_manifest.json"
+        )
+        tv_language_manifest_schema_file_location = (
             PathOps.get_project_root()
             / "plexutil"
             / "schemas"
             / "v1"
-            / "music_playlists_schema.json"
+            / "tv_language_manifest_schema.json"
         )
-        music_playlist_schema = {}
-
-        try:
-            with music_playlist_schema_location.open(
-                encoding=FileImporter.encoding
-            ) as file:
-                music_playlist_schema = json.load(file)
-        except FileNotFoundError:
-            description = "Music Playlists Schema not found.\n"
-            PlexUtilLogger.get_logger().exception(description)
-            description = f"Supplied location: {music_playlist_file_location}"
-            PlexUtilLogger.get_logger().debug(description)
-            raise SystemExit(1) from FileNotFoundError
-
-        try:
-            with music_playlist_file_location.open(
-                encoding=FileImporter.encoding
-            ) as file:
-                file_dict = json.load(file)
-                validate(instance=file_dict, schema=music_playlist_schema)
-                description = "Music Playlist exists and schema is valid!\n"
-                PlexUtilLogger.get_logger().debug(description)
-                return serializer.to_dto(file_dict)
-        except FileNotFoundError:
-            description = (
-                "Music Playlists File not found. "
-                "Proceeding with no music playlists file\n"
-            )
-            PlexUtilLogger.get_logger().info(description)
-            description = f"Supplied location: {music_playlist_file_location}"
-            PlexUtilLogger.get_logger().debug(description)
-            time.sleep(2)
-        except ValidationError as e:
-            description = (
-                "Music playlist is not valid. " "Please refer to schema\n"
-            )
-            raise InvalidSchemaError(description) from e
-
-        return MusicPlaylistFileDTO()
-
-    @staticmethod
-    def get_tv_language_manifest(
-        config_dir: Path,
-    ) -> TVLanguageManifestFileDTO:
-        serializer = TVLanguageManifestSerializer()
-
-        tv_language_manifest_file_location = (
-            config_dir / "tv_language_manifest.json"
-        )
+        with tv_language_manifest_schema_file_location.open(
+            encoding=FileImporter.encoding
+        ) as file:
+            schema_dict = json.load(file)
 
         try:
             with tv_language_manifest_file_location.open(
                 encoding=FileImporter.encoding
             ) as file:
                 file_dict = json.load(file)
-                return serializer.to_dto(file_dict)
+                validate(instance=file_dict, schema=schema_dict)
+                tv_language_manifests_dto = []
+                for language, ids in file_dict.items():
+                    lang = Language.get_from_str(language)
+                    tv_language_manifests_dto.append(
+                        TVLanguageManifestDTO(language=lang, ids=ids)
+                    )
+                return tv_language_manifests_dto
+
         except FileNotFoundError:
             description = (
-                "TV Language Manifest File not found. "
-                "Proceeding with no tv language manifest file\n"
+                "TV Language Manifest not found. "
+                "Proceeding with no language manifest\n"
             )
             PlexUtilLogger.get_logger().info(description)
-            description = (
-                "Supplied location: " f"{tv_language_manifest_file_location}"
-            )
-            PlexUtilLogger.get_logger().debug(description)
             time.sleep(2)
 
-        return TVLanguageManifestFileDTO()
-
-    @staticmethod
-    def export_music_playlist_file_dto(
-        music_playlist_file_dto: MusicPlaylistFileDTO,
-    ) -> None:
-        cwd = Path() / "music_playlists.json"
-        serializer = MusicPlaylistFileSerializer()
-        with cwd.open(encoding=FileImporter.encoding, mode="w") as file:
-            json.dump(
-                serializer.to_json(music_playlist_file_dto),
-                file,
-                indent=4,
-            )
+        return []
 
     @staticmethod
     def get_logging_config(logging_config_path: Path) -> dict:
@@ -267,6 +183,38 @@ class FileImporter(Static):
             "r", errors="strict", encoding=FileImporter.encoding
         ) as file:
             return yaml.safe_load(file)
+
+    @staticmethod
+    def get_pyproject() -> dict:
+        return toml.load(PathOps.get_project_root().parent / "pyproject.toml")
+
+    @staticmethod
+    def populate_sample(bootstrap_paths_dto: BootstrapPathsDTO) -> None:
+        dst_configs = [
+            x.name for x in bootstrap_paths_dto.config_dir.iterdir()
+        ]
+
+        manifests = (
+            PathOps.get_project_root() / "plexutil" / "sample" / "manifests"
+        )
+
+        preferences = (
+            PathOps.get_project_root() / "plexutil" / "sample" / "preferences"
+        )
+
+        src_configs = [manifests, preferences]
+
+        for src_config in src_configs:
+            for item in src_config.iterdir():
+                if item.is_dir():
+                    continue
+
+                src_file_name = item.name
+
+                if src_file_name in dst_configs:
+                    continue
+
+                shutil.copy2(item, bootstrap_paths_dto.config_dir)
 
     @staticmethod
     def bootstrap() -> BootstrapPathsDTO:
@@ -317,6 +265,7 @@ class FileImporter(Static):
                 config_dir=config_dir,
                 log_dir=log_dir,
                 plexutil_config_file=plexutil_config_file,
+                plexutil_playlists_db_dir=config_dir / "playlists.db",
             )
 
         except Exception as e:

@@ -1,65 +1,95 @@
-from pathlib import Path
+from __future__ import annotations
 
-from plexapi.server import PlexServer
+from typing import TYPE_CHECKING
+
+from plexutil.exception.library_op_error import LibraryOpError
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from plexapi.server import PlexServer
+    from plexapi.video import Movie
+
+    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 
 from plexutil.core.library import Library
-from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
-from plexutil.plex_util_logger import PlexUtilLogger
 
 
 class MovieLibrary(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        location: Path,
-        language: Language,
+        locations: list[Path],
         preferences: LibraryPreferencesDTO,
+        language: Language = Language.ENGLISH_US,
+        name: str = LibraryName.MOVIE.value,
     ) -> None:
         super().__init__(
             plex_server,
-            LibraryName.MOVIE,
+            name,
             LibraryType.MOVIE,
             Agent.MOVIE,
             Scanner.MOVIE,
-            location,
+            locations,
             language,
             preferences,
         )
 
     def create(self) -> None:
-        info = (
-            "Creating movie library: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
-        )
+        """
+        Creates a Movie Library
+        Logs a warning if a specific movie preference is rejected by the server
+        Logs a warning if no Movie Preferences available
 
-        PlexUtilLogger.get_logger().info(info)
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryOpError: If Library already exists
+        """
+        op_type = "CREATE"
+        if self.exists():
+            description = f"Movie Library '{self.name}' already exists"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MOVIE,
+                description=description,
+            )
+
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         self.plex_server.library.add(
-            name=self.name.value,
+            name=self.name,
             type=self.library_type.value,
             agent=self.agent.value,
             scanner=self.scanner.value,
-            location=str(self.location),
+            location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
             language=self.language.value,
         )
 
-        # This line triggers a refresh of the library
-        self.plex_server.library.sections()
+        self.inject_preferences()
 
-        self.plex_server.library.section(self.name.value).editAdvanced(
-            **self.preferences.movie,
-        )
+    def query(self) -> list[Movie]:
+        """
+        Returns all movies for the current LibrarySection
+
+        Returns:
+            list[plexapi.video.Video]: Movies from the current Section
+        """
+        op_type = "QUERY"
+        if not self.exists():
+            description = f"Movie Library '{self.name}' does not exist"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MOVIE,
+                description=description,
+            )
+        return self.get_section().searchMovies()
 
     def delete(self) -> None:
         return super().delete()

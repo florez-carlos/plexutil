@@ -23,7 +23,7 @@ class PlexUtilLogger(metaclass=SingletonMeta):
             month = str(datetime.now(timezone.utc).month)
             year = str(datetime.now(timezone.utc).year)
 
-            log_file_name = f"{month}-{day}-{year}.log"
+            log_file_name = f"{year}-{month}-{day}.log"
             # Rewrite contents of YAML config to accomodate
             # for date based log file names
             log_config["handlers"]["regular_file_handler"]["filename"] = (
@@ -33,9 +33,15 @@ class PlexUtilLogger(metaclass=SingletonMeta):
             logging.config.dictConfig(log_config)
             # Initialize loggers
             self.logger = logging.getLogger("regular")
+            self.console_logger = logging.getLogger("console")
             self.initialized = True
 
     @classmethod
     def get_logger(cls) -> logging.Logger:
         instance = cls._instances[cls]
         return instance.logger
+
+    @classmethod
+    def get_console_logger(cls) -> logging.Logger:
+        instance = cls._instances[cls]
+        return instance.console_logger

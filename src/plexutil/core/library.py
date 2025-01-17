@@ -4,26 +4,38 @@ import time
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
+from plexapi.exceptions import NotFound
+
+from plexutil.enums.agent import Agent
+from plexutil.enums.language import Language
+from plexutil.enums.scanner import Scanner
+from plexutil.exception.library_illegal_state_error import (
+    LibraryIllegalStateError,
+)
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
 )
+from plexutil.exception.library_section_missing_error import (
+    LibrarySectionMissingError,
+)
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.path_ops import PathOps
+from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.audio import Audio
+    from plexapi.audio import Track
+    from plexapi.library import LibrarySection
     from plexapi.server import PlexServer
-    from plexapi.video import Video
+    from plexapi.video import Movie, Show
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-    from plexutil.enums.agent import Agent
-    from plexutil.enums.language import Language
-    from plexutil.enums.library_name import LibraryName
-    from plexutil.enums.scanner import Scanner
+    from plexutil.dto.movie_dto import MovieDTO
+    from plexutil.dto.song_dto import SongDTO
+    from plexutil.dto.tv_series_dto import TVSeriesDTO
 
 from alive_progress import alive_bar
-from plexapi.exceptions import NotFound
 
 from plexutil.enums.library_type import LibraryType
 from plexutil.exception.library_op_error import LibraryOpError
@@ -36,11 +48,11 @@ class Library(ABC):
     def __init__(
         self,
         plex_server: PlexServer,
-        name: LibraryName,
+        name: str,
         library_type: LibraryType,
         agent: Agent,
         scanner: Scanner,
-        location: Path,
+        locations: list[Path],
         language: Language,
         preferences: LibraryPreferencesDTO,
     ) -> None:
@@ -49,9 +61,26 @@ class Library(ABC):
         self.library_type = library_type
         self.agent = agent
         self.scanner = scanner
-        self.location = location
+        self.locations = locations
         self.language = language
         self.preferences = preferences
+
+        section = None
+        try:
+            section = self.get_section()
+        except LibrarySectionMissingError:
+            # No need to continue if not an existing library
+            return
+
+        if section:
+            self.locations = section.locations
+            self.agent = Agent.get_from_str(section.agent)
+            self.scanner = Scanner.get_from_str(section.scanner)
+            self.locations = [
+                PathOps.get_path_from_str(location)
+                for location in section.locations
+            ]
+            self.language = Language.get_from_str(section.language)
 
     @abstractmethod
     def create(self) -> None:
@@ -59,65 +88,47 @@ class Library(ABC):
 
     @abstractmethod
     def delete(self) -> None:
-        op_type = "DELETE"
+        """
+        Generic Library Delete
 
-        info = (
-            "Deleting library: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.music}\n"
-        )
-        PlexUtilLogger.get_logger().info(info)
+        Returns:
+            None: This method does not return a value.
+
+        Raises:
+            LibraryOpError: If Library isn't found
+
+        """
+        op_type = "DELETE"
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         try:
-            result = self.plex_server.library.section(self.name.value)
-
-            if result:
-                result.delete()
-            else:
-                description = "Nothing found"
-                raise LibraryOpError(
-                    op_type=op_type,
-                    description=description,
-                    library_type=self.library_type,
-                )
-
-        except NotFound:
+            self.get_section().delete()
+        except LibrarySectionMissingError as e:
+            description = f"Does not exist: {self.name}"
             raise LibraryOpError(
                 op_type=op_type,
+                description=description,
                 library_type=self.library_type,
-            ) from NotFound
+            ) from e
 
     @abstractmethod
     def exists(self) -> bool:
-        debug = (
-            "Checking library exists: \n"
-            f"Name: {self.name.value}\n"
-            f"Type: {self.library_type.value}\n"
-            f"Agent: {self.agent.value}\n"
-            f"Scanner: {self.scanner.value}\n"
-            f"Location: {self.location!s}\n"
-            f"Language: {self.language.value}\n"
-            f"Preferences: {self.preferences.movie}\n"
+        """
+        Generic LibrarySection Exists
+
+        Returns:
+            bool: If LibrarySection exists
+
+        """
+        self.log_library(
+            operation="CHECK EXISTS", is_info=False, is_debug=True
         )
+
         try:
-            result = self.plex_server.library.section(self.name.value)
-
-            if not result:
-                debug = debug + "-Not found-"
-                PlexUtilLogger.get_logger().debug(debug)
-                return False
-
-        except NotFound:
-            debug = debug + "-Not found-"
-            PlexUtilLogger.get_logger().debug(debug)
+            self.get_section()
+        except LibrarySectionMissingError:
             return False
 
-        PlexUtilLogger.get_logger().debug(debug)
         return True
 
     def poll(
@@ -125,9 +136,22 @@ class Library(ABC):
         requested_attempts: int = 0,
         expected_count: int = 0,
         interval_seconds: int = 0,
-        tvdb_ids: list[int] | None = None,
     ) -> None:
-        current_count = len(self.query(tvdb_ids))
+        """
+        Performs a query based on the supplied parameters
+
+        Args:
+            requested_attempts (int): Amount of times to poll
+            expected_count (int): Polling terminates when reaching this amount
+            interval_seconds (int): timeout before making a new attempt
+
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryPollTimeoutError: If expected_count not reached
+        """
+        current_count = len(self.query())
         init_offset = abs(expected_count - current_count)
 
         debug = (
@@ -146,7 +170,7 @@ class Library(ABC):
             offset = init_offset
 
             while attempts < requested_attempts:
-                updated_current_count = len(self.query(tvdb_ids))
+                updated_current_count = len(self.query())
                 offset = abs(updated_current_count - current_count)
                 current_count = updated_current_count
 
@@ -163,66 +187,185 @@ class Library(ABC):
                 time.sleep(interval_seconds)
                 attempts = attempts + 1
                 if attempts >= requested_attempts:
-                    raise LibraryPollTimeoutError
+                    description = (
+                        "Did not reach the expected"
+                        f"library count: {expected_count}"
+                    )
+                    raise LibraryPollTimeoutError(description)
 
-    def query(
+    @abstractmethod
+    def query(self) -> list[Track] | list[Show] | list[Movie]:
+        raise NotImplementedError
+
+    def log_library(
         self,
-        tvdb_ids: list[int] | None = None,
-    ) -> list[Audio] | list[Video]:
-        op_type = "QUERY"
+        operation: str,
+        is_info: bool = True,
+        is_debug: bool = False,
+        is_console: bool = False,
+    ) -> None:
+        """
+        Private logging template to be used by methods of this class
 
-        if tvdb_ids is None:
-            tvdb_ids = []
+        Args:
+            opration (str): The type of operation i.e. CREATE DELETE
+            is_info (bool): Should it be logged as INFO
+            is_debug (bool): Should it be logged as DEBUG
+            is_console (bool): Should it be logged with console handler
 
-        debug = (
-            "Performing query:\n"
-            f"Name: {self.name.value}\n"
-            f"Library Type: {self.library_type.value}\n"
-            f"TVDB Ids: {tvdb_ids}\n"
+        Returns:
+            None: This method does not return a value.
+        """
+        library = self.plex_server.library
+        library_id = library.key if library else ""
+        info = (
+            f"{operation} {self.library_type} library: \n"
+            f"ID: {library_id}\n"
+            f"Name: {self.name}\n"
+            f"Type: {self.library_type.value}\n"
+            f"Agent: {self.agent.value}\n"
+            f"Scanner: {self.scanner.value}\n"
+            f"Locations: {self.locations!s}\n"
+            f"Language: {self.language.value}\n"
+            f"Movie Preferences: {self.preferences.movie}\n"
+            f"Music Preferences: {self.preferences.music}\n"
+            f"TV Preferences: {self.preferences.tv}\n"
         )
-        PlexUtilLogger.get_logger().debug(debug)
+        if not is_console:
+            if is_info:
+                PlexUtilLogger.get_logger().info(info)
+            if is_debug:
+                PlexUtilLogger.get_logger().debug(info)
+        else:
+            PlexUtilLogger.get_console_logger().info(info)
 
+    def get_section(self) -> LibrarySection:
+        """
+        Gets an up-to-date Plex Server Library Section
+        Gets the first occuring Section, does not have conflict resolution
+
+        Returns:
+            LibrarySection: A current LibrarySection
+
+        Raises:
+            LibrarySectionMissingError: If no library of the same
+            type and name exist
+        """
+
+        sections = self.plex_server.library.sections()
+
+        filtered_sections = [
+            section
+            for section in sections
+            if LibraryType.is_eq(self.library_type, section)
+        ]
+
+        for filtered_section in filtered_sections:
+            if filtered_section.title == self.name:
+                return filtered_section
+
+        raise LibrarySectionMissingError
+
+    def __get_local_files(
+        self,
+    ) -> list[SongDTO] | list[MovieDTO] | list[TVSeriesDTO]:
+        """
+        Private method to get local files
+
+        Returns:
+            [SongDTO | MovieDTO | TVEpisodeDTO]: Local files
+
+        Raises:
+            LibraryUnsupportedError: If Library Type not of MUSIC,
+            MUSIC_PLAYLIST, TV or MOVIE
+        """
+        library = self.get_section()
+
+        if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
+            LibraryType.MUSIC_PLAYLIST, library
+        ):
+            local_files = PathOps.get_local_songs(self.locations)
+        elif LibraryType.is_eq(LibraryType.TV, library):
+            local_files = PathOps.get_local_tv(self.locations)
+        elif LibraryType.is_eq(LibraryType.MOVIE, library):
+            local_files = PathOps.get_local_movies(self.locations)
+        else:
+            op_type = "Get Local Files"
+            raise LibraryUnsupportedError(
+                op_type,
+                LibraryType.get_from_section(library),
+            )
+
+        return local_files
+
+    def probe_library(self) -> None:
+        """
+        Verifies local files match server files, if not then it issues a
+        library update, polls for 1000s or until server matches local files
+
+        Returns:
+            None: This method does not return a value.
+
+        Raises:
+            LibraryIllegalStateError: If local files do not match server
+            LibraryUnsupportedError: If Library Type isn't supported
+        """
+        local_files = self.__get_local_files()
+        plex_files = self.query()
         try:
-            if self.library_type is LibraryType.MUSIC:
-                return self.plex_server.library.section(
-                    self.name.value,
-                ).searchTracks()
+            PlexOps.validate_local_files(plex_files, self.locations)
+        except LibraryIllegalStateError:
+            description = (
+                "Plex Server does not match local files\n"
+                "A server update is necessary\n"
+                "This process may take several minutes\n"
+            )
+            PlexUtilLogger.get_logger().info(description)
 
-            elif self.library_type is LibraryType.TV:
-                shows = self.plex_server.library.section(self.name.value).all()
-                shows_filtered = []
+        expected_count = len(local_files)
+        self.get_section().update()
 
-                if tvdb_ids:
-                    for show in shows:
-                        guids = show.guids
-                        tvdb_prefix = "tvdb://"
-                        for guid in guids:
-                            if tvdb_prefix in guid.id:
-                                tvdb = guid.id.replace(tvdb_prefix, "")
-                                if int(tvdb) in tvdb_ids:
-                                    shows_filtered.append(show)
-                            else:
-                                description = (
-                                    "Expected ("
-                                    + tvdb_prefix
-                                    + ") but show does not have any: "
-                                    + guid.id
-                                )
-                                LibraryOpError(
-                                    op_type=op_type,
-                                    library_type=self.library_type,
-                                    description=description,
-                                )
+        self.poll(100, expected_count, 10)
+        plex_files = self.query()
+        PlexOps.validate_local_files(plex_files, self.locations)
 
-                return shows_filtered
+    def inject_preferences(self) -> None:
+        """
+        Sets Library Section Preferences
+        Logs a warning if preferences dont't exist or library type
+        not of movie,tv,music
 
-            else:
-                raise LibraryUnsupportedError(
-                    op_type=op_type,
-                    library_type=self.library_type,
+        Returns:
+            None: This method does not return a value
+        """
+
+        if not self.preferences:
+            description = "WARNING: Did not receive any Library Preferences"
+            PlexUtilLogger.get_logger().warning(description)
+            return
+
+        section_preferences = None
+
+        if (
+            LibraryType.is_eq(LibraryType.MOVIE, self.get_section())
+            or LibraryType.is_eq(LibraryType.TV, self.get_section())
+            or LibraryType.is_eq(LibraryType.MUSIC, self.get_section())
+        ):
+            section_preferences = self.preferences.movie
+
+        if not section_preferences:
+            description = "WARNING: Did not receive any Library Preferences"
+            PlexUtilLogger.get_logger().warning(description)
+            return
+
+        for key, value in section_preferences.items():
+            try:
+                section = self.get_section()
+                section.editAdvanced(**{key: value})
+            except NotFound:  # noqa: PERF203
+                description = (
+                    f"WARNING: Preference not accepted by the server: {key}\n"
+                    f"Skipping -> {key}:{value}"
                 )
-
-        except NotFound:
-            debug = "Received Not Found on a Query operation"
-            PlexUtilLogger.get_logger().debug(debug)
-            return []
+                PlexUtilLogger.get_logger().warning(description)
+                continue

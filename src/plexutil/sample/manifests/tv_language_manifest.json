@@ -1,15 +1,4 @@
 {
-  "languages": [
-    {"name": "es",
-      "regions": [
-        {"name": "ES", "tvdbIds": []}
-      ]
-    },
-    {"name": "en",
-      "regions": [
-        {"name": "US", "tvdbIds": []}
-      ]
-    }
-
-  ]
+  "es-ES": [],
+  "en-US": []
 }
