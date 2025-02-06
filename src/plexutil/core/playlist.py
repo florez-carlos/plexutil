@@ -178,6 +178,7 @@ class Playlist(Library):
         Returns:
             None: This method does not return a value
         """
+        self.probe_library()
         filtered_tracks = self.__get_filtered_tracks()
         playlist = self.get_section().playlist(self.playlist_name)
         playlist.addItems(filtered_tracks)
