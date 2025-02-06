@@ -33,15 +33,7 @@ plexutil config -host <PLEX_SERVER_HOST> -port <PLEX_SERVER_PORT> -token <PLEX_S
 ```
 ### Optional
 #### TV Series Language Override
-To override the language of tv series, modify the tv_language_manifest.json file found in:
-- Windows
-```bash
-C:\Users\<YOUR_USER>\Documents\plexutil\config\tv_language_manifest.json
-```
-- Linux
-```bash
-$HOME/plexutil/config/tv_language_manifest.json
-```
+To override the language of tv series, modify the tv_language_manifest.json file found in: [Config Location](#config-location) <br >
 The file can be modified like such:
 ```bash
 {
@@ -50,7 +42,25 @@ The file can be modified like such:
 }
 ```
 Where the key is the language and the list contains the [TVDB](https://www.thetvdb.com/) ids of the desired series to be overriden <br >
-For a list of supported languages: TODO
+For a list of supported languages: [Language](./src/plexutil/enums/language.py)
+
+---
+
+#### Library Preferences
+Libraries of type:
+- Movie
+- Music
+- TV
+
+Can have their preferences set in the following files:
+
+- movie_library_preferences.json
+- music_library_preferences.json
+- tv_library_preferences.json
+
+These files can be found here: [Config Location](#config-location)
+
+
 
 
 ## Usage
@@ -61,6 +71,33 @@ test
 ```bash
 source init.sh
 ```
+## Config Location
+The config directory of Plexutil is located:
+> [!NOTE]
+> Replace <YOUR_USER> with your Windows UserName
+- Windows
+```bash
+C:\Users\<YOUR_USER>\Documents\plexutil\config\
+```
+- Linux
+```bash
+$HOME/plexutil/config/tv_language_manifest.json
+```
+
+## Log Location
+The log directory of Plexutil is located:
+> [!NOTE]
+> Replace <YOUR_USER> with your Windows UserName
+- Windows
+```bash
+C:\Users\<YOUR_USER>\Documents\plexutil\log
+```
+- Linux
+```bash
+$HOME/plexutil/log
+```
+> [!NOTE]
+> Log files are archived based on date, such as yyyy-mm-dd.log
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
