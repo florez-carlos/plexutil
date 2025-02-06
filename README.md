@@ -14,58 +14,53 @@ CLI tool with helpful functions to manage a Plex server.
 ## Table of Contents
 
 * [Installation](#installation)
+* [Configuration](#configuration)
 * [Usage](#usage)
 * [Development](#development)
-  * [Clone the repo in workspace with recurse submodules](#clone-the-repo-in-workspace-with-recurse-submodules)
-  * [Install Git Hooks](#install-git-hooks) 
 
 
 ## Installation
 
 ```bash
-python3 -m pip install plexutil
+pip install plexutil
 ```
 
-### Create the plexutil/config directory
-
-This directory is necessary to store our custom configuration of server settings and library preferences
-
-
-#### Windows
-
+## Configuration
+### Required
+Set the host, port, token of your plex server
 ```bash
-mkdir C:\Users\%USERNAME%\Documents\plexutil\config
+plexutil config -host <PLEX_SERVER_HOST> -port <PLEX_SERVER_PORT> -token <PLEX_SERVER_TOKEN>
 ```
-
-#### Linux
-
+### Optional
+#### TV Series Language Override
+To override the language of tv series, modify the tv_language_manifest.json file found in:
+- Windows
 ```bash
-mkdir -p $HOME/plexutil/config
+C:\Users\<YOUR_USER>\Documents\plexutil\config\tv_language_manifest.json
 ```
-
-### Add the sample Configuration files to the plexutil/config directory
-- Download the sample Preferences files located in ./samples/preferences and place in the plexutil config directory
-- Download the sample Manifests files located in ./samples/mainfests and place in the plexutil config directory
-- Download the sample Playlists files located in ./samples/playlists and place in the plexutil config directory
-
-The plexutil config directory should hold the folllowing
-
+- Linux
 ```bash
-plexutil/config/music_playlist.json
-plexutil/config/tv_language_manifest.json
-plexutil/config/movie_library_preferences.json
-plexutil/config/tv_library_preferences.json
-plexutil/config/music_library_preferences.json
-plexutil/config/plex_server_setting_preferences.json
+$HOME/plexutil/config/tv_language_manifest.json
 ```
-
+The file can be modified like such:
+```bash
+{
+  "es-ES": [327417,396583,388477,292262,282670,274522],
+  "en-US": []
+}
+```
+Where the key is the language and the list contains the [TVDB](https://www.thetvdb.com/) ids of the desired series to be overriden <br >
+For a list of supported languages: TODO
 
 
 ## Usage
 test
 
 
-
+## Development
+```bash
+source init.sh
+```
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
