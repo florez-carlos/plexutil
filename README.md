@@ -15,8 +15,21 @@ CLI tool with helpful functions to manage a Plex server.
 
 * [Installation](#installation)
 * [Configuration](#configuration)
+  * [Required](#required)
+  * [Optional](#optional)
+    * [TV Series Language Override](#tv-series-language-override)
+    * [Library Preferences](#library-preferences)
+    * [Server Setting Preferences](#server-setting-preferences)
 * [Usage](#usage)
+  * [Creating a media library](#creating-a-media-library)
+  * [Deleting a media library](#deleting-a-media-library)
+  * [Creating a Playlist](#creating-a-playlist)
+  * [Deleting a Playlist](#deleting-a-playlist)
+  * [Adding songs to a Playlist](#adding-songs-to-a-playlist)
+  * [Exporting/Importing Music Playlists](#exportingimporting-music-playlists)
 * [Development](#development)
+* [Config Location](#config-location)
+* [Log Location](#log-location)
 
 
 ## Installation
@@ -84,7 +97,7 @@ plexutil set_server_settings
 ```
 The file already includes default preferences that can be removed/modified/added based on your needs <br >
 
-
+---
 
 ## Usage
 ### Creating a media library:
@@ -134,7 +147,6 @@ This file can then be used to recreate the playlists in another Plex Server with
 ```bash
 plexutil import_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLISTS_ARE>
 ```
-
 > [!NOTE]
 > The songs in the Music Library of the importing server must match the songs in the exporting server
 
