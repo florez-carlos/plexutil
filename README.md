@@ -58,13 +58,63 @@ Can have their preferences set in the following files:
 - music_library_preferences.json
 - tv_library_preferences.json
 
-These files can be found here: [Config Location](#config-location)
+These files can be found here: [Config Location](#config-location) <br >
+The files already include default preferences that can be removed/modified/added based on your needs <br >
 
+---
+
+#### Server Setting Preferences
+These preferences modify the behavior of the server
+
+- plex_server_setting_preferences.json
+
+The file can be found here: [Config Location](#config-location) <br >
+For example:
+```json
+"ButlerStartHour": 23,
+```
+Starts scheduled tasks at 11:00PM local time, to modify this time to 1:00AM
+```json
+"ButlerStartHour": 1,
+```
+The file already includes default preferences that can be removed/modified/added based on your needs <br >
 
 
 
 ## Usage
-test
+### Creating a media library:
+> [!NOTE]
+> If language is not supplied, the default is en-US
+```bash
+plexutil create_movie_library -libn <NAME_OF_THE_LIBRARY> -loc </PATH/TO/MEDIA/LOCATION> -l <LANGUAGE>
+```
+### Deleting a media library:
+```bash
+plexutil delete_movie_library -libn <NAME_OF_THE_LIBRARY>
+```
+
+### Creating a Playlist
+> [!NOTE]
+> Only Music Playlists are currently supported
+```bash
+plexutil create_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLIST_IS> -pn <NAME_OF_THE_PLAYLIST> -s /path/to/song.mp3 /path/to/another-song.mp3
+```
+> [!NOTE]
+> The paths passed to -s must match the location of the library <br >
+> Therefore, if the library has for location /media/music these song paths must be in /media/music/song.mp3
+
+### Deleting a Playlist
+> [!NOTE]
+> Only Music Playlists are currently supported
+```bash
+plexutil delete_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLIST_IS> -pn <NAME_OF_THE_PLAYLIST>
+```
+
+### Adding songs to a Playlist
+
+
+
+
 
 
 ## Development
