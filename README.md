@@ -59,6 +59,7 @@ Can have their preferences set in the following files:
 - tv_library_preferences.json
 
 These files can be found here: [Config Location](#config-location) <br >
+These Preferences are set at library creation time <br >
 The files already include default preferences that can be removed/modified/added based on your needs <br >
 
 ---
@@ -76,6 +77,10 @@ For example:
 Starts scheduled tasks at 11:00PM local time, to modify this time to 1:00AM
 ```json
 "ButlerStartHour": 1,
+```
+These modifications need to be set by doing:
+```bash
+plexutil set_server_settings
 ```
 The file already includes default preferences that can be removed/modified/added based on your needs <br >
 
@@ -112,10 +117,26 @@ plexutil delete_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLIST_IS> -pn <NAME_
 
 ### Adding songs to a Playlist
 
+```bash
+plexutil add_songs_to_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLIST_IS> -pn <NAME_OF_THE_PLAYLIST> -s /path/to/song.mp3 /path/to/another-song.mp3
+```
+> [!NOTE]
+> The paths passed to -s must match the location of the library <br >
+> Therefore, if the library has for location /media/music these song paths must be in /media/music/song.mp3
 
+### Exporting/Importing Music Playlists
+Music Playlists can be exported to a playlists.db file, this file can later be imported to another Plex server with plexutil
+```bash
+plexutil export_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLISTS_ARE>
+```
+This action will create a playlists.db file here: [Config Location](#config-location) <br >
+This file can then be used to recreate the playlists in another Plex Server with plexutil by doing
+```bash
+plexutil import_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLISTS_ARE>
+```
 
-
-
+> [!NOTE]
+> The songs in the Music Library of the importing server must match the songs in the exporting server
 
 ## Development
 ```bash
