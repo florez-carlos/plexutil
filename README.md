@@ -106,10 +106,13 @@ The file already includes default preferences that can be removed/modified/added
 ```bash
 plexutil create_movie_library -libn <NAME_OF_THE_LIBRARY> -loc </PATH/TO/MEDIA/LOCATION> -l <LANGUAGE>
 ```
+---
+
 ### Deleting a media library:
 ```bash
 plexutil delete_movie_library -libn <NAME_OF_THE_LIBRARY>
 ```
+---
 
 ### Creating a Playlist
 > [!NOTE]
@@ -121,12 +124,16 @@ plexutil create_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLIST_IS> -pn <NAME_
 > The paths passed to -s must match the location of the library <br >
 > Therefore, if the library has for location /media/music these song paths must be in /media/music/song.mp3
 
+---
+
 ### Deleting a Playlist
 > [!NOTE]
 > Only Music Playlists are currently supported
 ```bash
 plexutil delete_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLIST_IS> -pn <NAME_OF_THE_PLAYLIST>
 ```
+
+---
 
 ### Adding songs to a Playlist
 
@@ -136,6 +143,8 @@ plexutil add_songs_to_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLIST_IS> -pn 
 > [!NOTE]
 > The paths passed to -s must match the location of the library <br >
 > Therefore, if the library has for location /media/music these song paths must be in /media/music/song.mp3
+
+---
 
 ### Exporting/Importing Music Playlists
 Music Playlists can be exported to a playlists.db file, this file can later be imported to another Plex server with plexutil
@@ -149,6 +158,8 @@ plexutil import_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLISTS_ARE>
 ```
 > [!NOTE]
 > The songs in the Music Library of the importing server must match the songs in the exporting server
+
+---
 
 ## Development
 ```bash
