@@ -57,8 +57,9 @@ class Prompt(Static):
             "--playlist_name",
             metavar="Playlist Name",
             type=str,
-            nargs="?",
+            nargs="+",
             help=("Name of the playlist"),
+            default=[],
         )
 
         parser.add_argument(
@@ -76,8 +77,9 @@ class Prompt(Static):
             "--library_name",
             metavar="Library Name",
             type=str,
-            nargs="?",
+            nargs="+",
             help="Library Name",
+            default=[],
         )
 
         parser.add_argument(
@@ -163,6 +165,9 @@ class Prompt(Static):
                 UserRequest.get_user_request_from_str(args.request)
             )
         library_name = args.library_name
+
+        playlist_name = " ".join(playlist_name) if playlist_name else ""
+        library_name = " ".join(library_name) if library_name else ""
 
         if is_version:
             plexutil_version = ""
