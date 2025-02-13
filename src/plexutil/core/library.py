@@ -264,7 +264,11 @@ class Library(ABC):
             if filtered_section.title == self.name:
                 return filtered_section
 
-        raise LibrarySectionMissingError
+        if self.name:
+            description = f"Library not found: {self.name}"
+        else:
+            description = "Library Name (-libn) not specified, see -h"
+        raise LibrarySectionMissingError(description)
 
     def __get_local_files(
         self,

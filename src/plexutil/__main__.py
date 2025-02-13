@@ -23,6 +23,9 @@ from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.exception.library_poll_timeout_error import (
     LibraryPollTimeoutError,
 )
+from plexutil.exception.library_section_missing_error import (
+    LibrarySectionMissingError,
+)
 from plexutil.exception.server_config_error import ServerConfigError
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
@@ -275,6 +278,12 @@ def main() -> None:
     except LibraryPollTimeoutError as e:
         sys.tracebacklimit = 0
         description = "\n=====Library Poll Tiemout Error=====\n" f"{e!s}"
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
+    except LibrarySectionMissingError as e:
+        sys.tracebacklimit = 0
+        description = "\n=====Library Not Found Error=====\n" f"{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
