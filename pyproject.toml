@@ -29,7 +29,7 @@ dependencies = [
   "peewee==3.17.7",
   "colorlog==6.4.0",
   "keyring==25.5.0",
-  "cryptography==44.0.0"
+  "cryptography==44.0.1"
 ]
 
 [project.scripts]
