@@ -181,6 +181,13 @@ class Library(ABC):
                 if current_count == expected_count:
                     break
 
+                if current_count > expected_count:
+                    description = (
+                        f"Expected {expected_count} items in the library "
+                        f"but Plex Server has {current_count}"
+                    )
+                    raise LibraryIllegalStateError(description)
+
                 time.sleep(interval_seconds)
                 attempts = attempts + 1
                 if attempts >= requested_attempts:
