@@ -177,7 +177,7 @@ class Library(ABC):
                 for _ in range(offset):
                     display_count = display_count + 1
                     bar()
-                    
+
                 if current_count == expected_count:
                     break
 
