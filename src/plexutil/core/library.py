@@ -174,15 +174,12 @@ class Library(ABC):
                 offset = abs(updated_current_count - current_count)
                 current_count = updated_current_count
 
-                if current_count == expected_count:
-                    for _ in range(abs(current_count - display_count)):
-                        bar()
-
-                    break
-
                 for _ in range(offset):
                     display_count = display_count + 1
                     bar()
+                    
+                if current_count == expected_count:
+                    break
 
                 time.sleep(interval_seconds)
                 attempts = attempts + 1
