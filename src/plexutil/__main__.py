@@ -247,43 +247,43 @@ def main() -> None:
             description = "Successful System Exit"
             PlexUtilLogger.get_logger().debug(description)
         else:
-            description = "\n=====Unexpected Error=====\n" f"{e!s}"
+            description = f"\n=====Unexpected Error=====\n{e!s}"
             PlexUtilLogger.get_logger().exception(description)
             raise
 
     except ServerConfigError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Server Config Error=====\n" f"{e!s}"
+        description = f"\n=====Server Config Error=====\n{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except UserError as e:
         sys.tracebacklimit = 0
-        description = "\n=====User Error=====\n" f"{e!s}"
+        description = f"\n=====User Error=====\n{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibraryIllegalStateError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Library Illegal State Error=====\n" f"{e!s}"
+        description = f"\n=====Library Illegal State Error=====\n{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibraryOpError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Library Operation Error=====\n" f"{e!s}"
+        description = f"\n=====Library Operation Error=====\n{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibraryPollTimeoutError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Library Poll Tiemout Error=====\n" f"{e!s}"
+        description = f"\n=====Library Poll Tiemout Error=====\n{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibrarySectionMissingError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Library Not Found Error=====\n" f"{e!s}"
+        description = f"\n=====Library Not Found Error=====\n{e!s}"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
@@ -300,17 +300,17 @@ def main() -> None:
 
     except ValidationError as e:
         sys.tracebacklimit = 0
-        description = "\n=====Invalid Schema Error=====\n" f"{e!s}"
+        description = f"\n=====Invalid Schema Error=====\n{e!s}"
         PlexUtilLogger.get_logger().error(description)
 
     # No regular logger can be expected to be initialized
     except BootstrapError as e:
-        description = "\n=====Program Initialization Error=====\n" f"{e!s}"
+        description = f"\n=====Program Initialization Error=====\n{e!s}"
         e.args = (description,)
         raise
 
     except Exception as e:  # noqa: BLE001
-        description = "\n=====Unexpected Error=====\n" f"{e!s}"
+        description = f"\n=====Unexpected Error=====\n{e!s}"
         PlexUtilLogger.get_logger().exception(description)
 
 

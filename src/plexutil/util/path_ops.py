@@ -194,7 +194,7 @@ class PathOps(Static):
 
         description = (
             f"Evaluated local TV.\n"
-            f"Understood: {len(series)-len(unknown)!s}\n"
+            f"Understood: {len(series) - len(unknown)!s}\n"
             f"Unknown: {len(unknown)!s}\n"
         )
         PlexUtilLogger.get_logger().debug(description)
@@ -250,7 +250,7 @@ class PathOps(Static):
 
         description = (
             f"Evaluated local movies.\n"
-            f"Understood: {len(movies)-len(unknown)!s}\n"
+            f"Understood: {len(movies) - len(unknown)!s}\n"
             f"Unknown: {len(unknown)!s}\n"
         )
         PlexUtilLogger.get_logger().debug(description)
@@ -300,7 +300,7 @@ class PathOps(Static):
 
         description = (
             f"Evaluated local songs.\n"
-            f"Understood: {(len(songs)-len(unknown))!s}\n"
+            f"Understood: {(len(songs) - len(unknown))!s}\n"
             f"Unknown: {len(unknown)!s}\n"
         )
         PlexUtilLogger.get_logger().debug(description)
