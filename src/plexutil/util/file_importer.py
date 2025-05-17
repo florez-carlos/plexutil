@@ -277,7 +277,7 @@ class FileImporter(Static):
                     strings=[""],
                 )
             elif platform.system == "Linux":
-                logging.exception("") # noqa: LOG015
+                logging.exception("")  # noqa: LOG015
             if e.args and len(e.args) >= 0:
                 raise BootstrapError(e.args[0]) from e
 
