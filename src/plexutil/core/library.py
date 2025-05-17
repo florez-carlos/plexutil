@@ -370,7 +370,7 @@ class Library(ABC):
             try:
                 section = self.get_section()
                 section.editAdvanced(**{key: value})
-            except NotFound:  # noqa: PERF203
+            except NotFound:
                 description = (
                     f"WARNING: Preference not accepted by the server: {key}\n"
                     f"Skipping -> {key}:{value}"

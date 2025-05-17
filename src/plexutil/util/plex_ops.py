@@ -167,17 +167,17 @@ class PlexOps(Static):
         if all(isinstance(plex_file, Track) for plex_file in plex_files):
             songs = PathOps.get_local_songs(locations)
             _, unknown = PlexOps.filter_plex_media(
-                cast(list[Track], plex_files), songs
+                cast("list[Track]", plex_files), songs
             )
         elif all(isinstance(plex_file, Show) for plex_file in plex_files):
             tv = PathOps.get_local_tv(locations)
             _, unknown = PlexOps.filter_plex_media(
-                cast(list[Show], plex_files), tv
+                cast("list[Show]", plex_files), tv
             )
         elif all(isinstance(plex_file, Movie) for plex_file in plex_files):
             movies = PathOps.get_local_movies(locations)
             _, unknown = PlexOps.filter_plex_media(
-                cast(list[Movie], plex_files), movies
+                cast("list[Movie]", plex_files), movies
             )
         else:
             description = "Expected to find Tracks, Movies or Shows"

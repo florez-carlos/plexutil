@@ -21,12 +21,18 @@ class LibraryType(Enum):
         library_type: LibraryType, library_section: LibrarySection
     ) -> bool:
         return (
-            isinstance(library_section, MovieSection)
-            and library_type is LibraryType.MOVIE
-            or isinstance(library_section, MusicSection)
-            and library_type is LibraryType.MUSIC
-            or isinstance(library_section, ShowSection)
-            and library_type is LibraryType.TV
+            (
+                isinstance(library_section, MovieSection)
+                and library_type is LibraryType.MOVIE
+            )
+            or (
+                isinstance(library_section, MusicSection)
+                and library_type is LibraryType.MUSIC
+            )
+            or (
+                isinstance(library_section, ShowSection)
+                and library_type is LibraryType.TV
+            )
         )
 
     @staticmethod

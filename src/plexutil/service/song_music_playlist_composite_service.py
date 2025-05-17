@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
-from plexutil.dto.song_dto import SongDTO
 from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.audio import Track
+
+    from plexutil.dto.song_dto import SongDTO
 
 
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
@@ -80,7 +81,7 @@ class SongMusicPlaylistCompositeService:
                 normalized_music_playlist_dtos.append(
                     MusicPlaylistDTO(
                         name=dto.name,
-                        songs=cast(list[SongDTO], normalized_songs),
+                        songs=cast("list[SongDTO]", normalized_songs),
                     )
                 )
             return normalized_music_playlist_dtos

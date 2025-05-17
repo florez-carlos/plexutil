@@ -9,11 +9,11 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
 
     from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
+    from plexutil.dto.song_dto import SongDTO
 
 
 from plexutil.core.library import Library
 from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -150,7 +150,7 @@ class Playlist(Library):
 
             for track in plex_playlist.items():
                 song_dto = cast(
-                    SongDTO, PlexOps.get_dto_from_plex_media(track)
+                    "SongDTO", PlexOps.get_dto_from_plex_media(track)
                 )
                 music_playlist_dto.songs.append(song_dto)
 

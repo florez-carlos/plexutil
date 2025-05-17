@@ -1,9 +1,11 @@
 import sys
-from typing import cast
+from typing import TYPE_CHECKING, cast
+
+if TYPE_CHECKING:
+    from plexapi.audio import Track
 
 from jsonschema.exceptions import ValidationError
 from peewee import DoesNotExist
-from plexapi.audio import Track
 from plexapi.server import PlexServer
 
 from plexutil.core.movie_library import MovieLibrary
@@ -205,7 +207,7 @@ def main() -> None:
 
             case UserRequest.EXPORT_MUSIC_PLAYLIST:
                 music_playlist_dtos = cast(
-                    Playlist, library
+                    "Playlist", library
                 ).get_all_playlists()
                 service = SongMusicPlaylistCompositeService(
                     bootstrap_paths_dto.plexutil_playlists_db_dir
@@ -221,7 +223,7 @@ def main() -> None:
                 )
                 music_playlist_dtos = composite_service.get(
                     entities=playlist_service.get_all(),
-                    tracks=cast(list[Track], library.query()),
+                    tracks=cast("list[Track]", library.query()),
                 )
 
                 for dto in music_playlist_dtos:
@@ -237,10 +239,10 @@ def main() -> None:
                     library.create()
 
             case UserRequest.ADD_SONGS_TO_MUSIC_PLAYLIST:
-                cast(Playlist, library).add_songs()
+                cast("Playlist", library).add_songs()
 
             case UserRequest.DELETE_SONGS_FROM_MUSIC_PLAYLIST:
-                cast(Playlist, library).delete_songs()
+                cast("Playlist", library).delete_songs()
 
     except SystemExit as e:
         if e.code == 0:
