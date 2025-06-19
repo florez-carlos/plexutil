@@ -206,6 +206,11 @@ def main() -> None:
                 PlexOps.set_server_settings(plex_server, preferences_dto)
 
             case UserRequest.EXPORT_MUSIC_PLAYLIST:
+                # Remove existing playlist.db file
+                bootstrap_paths_dto.plexutil_playlists_db_dir.unlink(
+                    missing_ok=True
+                )
+
                 music_playlist_dtos = cast(
                     "Playlist", library
                 ).get_all_playlists()
