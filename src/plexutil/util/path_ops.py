@@ -290,13 +290,6 @@ class PathOps(Static):
             known, unk = PathOps.__walk_music_structure(path)
             songs.extend(known)
             unknown.extend(unk)
-            for unk in unknown:
-                description = (
-                    f"Could not extract song: {unk!s} "
-                    f"Proceeding with default SongDTO"
-                )
-                PlexUtilLogger.get_logger().debug(description)
-                songs.append(SongDTO(location=unk))
 
         description = (
             f"Evaluated local songs.\n"
@@ -305,17 +298,10 @@ class PathOps(Static):
         )
         PlexUtilLogger.get_logger().debug(description)
         if unknown:
-            description = (
-                "WARNING: Plexutil failed to understand some path as songs:\n"
-            )
             for unk in unknown:
-                description = description + f"-> {unk}\n"
-            description = description + (
-                "https://support.plex.tv/articles/"
-                "200265296-adding-music-media-from-folders/"
-            )
+                description = "Not understood as song (ignored): " + f"{unk}\n"
+                PlexUtilLogger.get_logger().debug(description)
 
-            PlexUtilLogger.get_logger().warning(description)
         return songs
 
     @staticmethod
