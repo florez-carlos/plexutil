@@ -20,7 +20,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-  "PlexAPI==4.15.7",
+  "PlexAPI==4.17.2",
   "alive-progress==3.1.5",
   "pyyaml==6.0.1",
   "toml==0.10.2",
