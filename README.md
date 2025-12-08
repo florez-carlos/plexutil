@@ -5,8 +5,10 @@ CLI tool with helpful functions to manage a Plex server.
 
 > [!NOTE]
 > Installation is supported only for the following: 
-> - Windows
-> - Linux
+> - Windows (amd64)
+> - Linux (amd64)
+>    - X11
+>    - Wayland
 
 > [!NOTE]
 > Development requires a fully configured [Dotfiles](https://github.com/florez-carlos/dotfiles) dev environment <br>
@@ -33,7 +35,9 @@ CLI tool with helpful functions to manage a Plex server.
 
 
 ## Installation
-
+> [!NOTE]
+> - Requires Python 3.11+<br >
+> - Requires pip
 ```bash
 pip install plexutil
 ```
@@ -41,6 +45,9 @@ pip install plexutil
 ## Configuration
 ### Required
 Set the host, port, token of your plex server
+> [!CAUTION]
+> Plexutil only works on the same machine the media library is attached to.<br >
+
 ```bash
 plexutil config -host <PLEX_SERVER_HOST> -port <PLEX_SERVER_PORT> -token <PLEX_SERVER_TOKEN>
 ```
