@@ -240,7 +240,7 @@ class FileImporter(Static):
                 session = os.getenv("XDG_SESSION_TYPE") or ""
                 session = session.lower()
 
-                if not session.startswith("x11") or not session.startswith(
+                if not session.startswith("x11") and not session.startswith(
                     "wayland"
                 ):
                     description = "Graphical session REQUIRED (X11/Wayland)."
