@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import ctypes.wintypes
 import json
-import logging
 import os
 import platform
 import shutil
+import syslog
 import time
 from pathlib import Path
 
@@ -237,6 +237,15 @@ class FileImporter(Static):
 
             elif system == "Linux":
                 home_folder = os.getenv("HOME") or ""
+                session = os.getenv("XDG_SESSION_TYPE") or ""
+                session = session.lower()
+
+                if not session.startswith("x11") or not session.startswith(
+                    "wayland"
+                ):
+                    description = "Graphical session REQUIRED (X11/Wayland)."
+                    raise BootstrapError(description)  # noqa: TRY301
+
             else:
                 description = f"Unsupported OS: {system}"
                 raise OSError(description)  # noqa: TRY301
@@ -277,8 +286,5 @@ class FileImporter(Static):
                     strings=[""],
                 )
             elif platform.system == "Linux":
-                logging.exception("")  # noqa: LOG015
-            if e.args and len(e.args) >= 0:
-                raise BootstrapError(e.args[0]) from e
-
-            raise BootstrapError from e
+                syslog.syslog(str(e))
+            raise
