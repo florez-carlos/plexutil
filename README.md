@@ -10,8 +10,10 @@ CLI tool with helpful functions to manage a Plex server.
 >    - X11
 >    - Wayland
 
-> [!NOTE]
-> Development requires a fully configured [Dotfiles](https://github.com/florez-carlos/dotfiles) dev environment <br>
+> [!WARNING]
+> Plexutil utilizes the system keychain in order to store an encrypted copy of the Plex token
+
+
 
 ## Table of Contents
 
@@ -166,6 +168,8 @@ plexutil import_music_playlist -libn <LIBRARY_NAME_WHERE_PLAYLISTS_ARE>
 ---
 
 ## Development
+> [!NOTE]
+> Development requires a fully configured [Dotfiles](https://github.com/florez-carlos/dotfiles) dev environment <br>
 ```bash
 source init.sh
 ```
@@ -179,7 +183,7 @@ C:\Users\<YOUR_USER>\Documents\plexutil\config\
 ```
 - Linux
 ```bash
-$HOME/plexutil/config/tv_language_manifest.json
+$HOME/plexutil/config/
 ```
 
 ## Log Location
