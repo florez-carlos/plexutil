@@ -64,8 +64,6 @@ The file can be modified like such:
 Where the key is the language and the list contains the [TVDB](https://www.thetvdb.com/) ids of the desired series to be overriden <br >
 For a list of supported languages: [Language](./src/plexutil/enums/language.py)
 
----
-
 #### Library Preferences
 Libraries of type:
 - Movie
@@ -82,7 +80,6 @@ These files can be found here: [Config Location](#config-location) <br >
 These Preferences are set at library creation time <br >
 The files already include default preferences that can be removed/modified/added based on your needs <br >
 
----
 
 #### Server Setting Preferences
 These preferences modify the behavior of the server
