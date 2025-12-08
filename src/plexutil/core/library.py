@@ -125,10 +125,19 @@ class Library(ABC):
         )
 
         try:
-            self.get_section()
+            section = self.get_section()
+            if not section:
+                description = "Does not exist\n"
+                PlexUtilLogger.get_logger().debug(description)
+                return False
+
         except LibrarySectionMissingError:
+            description = "Does not exist\n"
+            PlexUtilLogger.get_logger().debug(description)
             return False
 
+        description = "Exists\n"
+        PlexUtilLogger.get_logger().debug(description)
         return True
 
     def poll(
