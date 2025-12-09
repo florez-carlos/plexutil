@@ -1,6 +1,6 @@
 {
   "ButlerStartHour": 23,
-  "ButlerEndHour": 6,
+  "ButlerEndHour": 5,
   "GenerateIntroMarkerBehavior": "scheduled",
   "GenerateCreditsMarkerBehavior": "scheduled"
 }
