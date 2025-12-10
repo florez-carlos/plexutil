@@ -245,9 +245,9 @@ class Library(ABC):
             None: This method does not return a value.
         """
         library = self.plex_server.library
-        library_id = library.key if library else ""
+        library_id = library.key if library else "UNKNOWN"
         info = (
-            f"{operation} {self.library_type} library: \n"
+            f"\n===== LIBRARY | {operation} =====\n"
             f"ID: {library_id}\n"
             f"Name: {self.name}\n"
             f"Type: {self.library_type.value}\n"
@@ -258,6 +258,7 @@ class Library(ABC):
             f"Movie Preferences: {self.preferences.movie}\n"
             f"Music Preferences: {self.preferences.music}\n"
             f"TV Preferences: {self.preferences.tv}\n"
+            f"\n===== LIBRARY | {operation} =====\n"
         )
         if not is_console:
             if is_info:
@@ -280,7 +281,7 @@ class Library(ABC):
             type and name exist
         """
 
-        time.sleep(2)
+        time.sleep(2)  # Slow devices
         sections = self.plex_server.library.sections()
 
         description = f"Section to find: {self.library_type}: {self.name}"
