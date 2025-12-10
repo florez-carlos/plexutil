@@ -124,12 +124,7 @@ class Library(ABC):
         )
 
         try:
-            section = self.get_section()
-            if not section:
-                description = "Does not exist\n"
-                PlexUtilLogger.get_logger().debug(description)
-                return False
-
+            self.get_section()
         except LibrarySectionMissingError:
             description = "Does not exist\n"
             PlexUtilLogger.get_logger().debug(description)
