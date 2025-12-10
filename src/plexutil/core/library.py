@@ -158,10 +158,12 @@ class Library(ABC):
         """
         current_count = len(self.query())
         init_offset = abs(expected_count - current_count)
+        time_start = time.time()
 
         debug = (
-            f"Requested attempts: {requested_attempts!s}\n"
-            f"Interval seconds: {interval_seconds!s}\n"
+            f"\n===== POLL BEGIN =====\n"
+            f"Attempts: {requested_attempts!s}\n"
+            f"Interval: {interval_seconds!s}\n"
             f"Current count: {current_count!s}\n"
             f"Expected count: {expected_count!s}\n"
             f"Net change: {init_offset!s}\n"
@@ -187,20 +189,37 @@ class Library(ABC):
                     break
 
                 if current_count > expected_count:
+                    time_end = time.time()
+                    time_complete = time_end - time_start
                     description = (
-                        f"Expected {expected_count} items in the library "
-                        f"but Plex Server has {current_count}"
+                        f"Expected {expected_count!s} items in the library "
+                        f"but Plex Server has {current_count!s}\n"
+                        f"Failed in {time_complete:.2f}s\n"
+                        f"===== POLL END =====\n"
                     )
                     raise LibraryIllegalStateError(description)
 
                 time.sleep(interval_seconds)
                 attempts = attempts + 1
                 if attempts >= requested_attempts:
+                    time_end = time.time()
+                    time_complete = time_end - time_start
                     description = (
                         "Did not reach the expected"
-                        f"library count: {expected_count}"
+                        f"library count: {expected_count!s}\n"
+                        f"Failed in {time_complete:.2f}s\n"
+                        f"===== POLL END =====\n"
                     )
                     raise LibraryPollTimeoutError(description)
+
+        time_end = time.time()
+        time_complete = time_end - time_start
+        debug = (
+            f"Reached expected: {expected_count!s} in {time_complete:.2f}s\n"
+            f"===== POLL END =====\n"
+        )
+
+        PlexUtilLogger.get_logger().debug(debug)
 
     @abstractmethod
     def query(self) -> list[Track] | list[Show] | list[Movie]:
