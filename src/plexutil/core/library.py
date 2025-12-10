@@ -265,13 +265,23 @@ class Library(ABC):
             type and name exist
         """
 
+        time.sleep(2)
         sections = self.plex_server.library.sections()
+
+        description = f"Section to find: {self.library_type}: {self.name}"
+        PlexUtilLogger.get_logger().debug(description)
+
+        description = f"All Sections: {sections}"
+        PlexUtilLogger.get_logger().debug(description)
 
         filtered_sections = [
             section
             for section in sections
             if LibraryType.is_eq(self.library_type, section)
         ]
+
+        description = f"Filtered Sections: {filtered_sections}"
+        PlexUtilLogger.get_logger().debug(description)
 
         for filtered_section in filtered_sections:
             if filtered_section.title == self.name:
