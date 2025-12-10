@@ -123,14 +123,16 @@ class Library(ABC):
             operation="CHECK EXISTS", is_info=False, is_debug=True
         )
 
+        library = f"{self.name} | {self.library_type}"
+
         try:
             self.get_section()
         except LibrarySectionMissingError:
-            description = "Does not exist\n"
+            description = f"Does not exist: {library}"
             PlexUtilLogger.get_logger().debug(description)
             return False
 
-        description = "Exists\n"
+        description = f"Exists: {library}"
         PlexUtilLogger.get_logger().debug(description)
         return True
 
