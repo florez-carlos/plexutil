@@ -72,15 +72,14 @@ class Library(ABC):
             # No need to continue if not an existing library
             return
 
-        if section:
-            self.locations = section.locations
-            self.agent = Agent.get_from_str(section.agent)
-            self.scanner = Scanner.get_from_str(section.scanner)
-            self.locations = [
-                PathOps.get_path_from_str(location)
-                for location in section.locations
-            ]
-            self.language = Language.get_from_str(section.language)
+        self.locations = section.locations
+        self.agent = Agent.get_from_str(section.agent)
+        self.scanner = Scanner.get_from_str(section.scanner)
+        self.locations = [
+            PathOps.get_path_from_str(location)
+            for location in section.locations
+        ]
+        self.language = Language.get_from_str(section.language)
 
     @abstractmethod
     def create(self) -> None:
