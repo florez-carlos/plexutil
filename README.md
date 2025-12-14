@@ -79,8 +79,9 @@ Can have their preferences set in the following files:
 - tv_library_preferences.json
 
 These files can be found here: [Config Location](#config-location) <br >
-These Preferences are set at library creation time <br >
-The files already include default preferences that can be removed/modified/added based on your needs <br >
+> [!NOTE]
+> - These Preferences are set at library creation time <br >
+> - The files already include default preferences that can be removed/modified/added based on your needs <br >
 
 
 #### Server Setting Preferences
@@ -88,7 +89,7 @@ These preferences modify the behavior of the server
 
 - plex_server_setting_preferences.json
 
-The file can be found here: [Config Location](#config-location) <br >
+The file can be found here: [Config Location](#config-location) <br ><br >
 For example:
 ```json
 "ButlerStartHour": 23,
@@ -97,7 +98,7 @@ Starts scheduled tasks at 11:00PM local time, to modify this time to 1:00AM
 ```json
 "ButlerStartHour": 1,
 ```
-These modifications need to be set by doing:
+These modifications need to be set with:
 ```bash
 plexutil set_server_settings
 ```
