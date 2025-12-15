@@ -123,7 +123,7 @@ class Library(ABC):
             operation="CHECK EXISTS", is_info=False, is_debug=True
         )
 
-        library = f"{self.name} | {self.library_type}"
+        library = f"{self.name} | {self.library_type.value}"
 
         try:
             self.get_section()
@@ -284,7 +284,7 @@ class Library(ABC):
         time.sleep(2)  # Slow devices
         sections = self.plex_server.library.sections()
 
-        description = f"Section to find: {self.library_type}: {self.name}"
+        description = f"Section to find: {self.name} {self.library_type.value}"
         PlexUtilLogger.get_logger().debug(description)
 
         description = f"All Sections: {sections}"
