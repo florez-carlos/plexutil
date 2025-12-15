@@ -90,7 +90,7 @@ class MusicLibrary(Library):
                 part,
                 method=self.plex_server._session.post,
             )
-            description = f"Succesfully created: {self.name}"
+            description = f"Successfully created: {self.name}"
             PlexUtilLogger.get_logger().debug(description)
         else:
             description = "Malformed Music Query"

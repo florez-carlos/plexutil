@@ -74,7 +74,7 @@ class MovieLibrary(Library):
             language=self.language.value,
         )
 
-        description = f"Succesfully created: {self.name}"
+        description = f"Successfully created: {self.name}"
         PlexUtilLogger.get_logger().debug(description)
 
         self.inject_preferences()
