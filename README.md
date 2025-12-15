@@ -1,6 +1,6 @@
 # Plexutil
 
-CLI tool with helpful functions to manage a Plex server.
+CLI for Plex Media Server.
 
 ![PyPI Version](https://img.shields.io/pypi/v/plexutil)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
