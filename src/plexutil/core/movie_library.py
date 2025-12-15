@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from plexutil.exception.library_op_error import LibraryOpError
+from plexutil.plex_util_logger import PlexUtilLogger
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -53,6 +54,9 @@ class MovieLibrary(Library):
             LibraryOpError: If Library already exists
         """
         op_type = "CREATE"
+
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+
         if self.exists():
             description = f"Movie Library '{self.name}' already exists"
             raise LibraryOpError(
@@ -60,8 +64,6 @@ class MovieLibrary(Library):
                 library_type=LibraryType.MOVIE,
                 description=description,
             )
-
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         self.plex_server.library.add(
             name=self.name,
@@ -72,6 +74,9 @@ class MovieLibrary(Library):
             language=self.language.value,
         )
 
+        description = f"Succesfully created: {self.name}"
+        PlexUtilLogger.get_logger().debug(description)
+
         self.inject_preferences()
 
     def query(self) -> list[Movie]:
@@ -79,7 +84,7 @@ class MovieLibrary(Library):
         Returns all movies for the current LibrarySection
 
         Returns:
-            list[plexapi.video.Video]: Movies from the current Section
+            list[plexapi.video.Movie]: Movies from the current Section
         """
         op_type = "QUERY"
         if not self.exists():
@@ -89,7 +94,7 @@ class MovieLibrary(Library):
                 library_type=LibraryType.MOVIE,
                 description=description,
             )
-        return self.get_section().searchMovies()
+        return cast("list[Movie]", self.get_section().searchMovies())
 
     def delete(self) -> None:
         return super().delete()
