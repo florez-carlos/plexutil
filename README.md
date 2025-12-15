@@ -2,6 +2,12 @@
 
 CLI tool with helpful functions to manage a Plex server.
 
+![PyPI Version](https://img.shields.io/pypi/v/plexutil)
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![Platform](https://img.shields.io/badge/Platform-Cross--Platform-success)
+![PyPI Status](https://img.shields.io/pypi/status/plexutil)
+![CLI](https://img.shields.io/badge/Interface-CLI-important)
+
 
 > [!NOTE]
 > Installation is supported only for the following: 
