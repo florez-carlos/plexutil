@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from time import sleep
+from typing import TYPE_CHECKING, cast
 
 from plexutil.exception.library_op_error import LibraryOpError
 
@@ -8,7 +9,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.server import PlexServer
-    from plexapi.video import Show, Video
+    from plexapi.video import Show
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
@@ -62,6 +63,8 @@ class TVLibrary(Library):
         """
         op_type = "CREATE"
 
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+
         if self.exists():
             description = f"TV Library '{self.name}' already exists"
             raise LibraryOpError(
@@ -69,8 +72,6 @@ class TVLibrary(Library):
                 library_type=LibraryType.TV,
                 description=description,
             )
-
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         self.plex_server.library.add(
             name=self.name,
@@ -81,11 +82,14 @@ class TVLibrary(Library):
             language=self.language.value,
         )
 
+        description = f"Successfully created: {self.name}"
+        PlexUtilLogger.get_logger().debug(description)
+
         self.inject_preferences()
 
         manifests_dto = self.tv_language_manifest_dto
-        debug = f"Manifests: {manifests_dto}\n"
-        PlexUtilLogger.get_logger().debug(debug)
+        description = f"Begin language override\nManifests: {manifests_dto}\n"
+        PlexUtilLogger.get_logger().debug(description)
 
         self.probe_library()
 
@@ -93,12 +97,19 @@ class TVLibrary(Library):
             language = manifest_dto.language
             ids = manifest_dto.ids
             if not ids:
+                description = f"TV Language override ({language.value}): NONE"
+                PlexUtilLogger.get_logger().info(description)
+                sleep(1)
                 continue
 
-            description = f"Language override {language.value} for: {ids}"
-            PlexUtilLogger.get_logger().debug(description)
             for show in self.get_shows_by_tvdb(ids):
                 show.editAdvanced(languageOverride=language.value)
+                description = (
+                    f"TV Language override ({language.value}): "
+                    f"{show.originalTitle}"
+                )
+                PlexUtilLogger.get_logger().info(description)
+                sleep(1)
 
     def query(self) -> list[Show]:
         op_type = "QUERY"
@@ -109,10 +120,13 @@ class TVLibrary(Library):
                 library_type=LibraryType.TV,
                 description=description,
             )
-        return self.get_section().searchShows()
+        return cast("list[Show]", self.get_section().searchShows())
 
-    def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Video]:
-        shows = self.get_section().searchShows()
+    def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Show]:
+        shows = cast("list[Show]", self.get_section().searchShows())
+
+        description = f"Available Shows in server: {len(shows)!s}"
+        PlexUtilLogger.get_logger().debug(description)
 
         tvdb_prefix = "tvdb://"
 
@@ -123,6 +137,11 @@ class TVLibrary(Library):
         shows_filtered = []
 
         for show in shows:
+            description = (
+                f"Evaluating guids for {show.originalTitle}: {show.guids}"
+            )
+            PlexUtilLogger.get_logger().debug(description)
+
             for guid in show.guids:
                 _id = guid.id
                 if tvdb_prefix in _id:
