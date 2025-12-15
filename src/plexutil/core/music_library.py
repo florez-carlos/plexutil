@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -55,6 +55,9 @@ class MusicLibrary(Library):
             or when failure to create a Query
         """
         op_type = "CREATE"
+
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+
         if self.exists():
             description = f"Music Library '{self.name}' already exists"
             raise LibraryOpError(
@@ -62,8 +65,6 @@ class MusicLibrary(Library):
                 library_type=LibraryType.TV,
                 description=description,
             )
-
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         part = ""
 
@@ -74,17 +75,14 @@ class MusicLibrary(Library):
             agent=Agent.MUSIC.value,
             scanner=Scanner.MUSIC.value,
             language=self.language.value,
-            importFromiTunes="",
-            enableAutoPhotoTags="",
             location=self.locations,
             prefs=self.preferences.music,
         )
 
         part = query_builder.build()
 
-        debug = f"Query: {part}\n"
-
-        PlexUtilLogger.get_logger().debug(debug)
+        description = f"Query: {part}\n"
+        PlexUtilLogger.get_logger().debug(description)
 
         # This posts a music library
         if part:
@@ -92,8 +90,10 @@ class MusicLibrary(Library):
                 part,
                 method=self.plex_server._session.post,
             )
+            description = f"Succesfully created: {self.name}"
+            PlexUtilLogger.get_logger().debug(description)
         else:
-            description = "Query Builder has not built a part!"
+            description = "Malformed Music Query"
             raise LibraryOpError(
                 op_type="CREATE",
                 library_type=self.library_type,
@@ -107,7 +107,7 @@ class MusicLibrary(Library):
         Returns all tracks for the current LibrarySection
 
         Returns:
-            list[plexapi.audio.Audio]: Tracks from the current Section
+            list[plexapi.audio.Track]: Tracks from the current Section
         """
         op_type = "QUERY"
         if not self.exists():
@@ -118,7 +118,7 @@ class MusicLibrary(Library):
                 description=description,
             )
 
-        return self.get_section().searchTracks()
+        return cast("list[Track]", self.get_section().searchTracks())
 
     def delete(self) -> None:
         return super().delete()
