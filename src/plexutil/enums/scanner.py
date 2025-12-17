@@ -21,15 +21,19 @@ class Scanner(Enum):
 
     @staticmethod
     def get_from_str(candidate: str) -> Scanner:
-        for agent in Scanner.get_all():
-            if candidate.lower() == agent.value.lower():
-                if agent is Scanner.MOVIE_LEGACY or agent is Scanner.TV_LEGACY:
+        for scanner in Scanner.get_all():
+            if candidate.lower() == scanner.value.lower():
+                if (
+                    scanner is Scanner.MOVIE_LEGACY
+                    or scanner is Scanner.TV_LEGACY
+                ):
                     description = (
-                        f"WARNING: Selected Deprecated Scanner: {agent.value}"
+                        f"WARNING: Chosen a deprecated Scanner "
+                        f"({scanner.value})"
                     )
                     PlexUtilLogger.get_logger().warning(description)
 
-                return agent
+                return scanner
 
         description = f"Scanner not supported: {candidate}"
         raise ValueError(description)
