@@ -247,7 +247,7 @@ class Library(ABC):
         library = self.plex_server.library
         library_id = library.key if library else "UNKNOWN"
         info = (
-            f"\n===== LIBRARY | {operation} =====\n"
+            f"\n===== {self.library_type} | {operation} =====\n"
             f"ID: {library_id}\n"
             f"Name: {self.name}\n"
             f"Type: {self.library_type.value}\n"
@@ -258,7 +258,7 @@ class Library(ABC):
             f"Movie Preferences: {self.preferences.movie}\n"
             f"Music Preferences: {self.preferences.music}\n"
             f"TV Preferences: {self.preferences.tv}\n"
-            f"\n===== LIBRARY | {operation} =====\n"
+            f"\n===== {self.library_type} | {operation} =====\n"
         )
         if not is_console:
             if is_info:
@@ -287,7 +287,7 @@ class Library(ABC):
         description = f"Section to find: {self.name} {self.library_type.value}"
         PlexUtilLogger.get_logger().debug(description)
 
-        description = f"All Sections: {sections}"
+        description = f"All Sections: {sections!s}"
         PlexUtilLogger.get_logger().debug(description)
 
         filtered_sections = [
@@ -296,7 +296,7 @@ class Library(ABC):
             if LibraryType.is_eq(self.library_type, section)
         ]
 
-        description = f"Filtered Sections: {filtered_sections}"
+        description = f"Filtered Sections: {filtered_sections!s}"
         PlexUtilLogger.get_logger().debug(description)
 
         for filtered_section in filtered_sections:
