@@ -2,11 +2,18 @@ from __future__ import annotations
 
 from enum import Enum
 
+from src.plexutil.plex_util_logger import PlexUtilLogger
 
+
+# Evaluates file name/folder structure to identify media
+# https://support.plex.tv/articles/200241548-scanners/
 class Scanner(Enum):
     MUSIC = "Plex Music"
     TV = "Plex TV Series"
     MOVIE = "Plex Movie"
+    MOVIE_VIDEO = "Plex Video Files Scanner"  # Most appropriate for Home Video
+    MOVIE_LEGACY = "Plex Movie Scanner"
+    TV_LEGACY = "Plex Series Scanner"
 
     @staticmethod
     def get_all() -> list[Scanner]:
@@ -16,6 +23,12 @@ class Scanner(Enum):
     def get_from_str(candidate: str) -> Scanner:
         for agent in Scanner.get_all():
             if candidate.lower() == agent.value.lower():
+                if agent is Scanner.MOVIE_LEGACY or agent is Scanner.TV_LEGACY:
+                    description = (
+                        f"WARNING: Selected Deprecated Scanner: {agent.value}"
+                    )
+                    PlexUtilLogger.get_logger().warning(description)
+
                 return agent
 
         description = f"Scanner not supported: {candidate}"
