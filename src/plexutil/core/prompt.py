@@ -8,8 +8,10 @@ from importlib.metadata import PackageNotFoundError, version
 
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
+from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
+from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
@@ -79,6 +81,26 @@ class Prompt(Static):
             type=str,
             nargs="+",
             help="Library Name",
+            default=[],
+        )
+
+        parser.add_argument(
+            "-scanner",
+            "--library_scanner",
+            metavar="Scanner",
+            type=str,
+            nargs="+",
+            help="Library Scanner",
+            default=[],
+        )
+
+        parser.add_argument(
+            "-agent",
+            "--library_agent",
+            metavar="Agent",
+            type=str,
+            nargs="+",
+            help="Library Agent",
             default=[],
         )
 
@@ -159,10 +181,23 @@ class Prompt(Static):
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
         locations = args.locations
+        scanner = args.scanner
+        agent = args.agent
         library_type = LibraryType.MUSIC
+
         if request:
             library_type = UserRequest.get_library_type_from_request(
                 UserRequest.get_user_request_from_str(args.request)
+            )
+            scanner = (
+                Scanner.get_from_str(args.scanner, library_type)
+                if args.scanner
+                else Scanner.get_default(library_type)
+            )
+            agent = (
+                Agent.get_from_str(args.agent, library_type)
+                if args.agent
+                else Agent.get_default(library_type)
             )
         library_name = args.library_name
 
@@ -204,6 +239,8 @@ class Prompt(Static):
             f"Locations: {locations!s}\n"
             f"Library Name: {library_name}\n"
             f"Library Type: {library_type.value}\n"
+            f"Scanner: {scanner.get_label()}\n"
+            f"Agent: {agent.get_label(library_type)}\n"
         )
         PlexUtilLogger.get_logger().debug(debug)
 
@@ -218,4 +255,6 @@ class Prompt(Static):
             locations=locations,
             server_config_dto=server_config_dto,
             language=language,
+            scanner=scanner,
+            agent=agent,
         )

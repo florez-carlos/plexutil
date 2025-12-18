@@ -9,7 +9,9 @@ from plexutil.enums.language import Language
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexutil.enums.agent import Agent
     from plexutil.enums.library_type import LibraryType
+    from plexutil.enums.scanner import Scanner
     from plexutil.enums.user_request import UserRequest
 
 
@@ -23,6 +25,8 @@ class UserInstructionsDTO:
     request: UserRequest
     library_type: LibraryType
     library_name: str
+    scanner: Scanner
+    agent: Agent
     playlist_name: str
     server_config_dto: ServerConfigDTO = field(
         default_factory=create_server_config
