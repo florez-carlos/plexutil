@@ -7,7 +7,7 @@ from plexutil.exception.library_unsupported_error import (
     LibraryUnsupportedError,
 )
 from plexutil.exception.user_error import UserError
-from src.plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.plex_util_logger import PlexUtilLogger
 
 
 # Evaluates file name/folder structure to identify media
