@@ -202,13 +202,13 @@ class Prompt(Static):
         agent = " ".join(agent) if agent else ""
 
         scanner = (
-            Scanner.get_from_str(args.scanner, library_type)
-            if args.scanner
+            Scanner.get_from_str(scanner, library_type)
+            if scanner
             else Scanner.get_default(library_type)
         )
         agent = (
-            Agent.get_from_str(args.agent, library_type)
-            if args.agent
+            Agent.get_from_str(agent, library_type)
+            if agent
             else Agent.get_default(library_type)
         )
 
