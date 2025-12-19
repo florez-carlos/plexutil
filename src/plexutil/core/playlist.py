@@ -76,8 +76,8 @@ class Playlist(Library):
             title=self.playlist_name, items=self.__get_filtered_tracks()
         )
 
-        description = f"Successfully created: {self.name}"
-        PlexUtilLogger.get_logger().debug(description)
+        description = f"Created Playlist: {self.playlist_name}"
+        PlexUtilLogger.get_logger().info(description)
 
     def query(self) -> list[Track]:
         op_type = "QUERY"
