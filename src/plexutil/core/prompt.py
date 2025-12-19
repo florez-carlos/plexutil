@@ -189,28 +189,28 @@ class Prompt(Static):
         scanner = args.library_scanner
         agent = args.library_agent
         library_type = LibraryType.MUSIC
-
-        scanner = " ".join(scanner) if scanner else ""
-        agent = " ".join(agent) if agent else ""
+        library_name = args.library_name
 
         if request:
             library_type = UserRequest.get_library_type_from_request(
                 UserRequest.get_user_request_from_str(args.request)
             )
-            scanner = (
-                Scanner.get_from_str(args.scanner, library_type)
-                if args.scanner
-                else Scanner.get_default(library_type)
-            )
-            agent = (
-                Agent.get_from_str(args.agent, library_type)
-                if args.agent
-                else Agent.get_default(library_type)
-            )
-        library_name = args.library_name
 
         playlist_name = " ".join(playlist_name) if playlist_name else ""
         library_name = " ".join(library_name) if library_name else ""
+        scanner = " ".join(scanner) if scanner else ""
+        agent = " ".join(agent) if agent else ""
+
+        scanner = (
+            Scanner.get_from_str(args.scanner, library_type)
+            if args.scanner
+            else Scanner.get_default(library_type)
+        )
+        agent = (
+            Agent.get_from_str(args.agent, library_type)
+            if args.agent
+            else Agent.get_default(library_type)
+        )
 
         if is_version:
             plexutil_version = ""
