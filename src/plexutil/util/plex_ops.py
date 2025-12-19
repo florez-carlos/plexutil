@@ -162,7 +162,7 @@ class PlexOps(Static):
         """
         if not plex_files:
             description = "Did not receive any Plex Files\n"
-            raise LibraryIllegalStateError(description)
+            raise ValueError(description)
 
         if all(isinstance(plex_file, Track) for plex_file in plex_files):
             songs = PathOps.get_local_songs(locations)
