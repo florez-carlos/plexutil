@@ -272,12 +272,15 @@ class Prompt(Static):
         library_setting: LibrarySettingDTO,
     ) -> LibrarySettingDTO:
         user_response = library_setting.user_response
+        response = library_setting.user_response
 
         if library_setting.is_toggle:
             response = (
                 input(
+                    f"\n=========== {library_setting.display_name} ==========="
                     f"{library_setting.description}\n"
-                    f"{library_setting.display_name}? (y/n): \n"
+                    f"{library_setting.display_name}? (y/n): "
+                    f"======================================================\n"
                 )
                 .strip()
                 .lower()
@@ -298,10 +301,16 @@ class Prompt(Static):
             dropdown = library_setting.dropdown
 
             description = (
-                f"Available Options:\nDefault is ({dropdown[0].display_name})"
+                f"Available Options:\nDefault is "
+                f"({dropdown[0].display_name})\n"
             )
+            dropdown_count = 1
             for item in dropdown:
-                description = description + f"-> {item.display_name}\n"
+                description = (
+                    description
+                    + f"[{dropdown_count}] -> {item.display_name}\n"
+                )
+                dropdown_count = dropdown_count + 1
 
             PlexUtilLogger.get_console_logger().info(description)
             response = input(f"Pick (1-{len(dropdown)}): \n").strip().lower()
@@ -313,19 +322,18 @@ class Prompt(Static):
                 else:
                     user_response = 0
             else:
+                description = (
+                    f"{Prompt.WARNING} Did not understand your input: "
+                    f"({response}) proceeding with default"
+                )
+                PlexUtilLogger.get_logger().warning(description)
                 user_response = 0
 
-            description = (
-                f"{Prompt.WARNING} Did not understand your input: ({response})"
-                " proceeding with default"
-            )
-            PlexUtilLogger.get_logger().warning(description)
-
-            description = (
-                f"Setting: {library_setting.name} | "
-                f"User Input: {response!s} | Chosen: {user_response!s}"
-            )
-            PlexUtilLogger.get_logger().debug(description)
+        description = (
+            f"Setting: {library_setting.name} | "
+            f"User Input: {response!s} | Chosen: {user_response!s}"
+        )
+        PlexUtilLogger.get_logger().debug(description)
 
         return LibrarySettingDTO(
             name=library_setting.name,

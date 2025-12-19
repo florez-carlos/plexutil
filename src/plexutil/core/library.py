@@ -250,7 +250,7 @@ class Library(ABC):
         library = self.plex_server.library
         library_id = library.key if library else "UNKNOWN"
         info = (
-            f"\n===== {self.library_type} | {operation} =====\n"
+            f"\n===== {self.library_type} | {operation} | BEGIN =====\n"
             f"ID: {library_id}\n"
             f"Name: {self.name}\n"
             f"Type: {self.library_type.value}\n"
@@ -258,7 +258,7 @@ class Library(ABC):
             f"Scanner: {self.scanner.get_value()}\n"
             f"Locations: {self.locations!s}\n"
             f"Language: {self.language.value}\n"
-            f"\n===== {self.library_type} | {operation} =====\n"
+            f"\n===== {self.library_type} | {operation} | END =====\n"
         )
         if not is_console:
             if is_info:
