@@ -70,8 +70,8 @@ class MovieLibrary(Library):
         self.plex_server.library.add(
             name=self.name,
             type=self.library_type.value,
-            agent=self.agent.value,
-            scanner=self.scanner.value,
+            agent=self.agent.get_value(),
+            scanner=self.scanner.get_value(),
             location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
             language=self.language.value,
         )

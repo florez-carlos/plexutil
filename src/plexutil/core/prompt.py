@@ -247,8 +247,8 @@ class Prompt(Static):
             f"Locations: {locations!s}\n"
             f"Library Name: {library_name}\n"
             f"Library Type: {library_type.value}\n"
-            f"Scanner: {scanner.get_label()}\n"
-            f"Agent: {agent.get_label(library_type)}\n"
+            f"Scanner: {scanner.get_value()}\n"
+            f"Agent: {agent.get_value()}\n"
         )
         PlexUtilLogger.get_logger().debug(debug)
 

@@ -15,8 +15,8 @@ from plexutil.plex_util_logger import PlexUtilLogger
 # (Value, MovieLabel, TVLabel if different from MovieLabel)
 class Agent(Enum):
     # Music Only
-    MUSIC = "tv.plex.agents.music"
-    LASTFM = "com.plexapp.agents.lastfm"
+    MUSIC = ("tv.plex.agents.music", "Plex Music")
+    LASTFM = ("com.plexapp.agents.lastfm", "Last.fm")
 
     # TV Only
     TV = ("tv.plex.agents.series", "Plex Series")
