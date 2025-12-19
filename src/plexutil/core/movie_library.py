@@ -224,7 +224,7 @@ class MovieLibrary(Library):
         library_settings = []
 
         for a_tuple in tuples:
-            library_settings.append( # noqa: PERF401
+            library_settings.append(  # noqa: PERF401
                 LibrarySettingDTO(
                     name=a_tuple[0],
                     display_name=a_tuple[1],
