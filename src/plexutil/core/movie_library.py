@@ -97,6 +97,7 @@ class MovieLibrary(Library):
                 True,
                 False,
                 False,
+                [],
             )
         )
 
@@ -116,6 +117,7 @@ class MovieLibrary(Library):
                 True,
                 False,
                 False,
+                [],
             )
         )
 
@@ -132,6 +134,7 @@ class MovieLibrary(Library):
                 True,
                 False,
                 False,
+                [],
             )
         )
 
@@ -151,6 +154,7 @@ class MovieLibrary(Library):
                 True,
                 False,
                 False,
+                [],
             )
         )
 
@@ -170,6 +174,7 @@ class MovieLibrary(Library):
                 True,
                 False,
                 False,
+                [],
             )
         )
 
@@ -189,6 +194,7 @@ class MovieLibrary(Library):
                 True,
                 False,
                 False,
+                [],
             )
         )
 
