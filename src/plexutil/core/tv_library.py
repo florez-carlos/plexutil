@@ -104,6 +104,7 @@ class TVLibrary(Library):
 
             for show in self.get_shows_by_tvdb(ids):
                 show.editAdvanced(languageOverride=language.value)
+                show.refresh()
                 description = (
                     f"TV Language override ({language.value}): "
                     f"{show.originalTitle}"
