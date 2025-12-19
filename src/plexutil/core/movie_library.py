@@ -241,6 +241,7 @@ class MovieLibrary(Library):
             )
 
         self.set_settings(settings=library_settings)
+        self.get_section().refresh()
 
     def query(self) -> list[Movie]:
         """
