@@ -289,10 +289,23 @@ class Prompt(Static):
                     user_response = 1
                 elif isinstance(library_setting.user_response, bool):
                     user_response = True
-            elif isinstance(library_setting.user_response, int):
-                user_response = 0
-            elif isinstance(library_setting.user_response, bool):
-                user_response = False
+            elif response == "n":
+                if isinstance(library_setting.user_response, int):
+                    user_response = 0
+                elif isinstance(library_setting.user_response, bool):
+                    user_response = False
+            else:
+                description = (
+                    f"{Prompt.WARNING} Did not understand your input: "
+                    f"({response}) proceeding with default"
+                )
+                PlexUtilLogger.get_logger().warning(description)
+                if isinstance(library_setting.user_response, int):
+                    user_response = 0
+                elif isinstance(library_setting.user_response, bool):
+                    user_response = False
+                else:
+                    user_response = ""
 
         elif library_setting.is_value:
             pass
