@@ -23,10 +23,6 @@ from plexutil.util.file_importer import FileImporter
 
 
 class Prompt(Static):
-    WARNING = (
-        "⚠️ " if sys.stdout.encoding.lower().startswith("utf") else "[WARNING]"
-    )
-
     @staticmethod
     def get_user_instructions_dto() -> UserInstructionsDTO:
         parser = argparse.ArgumentParser(

@@ -23,5 +23,5 @@ class LibrarySettingDTO:
         False  # When response is expected to be an index pick on dropdown
     )
     dropdown: list[LibrarySettingDropdownItemDTO] = field(default_factory=list)
-    user_response: int = 0
+    user_response: bool | int | str = 0
     is_from_server: bool = False  # Was the Setting already on the Plex Server
