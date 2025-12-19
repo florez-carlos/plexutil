@@ -31,7 +31,6 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
     from plexapi.video import Movie, Show
 
-    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.library_setting_dto import LibrarySettingDTO
     from plexutil.dto.movie_dto import MovieDTO
     from plexutil.dto.song_dto import SongDTO
@@ -56,7 +55,6 @@ class Library(ABC):
         scanner: Scanner,
         locations: list[Path],
         language: Language,
-        preferences: LibraryPreferencesDTO,
     ) -> None:
         self.plex_server = plex_server
         self.name = name
@@ -65,7 +63,6 @@ class Library(ABC):
         self.scanner = scanner
         self.locations = locations
         self.language = language
-        self.preferences = preferences
 
         section = None
         try:
@@ -75,8 +72,12 @@ class Library(ABC):
             return
 
         self.locations = section.locations
-        self.agent = Agent.get_from_str(section.agent)
-        self.scanner = Scanner.get_from_str(section.scanner)
+        self.agent = Agent.get_from_str(
+            candidate=section.agent, library_type=self.library_type
+        )
+        self.scanner = Scanner.get_from_str(
+            candidate=section.agent, library_type=self.library_type
+        )
         self.locations = [
             PathOps.get_path_from_str(location)
             for location in section.locations
@@ -257,9 +258,6 @@ class Library(ABC):
             f"Scanner: {self.scanner.value}\n"
             f"Locations: {self.locations!s}\n"
             f"Language: {self.language.value}\n"
-            f"Movie Preferences: {self.preferences.movie}\n"
-            f"Music Preferences: {self.preferences.music}\n"
-            f"TV Preferences: {self.preferences.tv}\n"
             f"\n===== {self.library_type} | {operation} =====\n"
         )
         if not is_console:

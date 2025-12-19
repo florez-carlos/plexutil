@@ -167,7 +167,6 @@ def main() -> None:
                 library = MovieLibrary(
                     plex_server=plex_server,
                     language=language,
-                    preferences=preferences_dto,
                     name=library_name,
                     locations=locations,
                 )

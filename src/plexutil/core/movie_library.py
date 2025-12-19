@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
     from plexapi.video import Movie
 
-    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -31,7 +30,6 @@ class MovieLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
-        preferences: LibraryPreferencesDTO,
         language: Language = Language.ENGLISH_US,
         name: str = LibraryName.MOVIE.value,
     ) -> None:
@@ -43,7 +41,6 @@ class MovieLibrary(Library):
             Scanner.MOVIE,
             locations,
             language,
-            preferences,
         )
 
     def create(self) -> None:
