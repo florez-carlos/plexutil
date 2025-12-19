@@ -357,6 +357,9 @@ class Library(ABC):
         plex_files = self.query()
         try:
             PlexOps.validate_local_files(plex_files, self.locations)
+            description = "Local Files Successfully validated"
+            PlexUtilLogger.get_logger().debug(description)
+            return
         except LibraryIllegalStateError:
             description = (
                 "Plex Server does not match local files\n"
