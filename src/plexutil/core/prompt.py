@@ -300,6 +300,9 @@ class Prompt(Static):
             dropdown = library_setting.dropdown
 
             description = (
+                f"\n========== {library_setting.display_name} ==========\n"
+                f"{library_setting.description}\n"
+                f"{library_setting.display_name}? (y/n): "
                 f"Available Options:\nDefault is "
                 f"({dropdown[0].display_name})\n"
             )

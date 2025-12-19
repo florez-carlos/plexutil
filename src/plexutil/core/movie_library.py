@@ -84,7 +84,7 @@ class MovieLibrary(Library):
         name = "enableCinemaTrailers"
         display_name = "Enable Cinema Trailers"
         description = (
-            f"(Play Trailers automatically prior to the selected movie)\n"
+            f"Play Trailers automatically prior to the selected movie\n"
             f"{Prompt.WARNING} Also needs to be enabled in the client app\n"
         )
         user_response = 0
@@ -162,7 +162,7 @@ class MovieLibrary(Library):
         display_name = "Prefer local metadata"
         description = (
             "When scanning this library, prefer "
-            "embedded tags and local files if present."
+            "embedded tags and local files if present\n"
         )
         user_response = 0
         tuples.append(
@@ -182,7 +182,7 @@ class MovieLibrary(Library):
         display_name = "Enable video preview thumbnails"
         description = (
             "Generate video preview thumbnails for items in this library "
-            "when enabled in server settings"
+            "when enabled in server settings\n"
         )
         user_response = 1
         tuples.append(
@@ -200,7 +200,7 @@ class MovieLibrary(Library):
 
         name = "ratingsSource"
         display_name = "Ratings Source"
-        description = "Select a primary source for ratings."
+        description = "Select a primary source for ratings\n"
         user_response = 0
         dropdown = [
             LibrarySettingDropdownItemDTO(
