@@ -277,10 +277,9 @@ class Prompt(Static):
         if library_setting.is_toggle:
             response = (
                 input(
-                    f"\n=========== {library_setting.display_name} ==========="
+                    f"\n========== {library_setting.display_name} ==========\n"
                     f"{library_setting.description}\n"
                     f"{library_setting.display_name}? (y/n): "
-                    f"======================================================\n"
                 )
                 .strip()
                 .lower()
@@ -313,7 +312,7 @@ class Prompt(Static):
                 dropdown_count = dropdown_count + 1
 
             PlexUtilLogger.get_console_logger().info(description)
-            response = input(f"Pick (1-{len(dropdown)}): \n").strip().lower()
+            response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
 
             if response.isdigit():
                 int_response = int(response)
@@ -328,6 +327,8 @@ class Prompt(Static):
                 )
                 PlexUtilLogger.get_logger().warning(description)
                 user_response = 0
+
+            user_response = dropdown[user_response].value
 
         description = (
             f"Setting: {library_setting.name} | "
