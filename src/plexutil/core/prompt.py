@@ -186,8 +186,8 @@ class Prompt(Static):
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
         locations = args.locations
-        scanner = args.scanner
-        agent = args.agent
+        scanner = args.library_scanner
+        agent = args.library_agent
         library_type = LibraryType.MUSIC
 
         if request:
