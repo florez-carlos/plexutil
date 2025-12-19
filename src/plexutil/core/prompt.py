@@ -190,6 +190,9 @@ class Prompt(Static):
         agent = args.library_agent
         library_type = LibraryType.MUSIC
 
+        scanner = " ".join(scanner) if scanner else ""
+        agent = " ".join(agent) if agent else ""
+
         if request:
             library_type = UserRequest.get_library_type_from_request(
                 UserRequest.get_user_request_from_str(args.request)
