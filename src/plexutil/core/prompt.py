@@ -6,6 +6,7 @@ import sys
 from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
 
+from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
 from plexutil.enums.agent import Agent
@@ -22,6 +23,10 @@ from plexutil.util.file_importer import FileImporter
 
 
 class Prompt(Static):
+    WARNING = (
+        "⚠️ " if sys.stdout.encoding.lower().startswith("utf") else "[WARNING]"
+    )
+
     @staticmethod
     def get_user_instructions_dto() -> UserInstructionsDTO:
         parser = argparse.ArgumentParser(
@@ -257,4 +262,75 @@ class Prompt(Static):
             language=language,
             scanner=scanner,
             agent=agent,
+        )
+
+    @staticmethod
+    def confirm_library_setting(
+        library_setting: LibrarySettingDTO,
+    ) -> LibrarySettingDTO:
+        user_response = library_setting.user_response
+
+        if library_setting.is_toggle:
+            response = (
+                input(
+                    f"{library_setting.description}\n"
+                    f"{library_setting.display_name}? (y/n): \n"
+                )
+                .strip()
+                .lower()
+            )
+            if response == "y":
+                if isinstance(library_setting.user_response, int):
+                    user_response = 1
+                elif isinstance(library_setting.user_response, bool):
+                    user_response = True
+            elif isinstance(library_setting.user_response, int):
+                user_response = 0
+            elif isinstance(library_setting.user_response, bool):
+                user_response = False
+
+        elif library_setting.is_value:
+            pass
+        elif library_setting.is_dropdown:
+            dropdown = library_setting.dropdown
+
+            description = (
+                f"Available Options:\nDefault is ({dropdown[0].display_name})"
+            )
+            for item in dropdown:
+                description = description + f"-> {item.display_name}\n"
+
+            PlexUtilLogger.get_console_logger().info(description)
+            response = input(f"Pick (1-{len(dropdown)}): \n").strip().lower()
+
+            if response.isdigit():
+                int_response = int(response)
+                if int_response > 0 and int_response <= len(dropdown):
+                    user_response = int_response - 1
+                else:
+                    user_response = 0
+            else:
+                user_response = 0
+
+            description = (
+                f"{Prompt.WARNING} Did not understand your input: ({response})"
+                " proceeding with default"
+            )
+            PlexUtilLogger.get_logger().warning(description)
+
+            description = (
+                f"Setting: {library_setting.name} | "
+                f"User Input: {response!s} | Chosen: {user_response!s}"
+            )
+            PlexUtilLogger.get_logger().debug(description)
+
+        return LibrarySettingDTO(
+            name=library_setting.name,
+            display_name=library_setting.display_name,
+            description=library_setting.description,
+            is_toggle=library_setting.is_toggle,
+            is_value=library_setting.is_value,
+            is_dropdown=library_setting.is_dropdown,
+            dropdown=library_setting.dropdown,
+            user_response=user_response,
         )

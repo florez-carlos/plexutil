@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from plexapi.exceptions import NotFound
 
+from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.scanner import Scanner
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
     from plexapi.video import Movie, Show
 
     from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+    from plexutil.dto.library_setting_dto import LibrarySettingDTO
     from plexutil.dto.movie_dto import MovieDTO
     from plexutil.dto.song_dto import SongDTO
     from plexutil.dto.tv_series_dto import TVSeriesDTO
@@ -372,43 +374,27 @@ class Library(ABC):
         plex_files = self.query()
         PlexOps.validate_local_files(plex_files, self.locations)
 
-    def inject_preferences(self) -> None:
+    def set_settings(self, settings: list[LibrarySettingDTO]) -> None:
         """
-        Sets Library Section Preferences
-        Logs a warning if preferences dont't exist or library type
-        not of movie,tv,music
+        Sets Library Settings
+        Logs a warning if setting doesn't exist
+
+        Args:
+            settings (LibrarySettingDTO): The Setting to apply to this Library
 
         Returns:
             None: This method does not return a value
         """
-
-        if not self.preferences:
-            description = "WARNING: Did not receive any Library Preferences"
-            PlexUtilLogger.get_logger().warning(description)
-            return
-
-        section_preferences = None
-
-        if (
-            LibraryType.is_eq(LibraryType.MOVIE, self.get_section())
-            or LibraryType.is_eq(LibraryType.TV, self.get_section())
-            or LibraryType.is_eq(LibraryType.MUSIC, self.get_section())
-        ):
-            section_preferences = self.preferences.movie
-
-        if not section_preferences:
-            description = "WARNING: Did not receive any Library Preferences"
-            PlexUtilLogger.get_logger().warning(description)
-            return
-
-        for key, value in section_preferences.items():
+        section = self.get_section()
+        for setting in settings:
+            response = Prompt.confirm_library_setting(setting)
             try:
-                section = self.get_section()
-                section.editAdvanced(**{key: value})
+                section.editAdvanced(**{response.name: response.user_response})
             except NotFound:
                 description = (
-                    f"WARNING: Preference not accepted by the server: {key}\n"
-                    f"Skipping -> {key}:{value}"
+                    f"{Prompt.WARNING} Library Setting not accepted "
+                    f"by the server: {response.name}\n"
+                    f"Skipping -> {response.name}:{response.user_response}"
                 )
                 PlexUtilLogger.get_logger().warning(description)
                 continue

@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from plexutil.core.prompt import Prompt
+from plexutil.dto.library_setting_dropdown_item_dto import (
+    LibrarySettingDropdownItemDTO,
+)
+from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.plex_util_logger import PlexUtilLogger
 
@@ -77,7 +82,162 @@ class MovieLibrary(Library):
         description = f"Successfully created: {self.name}"
         PlexUtilLogger.get_logger().debug(description)
 
-        self.inject_preferences()
+        tuples = []
+
+        name = "enableCinemaTrailers"
+        display_name = "Enable Cinema Trailers"
+        description = (
+            f"(Play Trailers automatically prior to the selected movie)\n"
+            f"{Prompt.WARNING} Also needs to be enabled in the client app\n"
+        )
+        user_response = 0
+        tuples.append(
+            (
+                name,
+                display_name,
+                description,
+                user_response,
+                True,
+                False,
+                False,
+            )
+        )
+
+        name = "originalTitles"
+        display_name = "Original Titles"
+        description = (
+            "Use the original titles for all items "
+            "regardless of the library language\n"
+        )
+        user_response = 1
+        tuples.append(
+            (
+                name,
+                display_name,
+                description,
+                user_response,
+                True,
+                False,
+                False,
+            )
+        )
+
+        name = "localizedArtwork"
+        display_name = "Prefer artwork based on library language"
+        description = "Use localized posters when available\n"
+        user_response = 1
+        tuples.append(
+            (
+                name,
+                display_name,
+                description,
+                user_response,
+                True,
+                False,
+                False,
+            )
+        )
+
+        name = "useLocalAssets"
+        display_name = "Use local assets"
+        description = (
+            "When scanning this library, "
+            "use local posters and artwork if present\n"
+        )
+        user_response = 1
+        tuples.append(
+            (
+                name,
+                display_name,
+                description,
+                user_response,
+                True,
+                False,
+                False,
+            )
+        )
+
+        name = "respectTags"
+        display_name = "Prefer local metadata"
+        description = (
+            "When scanning this library, prefer "
+            "embedded tags and local files if present."
+        )
+        user_response = 0
+        tuples.append(
+            (
+                name,
+                display_name,
+                description,
+                user_response,
+                True,
+                False,
+                False,
+            )
+        )
+
+        name = "enableBIFGeneration"
+        display_name = "Enable video preview thumbnails"
+        description = (
+            "Generate video preview thumbnails for items in this library "
+            "when enabled in server settings"
+        )
+        user_response = 1
+        tuples.append(
+            (
+                name,
+                display_name,
+                description,
+                user_response,
+                True,
+                False,
+                False,
+            )
+        )
+
+        name = "ratingsSource"
+        display_name = "Ratings Source"
+        description = "Select a primary source for ratings."
+        user_response = 0
+        dropdown = [
+            LibrarySettingDropdownItemDTO(
+                display_name="Rotten Tomatoes", value="rottentomatoes"
+            ),
+            LibrarySettingDropdownItemDTO(display_name="IMDb", value="imdb"),
+            LibrarySettingDropdownItemDTO(
+                display_name="The Movie Database", value="themoviedb"
+            ),
+        ]
+        tuples.append(
+            (
+                name,
+                display_name,
+                description,
+                user_response,
+                False,
+                False,
+                True,
+                dropdown,
+            )
+        )
+
+        library_settings = []
+
+        for a_tuple in tuples:
+            library_settings.append( # noqa: PERF401
+                LibrarySettingDTO(
+                    name=a_tuple[0],
+                    display_name=a_tuple[1],
+                    description=a_tuple[2],
+                    user_response=a_tuple[3],
+                    is_toggle=a_tuple[4],
+                    is_value=a_tuple[5],
+                    is_dropdown=a_tuple[6],
+                    dropdown=a_tuple[7],
+                )
+            )
+
+        self.set_settings(settings=library_settings)
 
     def query(self) -> list[Movie]:
         """
