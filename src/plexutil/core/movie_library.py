@@ -237,6 +237,7 @@ class MovieLibrary(Library):
                     is_value=a_tuple[5],
                     is_dropdown=a_tuple[6],
                     dropdown=a_tuple[7],
+                    is_from_server=False,
                 )
             )
 

@@ -24,3 +24,4 @@ class LibrarySettingDTO:
     )
     dropdown: list[LibrarySettingDropdownItemDTO] = field(default_factory=list)
     user_response: int = 0
+    is_from_server: bool = False  # Was the Setting already on the Plex Server

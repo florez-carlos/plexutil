@@ -284,6 +284,18 @@ class Prompt(Static):
                 .strip()
                 .lower()
             )
+
+            if isinstance(library_setting.user_response, int):
+                user_response = 0
+            elif isinstance(library_setting.user_response, bool):
+                user_response = False
+            else:
+                user_response = ""
+
+            if not response:
+                description = "Unchanged"
+                PlexUtilLogger.get_logger().info(description)
+
             if response == "y":
                 if isinstance(library_setting.user_response, int):
                     user_response = 1
@@ -295,17 +307,20 @@ class Prompt(Static):
                 elif isinstance(library_setting.user_response, bool):
                     user_response = False
             else:
-                description = (
-                    f"{Prompt.WARNING} Did not understand your input: "
-                    f"({response}) proceeding with default"
-                )
-                PlexUtilLogger.get_logger().warning(description)
-                if isinstance(library_setting.user_response, int):
-                    user_response = 0
-                elif isinstance(library_setting.user_response, bool):
-                    user_response = False
+                if not response and library_setting.is_from_server:
+                    description = "Setting Remains Unchanged"
+                elif response and library_setting.is_from_server:
+                    description = (
+                        f"{Prompt.WARNING} Did not understand your input: "
+                        f"({response}) | Setting Remains Unchanged"
+                    )
                 else:
-                    user_response = ""
+                    description = (
+                        f"{Prompt.WARNING} Did not understand your input: "
+                        f"({response}) proceeding with default"
+                    )
+
+                PlexUtilLogger.get_logger().warning(description)
 
         elif library_setting.is_value:
             pass
