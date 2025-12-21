@@ -6,10 +6,28 @@ from plexutil.dto.library_setting_dropdown_item_dto import (
     LibrarySettingDropdownItemDTO,
 )
 from plexutil.enums.icons import Icons
+from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 
 
 class LibrarySetting(Enum):
+    LANGUAGE = (
+        "language",
+        "Language",
+        ("Library Language\n"),
+        [LibraryType.MOVIE, LibraryType.TV, LibraryType.MUSIC],
+        False,
+        False,
+        True,
+        [
+            LibrarySettingDropdownItemDTO(
+                display_name=language.get_display_name(),
+                value=language.get_value(),
+            )
+            for language in Language.get_all()
+        ],
+        0,
+    )
     ENABLE_CINEMA_TRAILERS = (
         "enableCinemaTrailers",
         "Enable Cinema Trailers",
@@ -33,7 +51,7 @@ class LibrarySetting(Enum):
             "Use the original titles for all items "
             "regardless of the library language\n"
         ),
-        [LibraryType.MOVIE],
+        [LibraryType.MOVIE, LibraryType.TV],
         True,
         False,
         False,
@@ -45,7 +63,7 @@ class LibrarySetting(Enum):
         "localizedArtwork",
         "Prefer artwork based on library language",
         "Use localized posters when available\n",
-        [LibraryType.MOVIE],
+        [LibraryType.MOVIE, LibraryType.TV],
         True,
         False,
         False,
@@ -60,7 +78,7 @@ class LibrarySetting(Enum):
             "When scanning this library, "
             "use local posters and artwork if present\n"
         ),
-        [LibraryType.MOVIE],
+        [LibraryType.MOVIE, LibraryType.TV],
         True,
         False,
         False,
@@ -75,7 +93,7 @@ class LibrarySetting(Enum):
             "When scanning this library, prefer "
             "embedded tags and local files if present\n"
         ),
-        [LibraryType.MOVIE],
+        [LibraryType.MOVIE, LibraryType.TV],
         True,
         False,
         False,
@@ -90,7 +108,7 @@ class LibrarySetting(Enum):
             "Generate video preview thumbnails for items in this library "
             "when enabled in server settings\n"
         ),
-        [LibraryType.MOVIE],
+        [LibraryType.MOVIE, LibraryType.TV],
         True,
         False,
         False,

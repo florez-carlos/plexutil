@@ -10,6 +10,7 @@ from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
 from plexutil.enums.agent import Agent
+from plexutil.enums.icons import Icons
 from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
@@ -307,12 +308,12 @@ class Prompt(Static):
                     description = "Setting Remains Unchanged"
                 elif response and library_setting.is_from_server:
                     description = (
-                        f"{Prompt.WARNING} Did not understand your input: "
+                        f"{Icons.WARNING} Did not understand your input: "
                         f"({response}) | Setting Remains Unchanged"
                     )
                 else:
                     description = (
-                        f"{Prompt.WARNING} Did not understand your input: "
+                        f"{Icons.WARNING} Did not understand your input: "
                         f"({response}) proceeding with default"
                     )
 
@@ -331,12 +332,21 @@ class Prompt(Static):
                 f"({dropdown[0].display_name})\n"
             )
             dropdown_count = 1
+            columns_count = 1
+            max_columns = 5
+            min_space = "   "
+            newline = "\n"
+
             for item in dropdown:
                 description = (
-                    description
-                    + f"[{dropdown_count}] -> {item.display_name}\n"
+                    description + f"[{dropdown_count}] -> {item.display_name}"
+                    f"{min_space if columns_count < max_columns else newline}"
                 )
+
                 dropdown_count = dropdown_count + 1
+                columns_count = (
+                    1 if columns_count >= max_columns else columns_count + 1
+                )
 
             PlexUtilLogger.get_console_logger().info(description)
             response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
@@ -349,7 +359,7 @@ class Prompt(Static):
                     user_response = 0
             else:
                 description = (
-                    f"{Prompt.WARNING} Did not understand your input: "
+                    f"{Icons.WARNING} Did not understand your input: "
                     f"({response}) proceeding with default"
                 )
                 PlexUtilLogger.get_logger().warning(description)

@@ -4,50 +4,50 @@ from enum import Enum
 
 
 class Language(Enum):
-    ENGLISH_US = "en-US"
-    ENGLISH_AUSTRALIA = "en-AU"
-    ENGLISH_CANADA = "en-CA"
-    ENGLISH_UK = "en-GB"
-    SPANISH_SPAIN = "es-ES"
-    SPANISH_MEXICO = "es-MX"
-    ARABIC_SAUDI_ARABIA = "ar-SA"
-    BULGARIAN = "bg-BG"
-    CATALAN = "ca-ES"
-    CHINESE = "zh-CN"
-    CHINESE_HONG_KONG = "zh-HK"
-    CHINESE_TAIWAN = "zh-TW"
-    CROATIAN = "hr-HR"
-    CZECH = "cs-CZ"
-    DANISH = "da-DK"
-    DUTCH = "nl-NL"
-    ESTONIAN = "et-EE"
-    FINNISH = "fi-FI"
-    FRENCH = "fr-FR"
-    FRENCH_CANADA = "fr-CA"
-    GERMAN = "de-DE"
-    GREEK = "el-GR"
-    HEBREW = "he-IL"
-    HINDI = "hi-IN"
-    HUNGARIAN = "hu-HU"
-    INDONESIAN = "id-ID"
-    ITALIAN = "it-IT"
-    JAPANESE = "ja-JP"
-    KOREAN = "ko-KR"
-    LATVIAN = "lv-LV"
-    LITHUANIAN = "lt-LT"
-    NORWEGIAN_BOKMAL = "nb-NO"
-    PERSIAN = "fa-IR"
-    POLISH = "pl-PL"
-    PORTUGUESE = "pt-BR"
-    PORTUGUESE_PORTUGAL = "pt-PT"
-    ROMANIAN = "ro-RO"
-    RUSSIAN = "ru-RU"
-    SLOVAK = "sk-SK"
-    SWEDISH = "sv-SE"
-    THAI = "th-TH"
-    TURKISH = "tr-TR"
-    UKRAINIAN = "uk-UA"
-    VIETNAMESE = "vi-VN"
+    ARABIC_SAUDI_ARABIA = ("ar-SA", "Arabic (Saudi Arabia)")
+    BULGARIAN = ("bg-BG", "Bulgarian")
+    CATALAN = ("ca-ES", "Catalan")
+    CHINESE = ("zh-CN", "Chinese")
+    CHINESE_HONG_KONG = ("zh-HK", "Chinese (Hong Kong)")
+    CHINESE_TAIWAN = ("zh-TW", "Chinese (Taiwan)")
+    CROATIAN = ("hr-HR", "Croatian")
+    CZECH = ("cs-CZ", "Czech")
+    DANISH = ("da-DK", "Danish")
+    DUTCH = ("nl-NL", "Dutch")
+    ENGLISH_US = ("en-US", "English")
+    ENGLISH_AUSTRALIA = ("en-AU", "English (Australia)")
+    ENGLISH_CANADA = ("en-CA", "English (Canada)")
+    ENGLISH_UK = ("en-GB", "English (UK)")
+    ESTONIAN = ("et-EE", "Estonian")
+    FINNISH = ("fi-FI", "Finnish")
+    FRENCH = ("fr-FR", "French")
+    FRENCH_CANADA = ("fr-CA", "French (Canada)")
+    GERMAN = ("de-DE", "German")
+    GREEK = ("el-GR", "Greek")
+    HEBREW = ("he-IL", "Hebrew")
+    HINDI = ("hi-IN", "Hindi")
+    HUNGARIAN = ("hu-HU", "Hungarian")
+    INDONESIAN = ("id-ID", "Indonesian")
+    ITALIAN = ("it-IT", "Italian")
+    JAPANESE = ("ja-JP", "Japanase")
+    KOREAN = ("ko-KR", "Korean")
+    LATVIAN = ("lv-LV", "Latvian")
+    LITHUANIAN = ("lt-LT", "Lithuanian")
+    NORWEGIAN_BOKMAL = ("nb-NO", "Norwegian Bokmål")
+    PERSIAN = ("fa-IR", "Persian")
+    POLISH = ("pl-PL", "Polish")
+    PORTUGUESE = ("pt-BR", "Portuguese")
+    PORTUGUESE_PORTUGAL = ("pt-PT", "Portuguese (Portugal)")
+    ROMANIAN = ("ro-RO", "Romanian")
+    RUSSIAN = ("ru-RU", "Russian")
+    SLOVAK = ("sk-SK", "Slovak")
+    SPANISH_SPAIN = ("es-ES", "Spanish")
+    SPANISH_MEXICO = ("es-MX", "Spanish (Mexico)")
+    SWEDISH = ("sv-SE", "Swedish")
+    THAI = ("th-TH", "Thai")
+    TURKISH = ("tr-TR", "Turkish")
+    UKRAINIAN = ("uk-UA", "Ukranian")
+    VIETNAMESE = ("vi-VN", "Vietnamese")
 
     @staticmethod
     # Forward Reference used here in type hint
@@ -59,8 +59,14 @@ class Language(Enum):
         languages = Language.get_all()
 
         for language in languages:
-            if candidate.lower() == language.value.lower():
+            if candidate.lower() == language.get_value().lower():
                 return language
 
         description = f"Language not supported: {candidate}"
         raise ValueError(description)
+
+    def get_display_name(self) -> str:
+        return self.value[1]
+
+    def get_value(self) -> str:
+        return self.value[0]
