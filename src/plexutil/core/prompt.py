@@ -18,6 +18,7 @@ from plexutil.enums.user_request import UserRequest
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
 )
+from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.file_importer import FileImporter
@@ -83,6 +84,16 @@ class Prompt(Static):
             type=str,
             nargs="+",
             help="Library Name",
+            default=[],
+        )
+
+        parser.add_argument(
+            "-t",
+            "--libary_type",
+            metavar="Library Type",
+            type=str,
+            nargs="+",
+            help="Library Type",
             default=[],
         )
 
@@ -185,29 +196,14 @@ class Prompt(Static):
         locations = args.locations
         scanner = args.library_scanner
         agent = args.library_agent
-        library_type = LibraryType.MUSIC
+        library_type = args.library_type
         library_name = args.library_name
-
-        if request:
-            library_type = UserRequest.get_library_type_from_request(
-                UserRequest.get_user_request_from_str(args.request)
-            )
 
         playlist_name = " ".join(playlist_name) if playlist_name else ""
         library_name = " ".join(library_name) if library_name else ""
+        library_type = " ".join(library_type) if library_type else ""
         scanner = " ".join(scanner) if scanner else ""
         agent = " ".join(agent) if agent else ""
-
-        scanner = (
-            Scanner.get_from_str(scanner, library_type)
-            if scanner
-            else Scanner.get_default(library_type)
-        )
-        agent = (
-            Agent.get_from_str(agent, library_type)
-            if agent
-            else Agent.get_default(library_type)
-        )
 
         if is_version:
             plexutil_version = ""
@@ -224,6 +220,23 @@ class Prompt(Static):
 
         if request:
             request = UserRequest.get_user_request_from_str(request)
+            if library_type:
+                library_type = LibraryType.get_from_str(library_type)
+            else:
+                library_type = Prompt.confirm_library_type()
+            scanner = (
+                Scanner.get_from_str(scanner, library_type)
+                if scanner
+                else Scanner.get_default(library_type)
+            )
+            agent = (
+                Agent.get_from_str(agent, library_type)
+                if agent
+                else Agent.get_default(library_type)
+            )
+        else:
+            description = "Cannot continue without a request, see -h"
+            raise UserError(description)
 
         server_config_dto = ServerConfigDTO(
             host=plex_server_host,
@@ -243,7 +256,7 @@ class Prompt(Static):
             f"Language: {language.value}\n"
             f"Locations: {locations!s}\n"
             f"Library Name: {library_name}\n"
-            f"Library Type: {library_type.value}\n"
+            f"Library Type: {library_type.get_value()}\n"
             f"Scanner: {scanner.get_value()}\n"
             f"Agent: {agent.get_value()}\n"
         )
@@ -383,3 +396,42 @@ class Prompt(Static):
             dropdown=library_setting.dropdown,
             user_response=user_response,
         )
+
+    @staticmethod
+    def confirm_library_type() -> LibraryType:
+        dropdown = LibraryType.get_all()
+
+        description = (
+            "\n========== Library Type Selection ==========\n"
+            "Available Options:\n"
+        )
+        dropdown_count = 1
+
+        for lib in dropdown:
+            description = (
+                description
+                + f"[{dropdown_count}] -> {lib.get_display_name()}\n"
+            )
+
+            dropdown_count = dropdown_count + 1
+
+        PlexUtilLogger.get_console_logger().info(description)
+        response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
+
+        if response.isdigit():
+            int_response = int(response)
+            if int_response > 0 and int_response <= len(dropdown):
+                user_response = int_response - 1
+            else:
+                user_response = 0
+        else:
+            description = f"Did not understand your input: {response}"
+            raise UserError(description)
+
+        description = (
+            f"Prompt for Library Type Selection | "
+            f"User Chose: {dropdown[user_response].get_value()}"
+        )
+        PlexUtilLogger.get_logger().debug(description)
+
+        return dropdown[user_response]

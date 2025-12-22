@@ -9,12 +9,37 @@ from plexapi.library import (
     ShowSection,
 )
 
+from plexutil.exception.user_error import UserError
+
 
 class LibraryType(Enum):
-    MUSIC = "music"
-    TV = "show"
-    MOVIE = "movie"
-    MUSIC_PLAYLIST = "audio"
+    MUSIC = ("music", "Music")
+    TV = ("show", "TV Shows")
+    MOVIE = ("movie", "Movies")
+    MUSIC_PLAYLIST = ("audio", "Music Playlists")
+
+    @staticmethod
+    def get_all() -> list[LibraryType]:
+        return list(LibraryType)
+
+    @staticmethod
+    def get_from_str(candidate: str) -> LibraryType:
+        libs = LibraryType.get_all()
+        for lib in libs:
+            if lib.get_display_name().lower() == candidate.lower():
+                return lib
+        description = (
+            f"Couldn't determine Library Type from: {candidate} | Available:\n"
+        )
+        for lib in libs:
+            description = description + f"-> {lib.get_display_name()}\n"
+        raise UserError(description)
+
+    def get_value(self) -> str:
+        return self.value[0]
+
+    def get_display_name(self) -> str:
+        return self.value[1]
 
     @staticmethod
     def is_eq(

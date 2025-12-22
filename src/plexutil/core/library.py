@@ -8,6 +8,7 @@ from plexapi.exceptions import NotFound
 
 from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
+from plexutil.enums.icons import Icons
 from plexutil.enums.language import Language
 from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_illegal_state_error import (
@@ -126,7 +127,7 @@ class Library(ABC):
             operation="CHECK EXISTS", is_info=False, is_debug=True
         )
 
-        library = f"{self.name} | {self.library_type.value}"
+        library = f"{self.name} | {self.library_type.get_value()}"
 
         try:
             self.get_section()
@@ -253,7 +254,7 @@ class Library(ABC):
             f"\n===== {self.library_type} | {operation} | BEGIN =====\n"
             f"ID: {library_id}\n"
             f"Name: {self.name}\n"
-            f"Type: {self.library_type.value}\n"
+            f"Type: {self.library_type.get_value()}\n"
             f"Agent: {self.agent.get_value()}\n"
             f"Scanner: {self.scanner.get_value()}\n"
             f"Locations: {self.locations!s}\n"
@@ -284,8 +285,9 @@ class Library(ABC):
         time.sleep(2)  # Slow devices
         sections = self.plex_server.library.sections()
 
-        description = f"Section to find: {self.name} {self.library_type.value}"
-        PlexUtilLogger.get_logger().debug(description)
+        description = (
+            f"Section to find: {self.name} {self.library_type.get_value()}"
+        )
 
         description = f"All Sections: {sections!s}"
         PlexUtilLogger.get_logger().debug(description)
@@ -393,7 +395,7 @@ class Library(ABC):
                 section.editAdvanced(**{response.name: response.user_response})
             except NotFound:
                 description = (
-                    f"{Prompt.WARNING} Library Setting not accepted "
+                    f"{Icons.WARNING} Library Setting not accepted "
                     f"by the server: {response.name}\n"
                     f"Skipping -> {response.name}:{response.user_response}"
                 )
