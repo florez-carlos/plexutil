@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import sys
-from enum import Enum
+
+from plexutil.static import Static
 
 
-class Icons(Enum):
+class Icons(Static):
     WARNING = (
         "⚠️ " if sys.stdout.encoding.lower().startswith("utf") else "[WARNING] "
     )

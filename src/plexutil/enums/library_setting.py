@@ -5,8 +5,8 @@ from enum import Enum
 from plexutil.dto.dropdown_item_dto import (
     DropdownItemDTO,
 )
-from plexutil.enums.icons import Icons
 from plexutil.enums.library_type import LibraryType
+from plexutil.util.icons import Icons
 
 
 class LibrarySetting(Enum):
@@ -15,7 +15,7 @@ class LibrarySetting(Enum):
         "Enable Cinema Trailers",
         (
             f"Play Trailers automatically prior to the selected movie\n"
-            f"{Icons.WARNING.value} Also needs to be enabled in the "
+            f"{Icons.WARNING} Also needs to be enabled in the "
             f"client app\n"
         ),
         [LibraryType.MOVIE],

@@ -11,7 +11,6 @@ from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
 from plexutil.enums.agent import Agent
-from plexutil.enums.icons import Icons
 from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
@@ -23,6 +22,7 @@ from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.file_importer import FileImporter
+from plexutil.util.icons import Icons
 
 
 class Prompt(Static):

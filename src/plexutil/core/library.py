@@ -8,7 +8,6 @@ from plexapi.exceptions import NotFound
 
 from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
-from plexutil.enums.icons import Icons
 from plexutil.enums.language import Language
 from plexutil.enums.scanner import Scanner
 from plexutil.exception.library_illegal_state_error import (
@@ -21,6 +20,7 @@ from plexutil.exception.library_section_missing_error import (
     LibrarySectionMissingError,
 )
 from plexutil.plex_util_logger import PlexUtilLogger
+from plexutil.util.icons import Icons
 from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
