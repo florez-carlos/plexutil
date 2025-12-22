@@ -124,7 +124,7 @@ class Prompt(Static):
             type=str,
             nargs="?",
             help="Library Language",
-            default=Language.ENGLISH_US.value,
+            default=Language.get_default().get_display_name(),
         )
 
         parser.add_argument(

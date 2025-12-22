@@ -59,11 +59,19 @@ class Language(Enum):
         languages = Language.get_all()
 
         for language in languages:
+            if candidate.lower() == language.get_display_name().lower():
+                return language
+
+        for language in languages:
             if candidate.lower() == language.get_value().lower():
                 return language
 
         description = f"Language not supported: {candidate}"
         raise ValueError(description)
+
+    @staticmethod
+    def get_default() -> Language:
+        return Language.ENGLISH_US
 
     def get_display_name(self) -> str:
         return self.value[1]
