@@ -426,9 +426,14 @@ class Prompt(Static):
         for item in dropdown:
             offset = max_column_width - len(item.display_name)
             space = " " * offset
+            number_format = (
+                f"[ {dropdown_count}] "
+                if dropdown_count < 10  # noqa: PLR2004
+                else f"[{dropdown_count}] "
+            )
 
             description = (
-                description + f"[{dropdown_count}] -> {item.display_name}"
+                description + number_format + f"-> {item.display_name}"
                 f"{space if columns_count < max_columns else newline}"
             )
 
