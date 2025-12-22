@@ -413,8 +413,8 @@ class Prompt(Static):
         description = (
             f"\n========== {title} ==========\n"
             f"{description}\n"
-            f"Available Options:\nDefault is "
-            f"{dropdown[0].display_name}\n"
+            f"Available Options:\n"
+            f"(Default: {dropdown[0].display_name})\n"
         )
         dropdown_count = 1
         columns_count = 1
