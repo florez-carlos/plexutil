@@ -13,9 +13,9 @@ from plexutil.exception.user_error import UserError
 
 
 class LibraryType(Enum):
-    MUSIC = ("music", "Music")
-    TV = ("show", "TV Shows")
     MOVIE = ("movie", "Movies")
+    TV = ("show", "TV Shows")
+    MUSIC = ("music", "Music")
     MUSIC_PLAYLIST = ("audio", "Music Playlist")
 
     @staticmethod
