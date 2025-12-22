@@ -424,7 +424,7 @@ class Prompt(Static):
         newline = "\n"
 
         for item in dropdown:
-            offset = len(item.display_name) - max_column_width
+            offset = max_column_width - len(item.display_name)
             space = " " * offset
 
             description = (
