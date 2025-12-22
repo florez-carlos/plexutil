@@ -342,18 +342,22 @@ class Prompt(Static):
                 f"{library_setting.description}\n"
                 f"{library_setting.display_name}? (y/n): "
                 f"Available Options:\nDefault is "
-                f"({dropdown[0].display_name})\n"
+                f"{dropdown[0].display_name}\n"
             )
             dropdown_count = 1
             columns_count = 1
-            max_columns = 5
-            min_space = "   "
+            max_columns = 3
+            max_column_width = 25
+            space = ""
             newline = "\n"
 
             for item in dropdown:
+                offset = len(item.display_name) - max_column_width
+                space = " " * offset
+
                 description = (
                     description + f"[{dropdown_count}] -> {item.display_name}"
-                    f"{min_space if columns_count < max_columns else newline}"
+                    f"{space if columns_count < max_columns else newline}"
                 )
 
                 dropdown_count = dropdown_count + 1

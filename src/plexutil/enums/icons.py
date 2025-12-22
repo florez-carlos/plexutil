@@ -6,5 +6,5 @@ from enum import Enum
 
 class Icons(Enum):
     WARNING = (
-        "⚠️ " if sys.stdout.encoding.lower().startswith("utf") else "[WARNING]"
+        "⚠️ " if sys.stdout.encoding.lower().startswith("utf") else "[WARNING] "
     )

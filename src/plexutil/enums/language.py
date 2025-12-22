@@ -4,6 +4,7 @@ from enum import Enum
 
 
 class Language(Enum):
+    ENGLISH_US = ("en-US", "English")
     ARABIC_SAUDI_ARABIA = ("ar-SA", "Arabic (Saudi Arabia)")
     BULGARIAN = ("bg-BG", "Bulgarian")
     CATALAN = ("ca-ES", "Catalan")
@@ -14,7 +15,6 @@ class Language(Enum):
     CZECH = ("cs-CZ", "Czech")
     DANISH = ("da-DK", "Danish")
     DUTCH = ("nl-NL", "Dutch")
-    ENGLISH_US = ("en-US", "English")
     ENGLISH_AUSTRALIA = ("en-AU", "English (Australia)")
     ENGLISH_CANADA = ("en-CA", "English (Canada)")
     ENGLISH_UK = ("en-GB", "English (UK)")

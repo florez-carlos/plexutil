@@ -27,7 +27,7 @@ class MovieLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
-        language: Language = Language.get_default(), # noqa: B008
+        language: Language = Language.get_default(),  # noqa: B008
         name: str = LibraryName.MOVIE.value,
     ) -> None:
         super().__init__(
