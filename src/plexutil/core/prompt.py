@@ -89,7 +89,7 @@ class Prompt(Static):
 
         parser.add_argument(
             "-t",
-            "--libary_type",
+            "--library_type",
             metavar="Library Type",
             type=str,
             nargs="+",
