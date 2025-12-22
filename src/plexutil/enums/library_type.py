@@ -16,7 +16,7 @@ class LibraryType(Enum):
     MUSIC = ("music", "Music")
     TV = ("show", "TV Shows")
     MOVIE = ("movie", "Movies")
-    MUSIC_PLAYLIST = ("audio", "Music Playlists")
+    MUSIC_PLAYLIST = ("audio", "Music Playlist")
 
     @staticmethod
     def get_all() -> list[LibraryType]:
