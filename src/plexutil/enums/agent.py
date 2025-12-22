@@ -113,8 +113,12 @@ class Agent(Enum):
             UserError: If Agent incompatible with the supplied LibraryType
                        If Agent could not be determined from the candidate str
         """
+        candidate = candidate.lower()
         for agent in Agent.get_all():
-            if candidate.lower() == agent.get_label(library_type).lower():
+            if (
+                candidate == agent.get_label(library_type).lower()
+                or candidate == agent.get_value().lower()
+            ):
                 if not agent.is_compatible(library_type):
                     description = (
                         f"Chosen Agent ({agent.get_label(library_type)}) "

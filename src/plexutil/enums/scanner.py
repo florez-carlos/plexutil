@@ -82,8 +82,12 @@ class Scanner(Enum):
             UserError: If Scanner incompatible with the supplied LibraryType
                        If Scanner couldn't be determined from the candidate str
         """
+        candidate = candidate.lower()
         for scanner in Scanner.get_all():
-            if candidate.lower() == scanner.get_label().lower():
+            if (
+                candidate == scanner.get_label().lower()
+                or candidate == scanner.get_value().lower()
+            ):
                 if not scanner.is_compatible(library_type):
                     description = (
                         f"Chosen Scanner ({scanner.get_label()}) "
