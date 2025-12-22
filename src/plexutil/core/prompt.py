@@ -289,13 +289,15 @@ class Prompt(Static):
     ) -> LibrarySettingDTO:
         user_response = library_setting.user_response
         response = library_setting.user_response
+        default = "yes" if library_setting.user_response == 1 else "no"
 
         if library_setting.is_toggle:
             response = (
                 input(
                     f"\n========== {library_setting.display_name} ==========\n"
                     f"{library_setting.description}\n"
-                    f"{library_setting.display_name}? (y/n): "
+                    f"{library_setting.display_name}? "
+                    f"(Default: {default}) (y/n): "
                 )
                 .strip()
                 .lower()
@@ -312,12 +314,12 @@ class Prompt(Static):
                 description = "Unchanged"
                 PlexUtilLogger.get_logger().info(description)
 
-            if response == "y":
+            if response in {"y", "yes"}:
                 if isinstance(library_setting.user_response, int):
                     user_response = 1
                 elif isinstance(library_setting.user_response, bool):
                     user_response = True
-            elif response == "n":
+            elif response in {"n", "no"}:
                 if isinstance(library_setting.user_response, int):
                     user_response = 0
                 elif isinstance(library_setting.user_response, bool):
@@ -445,15 +447,20 @@ class Prompt(Static):
         PlexUtilLogger.get_console_logger().info(description)
         response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
 
+        user_response = 0
+        description = (
+            f"{Icons.WARNING} Did not understand your input: "
+            f"({response}) proceeding with default"
+        )
+
         if response.isdigit():
             int_response = int(response)
             if int_response > 0 and int_response <= len(dropdown):
                 user_response = int_response - 1
             else:
-                user_response = 0
+                PlexUtilLogger.get_logger().warning(description)
         else:
-            description = f"Did not understand your input: {response}"
-            raise UserError(description)
+            PlexUtilLogger.get_logger().warning(description)
 
         description = (
             f"Prompt for Library Type Selection | "
