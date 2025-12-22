@@ -2,32 +2,14 @@ from __future__ import annotations
 
 from enum import Enum
 
-from plexutil.dto.library_setting_dropdown_item_dto import (
-    LibrarySettingDropdownItemDTO,
+from plexutil.dto.dropdown_item_dto import (
+    DropdownItemDTO,
 )
 from plexutil.enums.icons import Icons
-from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 
 
 class LibrarySetting(Enum):
-    LANGUAGE = (
-        "language",
-        "Language",
-        ("Library Language\n"),
-        [LibraryType.MOVIE, LibraryType.TV, LibraryType.MUSIC],
-        False,
-        False,
-        True,
-        [
-            LibrarySettingDropdownItemDTO(
-                display_name=language.get_display_name(),
-                value=language.get_value(),
-            )
-            for language in Language.get_all()
-        ],
-        0,
-    )
     ENABLE_CINEMA_TRAILERS = (
         "enableCinemaTrailers",
         "Enable Cinema Trailers",
@@ -125,11 +107,11 @@ class LibrarySetting(Enum):
         False,
         True,
         [
-            LibrarySettingDropdownItemDTO(
+            DropdownItemDTO(
                 display_name="Rotten Tomatoes", value="rottentomatoes"
             ),
-            LibrarySettingDropdownItemDTO(display_name="IMDb", value="imdb"),
-            LibrarySettingDropdownItemDTO(
+            DropdownItemDTO(display_name="IMDb", value="imdb"),
+            DropdownItemDTO(
                 display_name="The Movie Database", value="themoviedb"
             ),
         ],
@@ -208,7 +190,7 @@ class LibrarySetting(Enum):
         """
         return self.value[6]
 
-    def get_dropdown(self) -> list[LibrarySettingDropdownItemDTO]:
+    def get_dropdown(self) -> list[DropdownItemDTO]:
         """
         Get the Dropdown items for this setting
 

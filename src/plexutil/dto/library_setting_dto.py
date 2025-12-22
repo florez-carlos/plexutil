@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from plexutil.dto.library_setting_dropdown_item_dto import (
-        LibrarySettingDropdownItemDTO,
+    from plexutil.dto.dropdown_item_dto import (
+        DropdownItemDTO,
     )
 
 
@@ -22,6 +22,6 @@ class LibrarySettingDTO:
     is_dropdown: bool = (
         False  # When response is expected to be an index pick on dropdown
     )
-    dropdown: list[LibrarySettingDropdownItemDTO] = field(default_factory=list)
+    dropdown: list[DropdownItemDTO] = field(default_factory=list)
     user_response: bool | int | str = 0
     is_from_server: bool = False  # Was the Setting already on the Plex Server
