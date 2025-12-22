@@ -6,6 +6,7 @@ import sys
 from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
 
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.server_config_dto import ServerConfigDTO
 from plexutil.dto.user_instructions_dto import UserInstructionsDTO
@@ -122,9 +123,9 @@ class Prompt(Static):
             "--language",
             metavar="Library Language",
             type=str,
-            nargs="?",
+            nargs="+",
             help="Library Language",
-            default=Language.get_default().get_display_name(),
+            default=[],
         )
 
         parser.add_argument(
@@ -189,7 +190,7 @@ class Prompt(Static):
         is_version = args.version
         is_show_configuration = args.show_configuration
         is_show_configuration_token = args.show_configuration_token
-        language = Language.get_from_str(args.language)
+        language = args.language
         plex_server_host = args.plex_server_host
         plex_server_port = args.plex_server_port
         plex_server_token = args.plex_server_token
@@ -202,6 +203,7 @@ class Prompt(Static):
         playlist_name = " ".join(playlist_name) if playlist_name else ""
         library_name = " ".join(library_name) if library_name else ""
         library_type = " ".join(library_type) if library_type else ""
+        language = " ".join(language) if language else ""
         scanner = " ".join(scanner) if scanner else ""
         agent = " ".join(agent) if agent else ""
 
@@ -224,6 +226,10 @@ class Prompt(Static):
                 library_type = LibraryType.get_from_str(library_type)
             else:
                 library_type = Prompt.confirm_library_type()
+            if language:
+                language = Language.get_from_str(language)
+            else:
+                language = Prompt.confirm_language()
             scanner = (
                 Scanner.get_from_str(scanner, library_type)
                 if scanner
@@ -336,53 +342,11 @@ class Prompt(Static):
             pass
         elif library_setting.is_dropdown:
             dropdown = library_setting.dropdown
-
-            description = (
-                f"\n========== {library_setting.display_name} ==========\n"
-                f"{library_setting.description}\n"
-                f"{library_setting.display_name}? (y/n): "
-                f"Available Options:\nDefault is "
-                f"{dropdown[0].display_name}\n"
-            )
-            dropdown_count = 1
-            columns_count = 1
-            max_columns = 3
-            max_column_width = 25
-            space = ""
-            newline = "\n"
-
-            for item in dropdown:
-                offset = len(item.display_name) - max_column_width
-                space = " " * offset
-
-                description = (
-                    description + f"[{dropdown_count}] -> {item.display_name}"
-                    f"{space if columns_count < max_columns else newline}"
-                )
-
-                dropdown_count = dropdown_count + 1
-                columns_count = (
-                    1 if columns_count >= max_columns else columns_count + 1
-                )
-
-            PlexUtilLogger.get_console_logger().info(description)
-            response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
-
-            if response.isdigit():
-                int_response = int(response)
-                if int_response > 0 and int_response <= len(dropdown):
-                    user_response = int_response - 1
-                else:
-                    user_response = 0
-            else:
-                description = (
-                    f"{Icons.WARNING} Did not understand your input: "
-                    f"({response}) proceeding with default"
-                )
-                PlexUtilLogger.get_logger().warning(description)
-                user_response = 0
-
-            user_response = dropdown[user_response].value
+            user_response = Prompt.__draw_dropdown(
+                title=library_setting.display_name,
+                description=library_setting.description,
+                dropdown=dropdown,
+            ).value
 
         description = (
             f"Setting: {library_setting.name} | "
@@ -403,21 +367,74 @@ class Prompt(Static):
 
     @staticmethod
     def confirm_library_type() -> LibraryType:
-        dropdown = LibraryType.get_all()
+        libraries = LibraryType.get_all()
+        items = [
+            DropdownItemDTO(
+                display_name=library.get_display_name(),
+                value=library.get_value(),
+            )
+            for library in libraries
+        ]
+        response = Prompt.__draw_dropdown(
+            title="Library Type Selection",
+            description="Choose the Library Type",
+            dropdown=items,
+        )
 
+        return LibraryType.get_from_str(response.display_name)
+
+    @staticmethod
+    def confirm_language() -> Language:
+        languages = Language.get_all()
+        items = [
+            DropdownItemDTO(
+                display_name=language.get_display_name(),
+                value=language.get_value(),
+            )
+            for language in languages
+        ]
+
+        response = Prompt.__draw_dropdown(
+            title="Language Selection",
+            description="Choose the Language",
+            dropdown=items,
+        )
+
+        return Language.get_from_str(response.display_name)
+
+    @staticmethod
+    def __draw_dropdown(
+        title: str,
+        description: str,
+        dropdown: list[DropdownItemDTO],
+        is_multi_column: bool = False,
+    ) -> DropdownItemDTO:
         description = (
-            "\n========== Library Type Selection ==========\n"
-            "Available Options:\n"
+            f"\n========== {title} ==========\n"
+            f"{description}\n"
+            f"Available Options:\nDefault is "
+            f"{dropdown[0].display_name}\n"
         )
         dropdown_count = 1
+        columns_count = 1
+        max_columns = 3 if is_multi_column else 1
+        max_column_width = 25
+        space = ""
+        newline = "\n"
 
-        for lib in dropdown:
+        for item in dropdown:
+            offset = len(item.display_name) - max_column_width
+            space = " " * offset
+
             description = (
-                description
-                + f"[{dropdown_count}] -> {lib.get_display_name()}\n"
+                description + f"[{dropdown_count}] -> {item.display_name}"
+                f"{space if columns_count < max_columns else newline}"
             )
 
             dropdown_count = dropdown_count + 1
+            columns_count = (
+                1 if columns_count >= max_columns else columns_count + 1
+            )
 
         PlexUtilLogger.get_console_logger().info(description)
         response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
@@ -434,7 +451,7 @@ class Prompt(Static):
 
         description = (
             f"Prompt for Library Type Selection | "
-            f"User Chose: {dropdown[user_response].get_value()}"
+            f"User Chose: {dropdown[user_response].value}"
         )
         PlexUtilLogger.get_logger().debug(description)
 
