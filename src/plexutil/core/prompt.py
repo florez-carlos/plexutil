@@ -253,7 +253,7 @@ class Prompt(Static):
             f"Port: {plex_server_port}\n"
             f"show config: {is_show_configuration!s}\n"
             f"show config token: {is_show_configuration_token!s}\n"
-            f"Language: {language.value}\n"
+            f"Language: {language.get_value()}\n"
             f"Locations: {locations!s}\n"
             f"Library Name: {library_name}\n"
             f"Library Type: {library_type.get_value()}\n"

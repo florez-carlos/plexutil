@@ -258,7 +258,7 @@ class Library(ABC):
             f"Agent: {self.agent.get_value()}\n"
             f"Scanner: {self.scanner.get_value()}\n"
             f"Locations: {self.locations!s}\n"
-            f"Language: {self.language.value}\n"
+            f"Language: {self.language.get_value()}\n"
             f"\n===== {self.library_type} | {operation} | END =====\n"
         )
         if not is_console:

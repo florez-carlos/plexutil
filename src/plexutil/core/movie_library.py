@@ -27,7 +27,7 @@ class MovieLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
-        language: Language = Language.ENGLISH_US,
+        language: Language = Language.get_default(), # noqa: B008
         name: str = LibraryName.MOVIE.value,
     ) -> None:
         super().__init__(
@@ -70,7 +70,7 @@ class MovieLibrary(Library):
             agent=self.agent.get_value(),
             scanner=self.scanner.get_value(),
             location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
-            language=self.language.value,
+            language=self.language.get_value(),
         )
 
         description = f"Successfully created: {self.name}"
