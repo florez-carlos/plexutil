@@ -398,6 +398,7 @@ class Prompt(Static):
             title="Language Selection",
             description="Choose the Language",
             dropdown=items,
+            is_multi_column=True,
         )
 
         return Language.get_from_str(response.display_name)
