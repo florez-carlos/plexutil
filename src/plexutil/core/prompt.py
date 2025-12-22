@@ -412,9 +412,9 @@ class Prompt(Static):
     ) -> DropdownItemDTO:
         description = (
             f"\n========== {title} ==========\n"
-            f"{description}\n"
+            f"\n{description}\n"
             f"Available Options:\n"
-            f"(Default: {dropdown[0].display_name})\n"
+            f"(Default: {dropdown[0].display_name})\n\n"
         )
         dropdown_count = 1
         columns_count = 1
