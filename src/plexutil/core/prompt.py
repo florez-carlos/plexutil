@@ -330,12 +330,12 @@ class Prompt(Static):
                 elif response and library_setting.is_from_server:
                     description = (
                         f"{Icons.WARNING} Did not understand your input: "
-                        f"({response}) | Setting Remains Unchanged"
+                        f"{response} | Setting Remains Unchanged"
                     )
                 else:
                     description = (
                         f"{Icons.WARNING} Did not understand your input: "
-                        f"({response}) proceeding with default"
+                        f"{response} | Proceeding with default"
                     )
 
                 PlexUtilLogger.get_logger().warning(description)
@@ -450,7 +450,7 @@ class Prompt(Static):
         user_response = 0
         description = (
             f"{Icons.WARNING} Did not understand your input: "
-            f"({response}) proceeding with default"
+            f"{response} | Proceeding with default"
         )
 
         if response.isdigit():
