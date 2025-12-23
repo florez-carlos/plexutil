@@ -21,6 +21,8 @@ class UserRequest(Enum):
     ADD_SONGS_TO_MUSIC_PLAYLIST = "add_songs_to_music_playlist"
     DELETE_SONGS_FROM_MUSIC_PLAYLIST = "delete_songs_from_music_playlist"
 
+    MODIFY = "modify"
+
     @staticmethod
     # Forward Reference used here in type hint
     def get_all() -> list[UserRequest]:

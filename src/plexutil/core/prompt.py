@@ -344,7 +344,7 @@ class Prompt(Static):
             pass
         elif library_setting.is_dropdown:
             dropdown = library_setting.dropdown
-            user_response = Prompt.__draw_dropdown(
+            user_response = Prompt.draw_dropdown(
                 title=library_setting.display_name,
                 description=library_setting.description,
                 dropdown=dropdown,
@@ -377,7 +377,7 @@ class Prompt(Static):
             )
             for library in libraries
         ]
-        response = Prompt.__draw_dropdown(
+        response = Prompt.draw_dropdown(
             title="Library Type Selection",
             description="Choose the Library Type",
             dropdown=items,
@@ -396,7 +396,7 @@ class Prompt(Static):
             for language in languages
         ]
 
-        response = Prompt.__draw_dropdown(
+        response = Prompt.draw_dropdown(
             title="Language Selection",
             description="Choose the Language",
             dropdown=items,
@@ -406,7 +406,7 @@ class Prompt(Static):
         return Language.get_from_str(response.display_name)
 
     @staticmethod
-    def __draw_dropdown(
+    def draw_dropdown(
         title: str,
         description: str,
         dropdown: list[DropdownItemDTO],
@@ -464,7 +464,7 @@ class Prompt(Static):
 
         description = (
             f"Prompt for Library Type Selection | "
-            f"User Chose: {dropdown[user_response].value}"
+            f"User Chose: {dropdown[user_response].value!s}"
         )
         PlexUtilLogger.get_logger().debug(description)
 

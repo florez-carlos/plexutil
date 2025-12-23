@@ -3,6 +3,9 @@ from __future__ import annotations
 from time import sleep
 from typing import TYPE_CHECKING, cast
 
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
+from plexutil.dto.library_setting_dto import LibrarySettingDTO
+from plexutil.enums.library_setting import LibrarySetting
 from plexutil.exception.library_op_error import LibraryOpError
 
 if TYPE_CHECKING:
@@ -11,10 +14,10 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
     from plexapi.video import Show
 
-    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
     from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
 
 from plexutil.core.library import Library
+from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -28,12 +31,11 @@ class TVLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
-        preferences: LibraryPreferencesDTO,
         tv_language_manifest_dto: list[TVLanguageManifestDTO],
-        agent: Agent = Agent.TV,
-        scanner: Scanner = Scanner.TV,
+        agent: Agent = Agent.get_default(LibraryType.TV),
+        scanner: Scanner = Scanner.get_default(LibraryType.TV),
         name: str = LibraryName.TV.value,
-        language: Language = Language.ENGLISH_US,
+        language: Language = Language.get_default(),
     ) -> None:
         super().__init__(
             plex_server,
@@ -43,7 +45,6 @@ class TVLibrary(Library):
             scanner,
             locations,
             language,
-            preferences,
         )
         self.tv_language_manifest_dto = tv_language_manifest_dto
 
@@ -85,32 +86,59 @@ class TVLibrary(Library):
         description = f"Successfully created: {self.name}"
         PlexUtilLogger.get_logger().debug(description)
 
-        self.inject_preferences()
+        settings = LibrarySetting.get_all(LibraryType.TV)
 
-        manifests_dto = self.tv_language_manifest_dto
-        description = f"Begin language override\nManifests: {manifests_dto}\n"
-        PlexUtilLogger.get_logger().debug(description)
+        library_settings = []
 
-        self.probe_library()
-
-        for manifest_dto in manifests_dto:
-            language = manifest_dto.language
-            ids = manifest_dto.ids
-            if not ids:
-                description = f"TV Language override ({language.value}): NONE"
-                PlexUtilLogger.get_logger().info(description)
-                sleep(1)
-                continue
-
-            for show in self.get_shows_by_tvdb(ids):
-                show.editAdvanced(languageOverride=language.value)
-                show.refresh()
-                description = (
-                    f"TV Language override ({language.value}): "
-                    f"{show.originalTitle}"
+        for setting in settings:
+            library_settings.append(  # noqa: PERF401
+                LibrarySettingDTO(
+                    name=setting.get_name(),
+                    display_name=setting.get_display_name(),
+                    description=setting.get_description(),
+                    user_response=setting.get_default_selection(),
+                    is_toggle=setting.is_toggle(),
+                    is_value=setting.is_value(),
+                    is_dropdown=setting.is_dropdown(),
+                    dropdown=setting.get_dropdown(),
+                    is_from_server=False,
                 )
-                PlexUtilLogger.get_logger().info(description)
-                sleep(1)
+            )
+
+        self.set_settings(settings=library_settings)
+        self.get_section().refresh()
+
+    def modify_show_language(self) -> None:
+        self.probe_library()
+        shows = cast("list[Show]", self.get_section().searchShows())
+        dropdown = [
+            DropdownItemDTO(display_name=show.originalTitle, value=show)
+            for show in shows
+        ]
+        user_response = Prompt.draw_dropdown(
+            title="TV Show Selection",
+            description="Pick the Show to modify language",
+            dropdown=dropdown,
+        )
+
+        show = user_response.value
+
+        user_response = Prompt.draw_dropdown(
+            title="TV Show Language Selection",
+            description=f"Pick the language to set for {show.originalTitle}",
+            dropdown=dropdown,
+        )
+
+        language = user_response.value
+
+        show.value.editAdvanced(languageOverride=language.get_value())
+        show.refresh()
+        description = (
+            f"TV Show Language override ({language.value}): "
+            f"{show.originalTitle}"
+        )
+        PlexUtilLogger.get_logger().info(description)
+        sleep(1)
 
     def query(self) -> list[Show]:
         op_type = "QUERY"

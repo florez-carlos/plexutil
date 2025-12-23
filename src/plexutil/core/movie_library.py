@@ -27,15 +27,17 @@ class MovieLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
-        language: Language = Language.get_default(),  # noqa: B008
+        language: Language = Language.get_default(),
+        agent: Agent = Agent.get_default(LibraryType.MOVIE),
+        scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
         name: str = LibraryName.MOVIE.value,
     ) -> None:
         super().__init__(
             plex_server,
             name,
             LibraryType.MOVIE,
-            Agent.MOVIE,
-            Scanner.MOVIE,
+            agent,
+            scanner,
             locations,
             language,
         )

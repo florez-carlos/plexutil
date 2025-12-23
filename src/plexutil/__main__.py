@@ -175,7 +175,6 @@ def main() -> None:
                     plex_server=plex_server,
                     language=language,
                     name=library_name,
-                    preferences=preferences_dto,
                     tv_language_manifest_dto=tv_language_manifest_dto,
                     locations=locations,
                 )
