@@ -9,5 +9,5 @@ class LibraryUnsupportedError(Exception):
     ) -> None:
         self.op_type = op_type
         self.library_type = library_type
-        message = self.op_type + ": " + library_type.value
+        message = self.op_type + ": " + library_type.get_value()
         super().__init__(message)

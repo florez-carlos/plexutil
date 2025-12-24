@@ -10,6 +10,7 @@ from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.scanner import Scanner
+from plexutil.enums.user_request import UserRequest
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
     from plexapi.video import Movie, Show
 
+    from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
     from plexutil.dto.library_setting_dto import LibrarySettingDTO
     from plexutil.dto.movie_dto import MovieDTO
     from plexutil.dto.song_dto import SongDTO
@@ -56,6 +58,8 @@ class Library(ABC):
         scanner: Scanner,
         locations: list[Path],
         language: Language,
+        user_request: UserRequest,
+        bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
         self.plex_server = plex_server
         self.name = name
@@ -64,6 +68,8 @@ class Library(ABC):
         self.scanner = scanner
         self.locations = locations
         self.language = language
+        self.user_request = user_request
+        self.bootstrap_paths_dto = bootstrap_paths_dto
 
         section = None
         try:
@@ -84,6 +90,37 @@ class Library(ABC):
             for location in section.locations
         ]
         self.language = Language.get_from_str(section.language)
+
+    def do(self) -> None:
+        match self.user_request:
+            case UserRequest.CREATE:
+                self.create()
+            case UserRequest.DELETE:
+                self.delete()
+            case UserRequest.DOWNLOAD:
+                self.download()
+            case UserRequest.UPLOAD:
+                self.upload()
+            case UserRequest.ADD_ITEM:
+                self.add_item()
+            case UserRequest.DELETE_ITEM:
+                self.delete_item()
+
+    @abstractmethod
+    def add_item(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def delete_item(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def download(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def upload(self) -> None:
+        raise NotImplementedError
 
     @abstractmethod
     def create(self) -> None:

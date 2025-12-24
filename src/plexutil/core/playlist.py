@@ -2,18 +2,28 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from plexutil.exception.library_unsupported_error import (
+    LibraryUnsupportedError,
+)
+from plexutil.service.music_playlist_service import MusicPlaylistService
+from plexutil.service.song_music_playlist_composite_service import (
+    SongMusicPlaylistCompositeService,
+)
+from plexutil.util.path_ops import PathOps
+
 if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.audio import Track
     from plexapi.server import PlexServer
 
+    from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
     from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
     from plexutil.dto.song_dto import SongDTO
+    from plexutil.enums.user_request import UserRequest
 
 
 from plexutil.core.library import Library
-from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
@@ -31,23 +41,27 @@ class Playlist(Library):
         plex_server: PlexServer,
         locations: list[Path],
         playlist_name: str,
-        songs: list[SongDTO],
+        user_request: UserRequest,
+        bootstrap_paths_dto: BootstrapPathsDTO,
         name: str = LibraryName.MUSIC.value,
-        library_type: LibraryType = LibraryType.MUSIC_PLAYLIST,
-        language: Language = Language.ENGLISH_US,
+        library_type: LibraryType = LibraryType.MUSIC,
+        language: Language = Language.get_default(),
+        agent: Agent = Agent.get_default(LibraryType.MUSIC),
+        scanner: Scanner = Scanner.get_default(LibraryType.MUSIC),
     ) -> None:
         super().__init__(
             plex_server,
             name,
             library_type,
-            Agent.MUSIC,
-            Scanner.MUSIC,
+            agent,
+            scanner,
             locations,
             language,
-            LibraryPreferencesDTO(),
+            user_request,
+            bootstrap_paths_dto,
         )
         self.playlist_name = playlist_name
-        self.songs = songs
+        self.songs = PathOps.get_local_songs(locations)
 
     def create(self) -> None:
         """
@@ -138,6 +152,43 @@ class Playlist(Library):
 
         return exists
 
+    def download(self) -> None:
+        if self.library_type is LibraryType.MUSIC:
+            # Remove existing playlist.db file
+            self.bootstrap_paths_dto.plexutil_playlists_db_dir.unlink(
+                missing_ok=True
+            )
+
+            music_playlist_dtos = self.get_all_playlists()
+
+            service = SongMusicPlaylistCompositeService(
+                self.bootstrap_paths_dto.plexutil_playlists_db_dir
+            )
+            service.add_many(music_playlist_dtos)
+        else:
+            op_type = "export"
+            raise LibraryUnsupportedError(
+                op_type, library_type=self.library_type
+            )
+
+    def upload(self) -> None:
+        if self.library_type is LibraryType.MUSIC:
+            composite_service = SongMusicPlaylistCompositeService(
+                self.bootstrap_paths_dto.plexutil_playlists_db_dir
+            )
+            playlist_service = MusicPlaylistService(
+                self.bootstrap_paths_dto.plexutil_playlists_db_dir
+            )
+            music_playlist_dtos = composite_service.get(
+                entities=playlist_service.get_all(),
+                tracks=cast("list[Track]", self.query()),
+            )
+
+            for dto in music_playlist_dtos:
+                self.songs = dto.songs
+                self.playlist_name = dto.name
+                self.create()
+
     def get_all_playlists(self) -> list[MusicPlaylistDTO]:
         """
         Gets ALL Playlists in a Library as a list of MusicPlaylistDTO
@@ -173,7 +224,7 @@ class Playlist(Library):
         PlexUtilLogger.get_logger().debug(description)
         return playlists
 
-    def delete_songs(self) -> None:
+    def delete_item(self) -> None:
         """
         Matches provided Songs to Plex Tracks in the playlist and deletes
         the tracks from the playlist
@@ -189,7 +240,7 @@ class Playlist(Library):
         )
         PlexUtilLogger.get_logger().debug(description)
 
-    def add_songs(self) -> None:
+    def add_item(self) -> None:
         """
         Matches provided Songs to Plex Tracks in the library and adds
         the tracks to the plex playlist

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from time import sleep
 from typing import TYPE_CHECKING, cast
 
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
@@ -14,7 +13,9 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
     from plexapi.video import Show
 
-    from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
+    from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
+    from plexutil.enums.user_request import UserRequest
+
 
 from plexutil.core.library import Library
 from plexutil.core.prompt import Prompt
@@ -31,7 +32,8 @@ class TVLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
-        tv_language_manifest_dto: list[TVLanguageManifestDTO],
+        user_request: UserRequest,
+        bootstrap_paths_dto: BootstrapPathsDTO,
         agent: Agent = Agent.get_default(LibraryType.TV),
         scanner: Scanner = Scanner.get_default(LibraryType.TV),
         name: str = LibraryName.TV.value,
@@ -45,8 +47,21 @@ class TVLibrary(Library):
             scanner,
             locations,
             language,
+            user_request,
+            bootstrap_paths_dto,
         )
-        self.tv_language_manifest_dto = tv_language_manifest_dto
+
+    def add_item(self) -> None:
+        raise NotImplementedError
+
+    def delete_item(self) -> None:
+        raise NotImplementedError
+
+    def download(self) -> None:
+        raise NotImplementedError
+
+    def upload(self) -> None:
+        raise NotImplementedError
 
     def create(self) -> None:
         """
@@ -76,11 +91,11 @@ class TVLibrary(Library):
 
         self.plex_server.library.add(
             name=self.name,
-            type=self.library_type.value,
-            agent=self.agent.value,
-            scanner=self.scanner.value,
+            type=self.library_type.get_value(),
+            agent=self.agent.get_value(),
+            scanner=self.scanner.get_value(),
             location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
-            language=self.language.value,
+            language=self.language.get_value(),
         )
 
         description = f"Successfully created: {self.name}"
@@ -123,6 +138,14 @@ class TVLibrary(Library):
 
         show = user_response.value
 
+        languages = Language.get_all()
+        dropdown = [
+            DropdownItemDTO(
+                display_name=language.get_display_name(),
+                value=language.get_value(),
+            )
+            for language in languages
+        ]
         user_response = Prompt.draw_dropdown(
             title="TV Show Language Selection",
             description=f"Pick the language to set for {show.originalTitle}",
@@ -137,8 +160,7 @@ class TVLibrary(Library):
             f"TV Show Language override ({language.value}): "
             f"{show.originalTitle}"
         )
-        PlexUtilLogger.get_logger().info(description)
-        sleep(1)
+        PlexUtilLogger.get_logger().debug(description)
 
     def query(self) -> list[Show]:
         op_type = "QUERY"
@@ -150,44 +172,6 @@ class TVLibrary(Library):
                 description=description,
             )
         return cast("list[Show]", self.get_section().searchShows())
-
-    def get_shows_by_tvdb(self, tvdb_ids: list[int]) -> list[Show]:
-        shows = cast("list[Show]", self.get_section().searchShows())
-
-        description = f"Available Shows in server: {len(shows)!s}"
-        PlexUtilLogger.get_logger().debug(description)
-
-        tvdb_prefix = "tvdb://"
-
-        if not tvdb_ids:
-            return []
-
-        id_shows = {}
-        shows_filtered = []
-
-        for show in shows:
-            description = (
-                f"Evaluating guids for {show.originalTitle}: {show.guids}"
-            )
-            PlexUtilLogger.get_logger().debug(description)
-
-            for guid in show.guids:
-                _id = guid.id
-                if tvdb_prefix in _id:
-                    tvdb = _id.replace(tvdb_prefix, "")
-                    id_shows[int(tvdb)] = show
-
-        for tvdb_id in tvdb_ids:
-            if tvdb_id in id_shows:
-                shows_filtered.append(id_shows[tvdb_id])
-            else:
-                description = (
-                    "WARNING: No show in server matches "
-                    f"the supplied TVDB ID: {tvdb_id!s} in language manifest"
-                )
-                PlexUtilLogger.get_logger().warning(description)
-
-        return shows_filtered
 
     def delete(self) -> None:
         return super().delete()

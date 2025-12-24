@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
     from plexapi.video import Movie
 
+    from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
+    from plexutil.enums.user_request import UserRequest
+
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -27,6 +30,8 @@ class MovieLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
+        user_request: UserRequest,
+        bootstrap_paths_dto: BootstrapPathsDTO,
         language: Language = Language.get_default(),
         agent: Agent = Agent.get_default(LibraryType.MOVIE),
         scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
@@ -40,7 +45,21 @@ class MovieLibrary(Library):
             scanner,
             locations,
             language,
+            user_request,
+            bootstrap_paths_dto,
         )
+
+    def add_item(self) -> None:
+        raise NotImplementedError
+
+    def delete_item(self) -> None:
+        raise NotImplementedError
+
+    def download(self) -> None:
+        raise NotImplementedError
+
+    def upload(self) -> None:
+        raise NotImplementedError
 
     def create(self) -> None:
         """

@@ -4,7 +4,6 @@ import ctypes.wintypes
 import json
 import os
 import platform
-import shutil
 import syslog
 import time
 from pathlib import Path
@@ -187,34 +186,6 @@ class FileImporter(Static):
     @staticmethod
     def get_pyproject() -> dict:
         return toml.load(PathOps.get_project_root().parent / "pyproject.toml")
-
-    @staticmethod
-    def populate_sample(bootstrap_paths_dto: BootstrapPathsDTO) -> None:
-        dst_configs = [
-            x.name for x in bootstrap_paths_dto.config_dir.iterdir()
-        ]
-
-        manifests = (
-            PathOps.get_project_root() / "plexutil" / "sample" / "manifests"
-        )
-
-        preferences = (
-            PathOps.get_project_root() / "plexutil" / "sample" / "preferences"
-        )
-
-        src_configs = [manifests, preferences]
-
-        for src_config in src_configs:
-            for item in src_config.iterdir():
-                if item.is_dir():
-                    continue
-
-                src_file_name = item.name
-
-                if src_file_name in dst_configs:
-                    continue
-
-                shutil.copy2(item, bootstrap_paths_dto.config_dir)
 
     @staticmethod
     def bootstrap() -> BootstrapPathsDTO:

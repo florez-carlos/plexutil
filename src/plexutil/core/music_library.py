@@ -8,7 +8,9 @@ if TYPE_CHECKING:
     from plexapi.audio import Track
     from plexapi.server import PlexServer
 
-    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+    from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
+    from plexutil.enums.user_request import UserRequest
+
 
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
@@ -26,20 +28,36 @@ class MusicLibrary(Library):
         self,
         plex_server: PlexServer,
         locations: list[Path],
-        preferences: LibraryPreferencesDTO,
+        user_request: UserRequest,
+        bootstrap_paths_dto: BootstrapPathsDTO,
+        agent: Agent = Agent.get_default(LibraryType.MOVIE),
+        scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
         name: str = LibraryName.MUSIC.value,
         language: Language = Language.ENGLISH_US,
     ) -> None:
         super().__init__(
-            plex_server,
-            name,
-            LibraryType.MUSIC,
-            Agent.MUSIC,
-            Scanner.MUSIC,
-            locations,
-            language,
-            preferences,
+            plex_server=plex_server,
+            name=name,
+            library_type=LibraryType.MUSIC,
+            agent=agent,
+            scanner=scanner,
+            locations=locations,
+            language=language,
+            user_request=user_request,
+            bootstrap_paths_dto=bootstrap_paths_dto,
         )
+
+    def add_item(self) -> None:
+        raise NotImplementedError
+
+    def delete_item(self) -> None:
+        raise NotImplementedError
+
+    def download(self) -> None:
+        raise NotImplementedError
+
+    def upload(self) -> None:
+        raise NotImplementedError
 
     def create(self) -> None:
         """
@@ -76,7 +94,7 @@ class MusicLibrary(Library):
             scanner=Scanner.MUSIC.value,
             language=self.language.value,
             location=self.locations,
-            prefs=self.preferences.music,
+            # prefs=self.preferences.music,
         )
 
         part = query_builder.build()
