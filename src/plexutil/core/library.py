@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from plexapi.exceptions import NotFound
@@ -9,6 +10,7 @@ from plexapi.exceptions import NotFound
 from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
+from plexutil.enums.library_name import LibraryName
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.library_illegal_state_error import (
@@ -26,8 +28,6 @@ from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from plexapi.audio import Track
     from plexapi.library import LibrarySection
     from plexapi.server import PlexServer
@@ -125,6 +125,49 @@ class Library(ABC):
     @abstractmethod
     def create(self) -> None:
         raise NotImplementedError
+
+    def assign_language(self) -> None:
+        """
+        Ask user for Library Language, or use Default in none provided
+
+        Returns:
+            None: This method does not return a value.
+        """
+        self.language = Prompt.confirm_language() or Language.get_default()
+
+    def assign_locations(self) -> None:
+        """
+        Ask user for Library Locations, or use CWD in none provided
+
+        Returns:
+            None: This method does not return a value.
+        """
+        locations = Prompt.confirm_text(
+            "Locations",
+            "Type Locations for this Library, separated by comma",
+            "Locations",
+        )
+        if locations:
+            locations = [Path(location) for location in locations]
+        else:
+            locations = [Path.cwd()]
+
+    def assign_name(self) -> None:
+        """
+        Ask user for a Library Name or set a Default Name
+        if none provided
+
+        Returns:
+            None: This method does not return a value.
+        """
+        text = Prompt.confirm_text(
+            "Library Name", "Type a name for the Library", "Library Name?: "
+        )
+        self.name = (
+            text[0]
+            if text
+            else LibraryName.get_default(self.library_type).value
+        )
 
     @abstractmethod
     def delete(self) -> None:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
@@ -31,9 +32,9 @@ class TVLibrary(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        locations: list[Path],
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
+        locations: list[Path] = field(default_factory=list),
         agent: Agent = Agent.get_default(LibraryType.TV),
         scanner: Scanner = Scanner.get_default(LibraryType.TV),
         name: str = LibraryName.TV.value,

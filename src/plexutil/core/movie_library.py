@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
@@ -29,24 +30,24 @@ class MovieLibrary(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        locations: list[Path],
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
+        locations: list[Path] = field(default_factory=list),
         language: Language = Language.get_default(),
         agent: Agent = Agent.get_default(LibraryType.MOVIE),
         scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
-        name: str = LibraryName.MOVIE.value,
+        name: str = LibraryName.get_default(LibraryType.MOVIE).value,
     ) -> None:
         super().__init__(
-            plex_server,
-            name,
-            LibraryType.MOVIE,
-            agent,
-            scanner,
-            locations,
-            language,
-            user_request,
-            bootstrap_paths_dto,
+            plex_server=plex_server,
+            name=name,
+            library_type=LibraryType.MOVIE,
+            agent=agent,
+            scanner=scanner,
+            locations=locations,
+            language=language,
+            user_request=user_request,
+            bootstrap_paths_dto=bootstrap_paths_dto,
         )
 
     def add_item(self) -> None:
@@ -77,6 +78,8 @@ class MovieLibrary(Library):
 
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
+        super().assign_name()
+
         if self.exists():
             description = f"Movie Library '{self.name}' already exists"
             raise LibraryOpError(
@@ -84,6 +87,9 @@ class MovieLibrary(Library):
                 library_type=LibraryType.MOVIE,
                 description=description,
             )
+
+        super().assign_locations()
+        super().assign_language()
 
         self.plex_server.library.add(
             name=self.name,

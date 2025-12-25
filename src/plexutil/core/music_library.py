@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
@@ -27,9 +28,9 @@ class MusicLibrary(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        locations: list[Path],
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
+        locations: list[Path] = field(default_factory=list),
         agent: Agent = Agent.get_default(LibraryType.MOVIE),
         scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
         name: str = LibraryName.MUSIC.value,

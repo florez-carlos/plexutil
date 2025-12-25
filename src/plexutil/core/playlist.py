@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
 from plexutil.exception.library_unsupported_error import (
@@ -39,11 +40,11 @@ class Playlist(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        locations: list[Path],
         playlist_name: str,
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
-        name: str = LibraryName.MUSIC.value,
+        locations: list[Path] = field(default_factory=list),
+        name: str = LibraryName.get_default(LibraryType.MUSIC).value,
         library_type: LibraryType = LibraryType.MUSIC,
         language: Language = Language.get_default(),
         agent: Agent = Agent.get_default(LibraryType.MUSIC),

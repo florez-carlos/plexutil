@@ -1,24 +1,18 @@
 from __future__ import annotations
 
 import argparse
-import pathlib
 import sys
 from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
 
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
-from plexutil.dto.server_config_dto import ServerConfigDTO
-from plexutil.dto.user_instructions_dto import UserInstructionsDTO
-from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
-from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
 )
-from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.file_importer import FileImporter
@@ -27,7 +21,7 @@ from plexutil.util.icons import Icons
 
 class Prompt(Static):
     @staticmethod
-    def get_user_instructions_dto() -> UserInstructionsDTO:
+    def get_user_request() -> UserRequest:
         parser = argparse.ArgumentParser(
             description="Plexutil", formatter_class=RawTextHelpFormatter
         )
@@ -46,133 +40,6 @@ class Prompt(Static):
         )
 
         parser.add_argument(
-            "-s",
-            "--songs",
-            metavar="songs",
-            nargs="+",
-            help=(
-                "Songs to be passed to a musical request, "
-                'i.e create_music_playlist --songs "path/to/song"'
-                '" path_to_song"'
-            ),
-            default=[],
-        )
-
-        parser.add_argument(
-            "-pn",
-            "--playlist_name",
-            metavar="Playlist Name",
-            type=str,
-            nargs="+",
-            help=("Name of the playlist"),
-            default=[],
-        )
-
-        parser.add_argument(
-            "-loc",
-            "--locations",
-            metavar="Library Locations",
-            type=pathlib.Path,
-            nargs="+",
-            help="Library Locations",
-            default=[],
-        )
-
-        parser.add_argument(
-            "-libn",
-            "--library_name",
-            metavar="Library Name",
-            type=str,
-            nargs="+",
-            help="Library Name",
-            default=[],
-        )
-
-        parser.add_argument(
-            "-t",
-            "--library_type",
-            metavar="Library Type",
-            type=str,
-            nargs="+",
-            help="Library Type",
-            default=[],
-        )
-
-        parser.add_argument(
-            "-scanner",
-            "--library_scanner",
-            metavar="Scanner",
-            type=str,
-            nargs="+",
-            help="Library Scanner",
-            default=[],
-        )
-
-        parser.add_argument(
-            "-agent",
-            "--library_agent",
-            metavar="Agent",
-            type=str,
-            nargs="+",
-            help="Library Agent",
-            default=[],
-        )
-
-        parser.add_argument(
-            "-l",
-            "--language",
-            metavar="Library Language",
-            type=str,
-            nargs="+",
-            help="Library Language",
-            default=[],
-        )
-
-        parser.add_argument(
-            "-host",
-            "--plex_server_host",
-            metavar="Plex Server Host",
-            type=str,
-            nargs="?",
-            help="Plex server host e.g. localhost",
-        )
-
-        parser.add_argument(
-            "-port",
-            "--plex_server_port",
-            metavar="Plex Server Port",
-            type=int,
-            nargs="?",
-            help="Plex server port e.g. 32400",
-        )
-
-        parser.add_argument(
-            "-token",
-            "--plex_server_token",
-            metavar="Plex Server Token",
-            type=str,
-            nargs="?",
-            help=(
-                "Fetch the token by listening for an"
-                "(X-Plex-Token) query parameter"
-            ),
-        )
-
-        parser.add_argument(
-            "-sc",
-            "--show_configuration",
-            action="store_true",
-            help=("Displays host,port"),
-        )
-
-        parser.add_argument(
-            "-sct",
-            "--show_configuration_token",
-            action="store_true",
-            help=("Displays host,port,token"),
-        )
-
-        parser.add_argument(
             "-v",
             "--version",
             action="store_true",
@@ -185,27 +52,7 @@ class Prompt(Static):
             raise UnexpectedArgumentError(unknown)
 
         request = args.request
-        songs = args.songs
-        playlist_name = args.playlist_name
         is_version = args.version
-        is_show_configuration = args.show_configuration
-        is_show_configuration_token = args.show_configuration_token
-        language = args.language
-        plex_server_host = args.plex_server_host
-        plex_server_port = args.plex_server_port
-        plex_server_token = args.plex_server_token
-        locations = args.locations
-        scanner = args.library_scanner
-        agent = args.library_agent
-        library_type = args.library_type
-        library_name = args.library_name
-
-        playlist_name = " ".join(playlist_name) if playlist_name else ""
-        library_name = " ".join(library_name) if library_name else ""
-        library_type = " ".join(library_type) if library_type else ""
-        language = " ".join(language) if language else ""
-        scanner = " ".join(scanner) if scanner else ""
-        agent = " ".join(agent) if agent else ""
 
         if is_version:
             plexutil_version = ""
@@ -220,68 +67,12 @@ class Prompt(Static):
             PlexUtilLogger.get_logger().info(plexutil_version)
             sys.exit(0)
 
-        if request:
-            request = UserRequest.get_user_request_from_str(request)
-            if library_type:
-                library_type = LibraryType.get_from_str(library_type)
-            else:
-                library_type = Prompt.confirm_library_type()
-            if language:
-                language = Language.get_from_str(language)
-            else:
-                language = Prompt.confirm_language()
-            scanner = (
-                Scanner.get_from_str(scanner, library_type)
-                if scanner
-                else Scanner.get_default(library_type)
-            )
-            agent = (
-                Agent.get_from_str(agent, library_type)
-                if agent
-                else Agent.get_default(library_type)
-            )
-        else:
-            description = "Cannot continue without a request, see -h"
-            raise UserError(description)
-
-        server_config_dto = ServerConfigDTO(
-            host=plex_server_host,
-            port=plex_server_port,
-            token=plex_server_token,
-        )
-
         debug = (
-            "Received a User Request:\n"
-            f"Request: {request.value if request else None}\n"
-            f"Songs: {songs!s}\n"
-            f"Playlist Name: {playlist_name}\n"
-            f"Host: {plex_server_host}\n"
-            f"Port: {plex_server_port}\n"
-            f"show config: {is_show_configuration!s}\n"
-            f"show config token: {is_show_configuration_token!s}\n"
-            f"Language: {language.get_value()}\n"
-            f"Locations: {locations!s}\n"
-            f"Library Name: {library_name}\n"
-            f"Library Type: {library_type.get_value()}\n"
-            f"Scanner: {scanner.get_value()}\n"
-            f"Agent: {agent.get_value()}\n"
+            f"Received a User Request: {request.value if request else None}\n"
         )
         PlexUtilLogger.get_logger().debug(debug)
 
-        return UserInstructionsDTO(
-            request=request,
-            is_show_configuration=is_show_configuration,
-            is_show_configuration_token=is_show_configuration_token,
-            library_type=library_type,
-            library_name=library_name,
-            playlist_name=playlist_name,
-            songs=songs,
-            locations=locations,
-            server_config_dto=server_config_dto,
-            language=language,
-            scanner=scanner,
-            agent=agent,
-        )
+        return request
 
     @staticmethod
     def confirm_library_setting(
@@ -404,6 +195,33 @@ class Prompt(Static):
         )
 
         return Language.get_from_str(response.display_name)
+
+    @staticmethod
+    def confirm_text(title: str, description: str, question: str) -> list[str]:
+        """
+        Prompts the user for text,
+        expects one or multiple entries separated by ,
+
+        Args:
+            title (str): Top banner title
+            description (str): Helpful text
+            question (str): Question
+
+        Returns:
+            str: The User's response
+        """
+        response = (
+            input(
+                f"\n========== {title} ==========\n"
+                f"{description}\n"
+                f"{question}?: "
+            )
+            .strip()
+            .split(",")
+        )
+        description = f"User Response: {response}"
+        PlexUtilLogger.get_logger().debug(description)
+        return response
 
     @staticmethod
     def draw_dropdown(
