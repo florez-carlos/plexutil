@@ -72,7 +72,7 @@ class Prompt(Static):
         )
         PlexUtilLogger.get_logger().debug(debug)
 
-        return request
+        return UserRequest.get_user_request_from_str(request)
 
     @staticmethod
     def confirm_library_setting(
