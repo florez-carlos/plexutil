@@ -222,12 +222,11 @@ class FileImporter(Static):
                 raise OSError(description)  # noqa: TRY301
 
             plexutil_dir = Path(home_folder) / "plexutil"
-            config_dir = plexutil_dir / "config"
+            auth_dir = plexutil_dir / "auth"
             log_dir = plexutil_dir / "log"
-            plexutil_config_file = config_dir / "config.json"
 
             plexutil_dir.mkdir(exist_ok=True)
-            config_dir.mkdir(exist_ok=True)
+            auth_dir.mkdir(exist_ok=True)
             log_dir.mkdir(exist_ok=True)
 
             log_config_file_path = (
@@ -242,10 +241,12 @@ class FileImporter(Static):
             PlexUtilLogger(log_dir, log_config)
 
             return BootstrapPathsDTO(
-                config_dir=config_dir,
+                auth_dir=auth_dir,
                 log_dir=log_dir,
-                plexutil_config_file=plexutil_config_file,
-                plexutil_playlists_db_dir=config_dir / "playlists.db",
+                private_key_dir=auth_dir / "private.key",
+                public_key_dir=auth_dir / "public.key",
+                token_dir=auth_dir / "token",
+                plexutil_playlists_db_dir=Path.cwd() / "playlists.db",
             )
 
         except Exception as e:
