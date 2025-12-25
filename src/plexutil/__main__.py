@@ -1,14 +1,11 @@
 import sys
 
 from jsonschema.exceptions import ValidationError
-from peewee import DoesNotExist
-from plexapi.server import PlexServer
 
+from plexutil.core.auth import Auth
 from plexutil.core.library_factory import LibraryFactory
 from plexutil.core.prompt import Prompt
-from plexutil.core.server_config import ServerConfig
-from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
-from plexutil.enums.user_request import UserRequest
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -27,85 +24,28 @@ from plexutil.exception.unexpected_argument_error import (
 from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
-from plexutil.util.plex_ops import PlexOps
 
 
 def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
-        instructions_dto = Prompt.get_user_instructions_dto()
-        request = instructions_dto.request
-        server_config_dto = instructions_dto.server_config_dto
-        config = ServerConfig(bootstrap_paths_dto, server_config_dto)
+        user_request = Prompt.get_user_request()
+        auth = Auth().get_resources(bootstrap_paths_dto)
+        dropdown = [
+            DropdownItemDTO(display_name=f"{x.name} - {x.device}", value=x)
+            for x in auth
+        ]
+        user_response = Prompt.draw_dropdown(
+            "Available Servers", "Choose a server to connect to", dropdown
+        )
+        plex_server = user_response.value.connect()
 
-        if request == UserRequest.CONFIG:
-            server_config_dto = config.save()
-            sys.exit(0)
-        else:
-            try:
-                server_config_dto = config.get()
-            except DoesNotExist as e:
-                description = "No Server Config found"
-                raise ServerConfigError(description) from e
-
-        host = server_config_dto.host
-        port = server_config_dto.port
-        token = server_config_dto.token
-
-        if (
-            instructions_dto.is_show_configuration
-            | instructions_dto.is_show_configuration_token
-        ):
-            if request:
-                description = (
-                    f"Received a request: '{request.value}' but also a call "
-                    f"to show configuration?\n"
-                    f"plexutil -sc OR plexutil -sct to show the token\n"
-                )
-
-                raise UserError(description)  # noqa: TRY301
-
-            description = (
-                "\n=====Server Configuration=====\n"
-                "To update the configuration: plexutil config -token ...\n\n"
-                f"Host: {host}\n"
-                f"Port: {port}\n"
-                f"Token: "
-            )
-            if instructions_dto.is_show_configuration_token:
-                description = (
-                    description + f"{token if token else 'NOT SUPPLIED'}\n"
-                )
-            else:
-                description = (
-                    description + "\n\nINFO: To show token use"
-                    "--show_configuration_token\n"
-                )
-
-            PlexUtilLogger.get_console_logger().info(description)
-
-            sys.exit(0)
-
-        if not token:
-            description = (
-                "Plex Token has not been supplied, cannot continue\n"
-                "Set a token -> plexutil config -token ..."
-            )
-            raise ServerConfigError(description)  # noqa: TRY301
-
-        baseurl = f"http://{host}:{port}"
-        plex_server = PlexServer(baseurl, token)
-
-        if instructions_dto.request is UserRequest.SET_SERVER_SETTINGS:
-            preferences_dto = LibraryPreferencesDTO()
-            PlexOps.set_server_settings(plex_server, preferences_dto)
-        else:
-            library = LibraryFactory.get(
-                user_instructions_dto=instructions_dto,
-                plex_server=plex_server,
-                bootstrap_paths_dto=bootstrap_paths_dto,
-            )
-            library.do()
+        library = LibraryFactory.get(
+            user_request=user_request,
+            plex_server=plex_server,
+            bootstrap_paths_dto=bootstrap_paths_dto,
+        )
+        library.do()
 
     except SystemExit as e:
         if e.code == 0:

@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 import ctypes.wintypes
-import json
 import os
 import platform
 import syslog
-import time
 from pathlib import Path
 
 import toml
-from jsonschema import validate
 
-from plexutil.dto.tv_language_manifest_dto import TVLanguageManifestDTO
-from plexutil.enums.language import Language
 from plexutil.exception.bootstrap_error import BootstrapError
 
 if platform.system() == "Windows":
@@ -22,7 +17,6 @@ if platform.system() == "Windows":
 import yaml
 
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
-from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.path_ops import PathOps
@@ -30,151 +24,6 @@ from plexutil.util.path_ops import PathOps
 
 class FileImporter(Static):
     encoding = "utf-8"
-
-    @staticmethod
-    def get_library_preferences_dto(
-        config_dir: Path,
-    ) -> LibraryPreferencesDTO:
-        music_preferences_file_location = (
-            config_dir / "music_library_preferences.json"
-        )
-        movie_preferences_file_location = (
-            config_dir / "movie_library_preferences.json"
-        )
-        tv_preferences_file_location = (
-            config_dir / "tv_library_preferences.json"
-        )
-        plex_server_setting_prefs_file_location = (
-            config_dir / "plex_server_setting_preferences.json"
-        )
-        music_prefs = {}
-        movie_prefs = {}
-        tv_prefs = {}
-        plex_server_setting_prefs = {}
-
-        preferences_schema_file_location = (
-            PathOps.get_project_root()
-            / "plexutil"
-            / "schemas"
-            / "v1"
-            / "preferences_schema.json"
-        )
-        with preferences_schema_file_location.open(
-            encoding=FileImporter.encoding
-        ) as file:
-            schema_dict = json.load(file)
-
-        try:
-            with music_preferences_file_location.open(
-                encoding=FileImporter.encoding,
-            ) as file:
-                music_prefs = json.load(file)
-                validate(instance=music_prefs, schema=schema_dict)
-        except FileNotFoundError:
-            description = (
-                "Music Library Preferences not found. "
-                "Proceeding with no music preferences\n"
-            )
-            PlexUtilLogger.get_logger().info(description)
-            time.sleep(2)
-            music_prefs = {}
-
-        try:
-            with movie_preferences_file_location.open(
-                encoding=FileImporter.encoding,
-            ) as file:
-                movie_prefs = json.load(file)
-                validate(instance=movie_prefs, schema=schema_dict)
-        except FileNotFoundError:
-            description = (
-                "Movie Library Preferences not found. "
-                "Proceeding with no movie preferences\n"
-            )
-            PlexUtilLogger.get_logger().info(description)
-            time.sleep(2)
-            movie_prefs = {}
-
-        try:
-            with tv_preferences_file_location.open(
-                encoding=FileImporter.encoding
-            ) as file:
-                tv_prefs = json.load(file)
-                validate(instance=tv_prefs, schema=schema_dict)
-        except FileNotFoundError:
-            description = (
-                "TV Library Preferences not found. "
-                "Proceeding with no tv preferences\n"
-            )
-            PlexUtilLogger.get_logger().info(description)
-            time.sleep(2)
-            tv_prefs = {}
-
-        try:
-            with plex_server_setting_prefs_file_location.open(
-                encoding=FileImporter.encoding,
-            ) as file:
-                plex_server_setting_prefs = json.load(file)
-                validate(
-                    instance=plex_server_setting_prefs, schema=schema_dict
-                )
-        except FileNotFoundError:
-            description = (
-                "Plex Server Setting Preferences not found. "
-                "Proceeding with no plex server setting preferences\n"
-            )
-            PlexUtilLogger.get_logger().info(description)
-            time.sleep(2)
-            plex_server_setting_prefs = {}
-
-        return LibraryPreferencesDTO(
-            music_prefs,
-            movie_prefs,
-            tv_prefs,
-            plex_server_setting_prefs,
-        )
-
-    @staticmethod
-    def get_tv_language_manifest(
-        config_dir: Path,
-    ) -> list[TVLanguageManifestDTO]:
-        tv_language_manifest_file_location = (
-            config_dir / "tv_language_manifest.json"
-        )
-        tv_language_manifest_schema_file_location = (
-            PathOps.get_project_root()
-            / "plexutil"
-            / "schemas"
-            / "v1"
-            / "tv_language_manifest_schema.json"
-        )
-        with tv_language_manifest_schema_file_location.open(
-            encoding=FileImporter.encoding
-        ) as file:
-            schema_dict = json.load(file)
-
-        try:
-            with tv_language_manifest_file_location.open(
-                encoding=FileImporter.encoding
-            ) as file:
-                file_dict = json.load(file)
-                validate(instance=file_dict, schema=schema_dict)
-                tv_language_manifests_dto = []
-                for language, ids in file_dict.items():
-                    lang = Language.get_from_str(language)
-                    tv_language_manifests_dto.append(
-                        TVLanguageManifestDTO(language=lang, ids=ids)
-                    )
-                return tv_language_manifests_dto
-
-        except FileNotFoundError:
-            description = (
-                "TV Language Manifest not found. "
-                "Proceeding with no language manifest\n"
-            )
-            PlexUtilLogger.get_logger().info(description)
-            time.sleep(2)
-
-        return []
 
     @staticmethod
     def get_logging_config(logging_config_path: Path) -> dict:
@@ -186,6 +35,18 @@ class FileImporter(Static):
     @staticmethod
     def get_pyproject() -> dict:
         return toml.load(PathOps.get_project_root().parent / "pyproject.toml")
+
+    @staticmethod
+    def get_jwt(location: Path) -> str:
+        with location.open(encoding=FileImporter.encoding) as file:
+            return file.read()
+
+    @staticmethod
+    def save_jwt(location: Path, token: str) -> None:
+        with location.open(
+            "w", errors="strict", encoding=FileImporter.encoding
+        ) as file:
+            file.write(token)
 
     @staticmethod
     def bootstrap() -> BootstrapPathsDTO:
