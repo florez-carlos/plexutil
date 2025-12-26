@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes.wintypes
+import json
 import os
 import platform
 import syslog
@@ -37,16 +38,20 @@ class FileImporter(Static):
         return toml.load(PathOps.get_project_root().parent / "pyproject.toml")
 
     @staticmethod
-    def get_jwt(location: Path) -> str:
+    def get_jwt(location: Path) -> tuple[str, str]:
         with location.open(encoding=FileImporter.encoding) as file:
-            return file.read()
+            data = json.load(file)
+            return (data["token"], data["client_identifier"])
 
     @staticmethod
-    def save_jwt(location: Path, token: str) -> None:
+    def save_jwt(location: Path, token: str, client_dentifier: str) -> None:
+        data = {}
+        data["token"] = token
+        data["X-Plex-Client-Identifier"] = client_dentifier
         with location.open(
             "w", errors="strict", encoding=FileImporter.encoding
         ) as file:
-            file.write(token)
+            json.dump(data, file, indent=4, ensure_ascii=False)
 
     @staticmethod
     def bootstrap() -> BootstrapPathsDTO:
@@ -106,7 +111,7 @@ class FileImporter(Static):
                 log_dir=log_dir,
                 private_key_dir=auth_dir / "private.key",
                 public_key_dir=auth_dir / "public.key",
-                token_dir=auth_dir / "token",
+                token_dir=auth_dir / "token.json",
                 plexutil_playlists_db_dir=Path.cwd() / "playlists.db",
             )
 

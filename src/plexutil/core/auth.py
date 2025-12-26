@@ -39,7 +39,11 @@ class Auth(Static):
             token = jwt_login.jwtToken
 
             if isinstance(token, str):
-                FileImporter.save_jwt(bootstrap_paths_dto.token_dir, token)
+                FileImporter.save_jwt(
+                    bootstrap_paths_dto.token_dir,
+                    token,
+                    headers["X-Plex-Client-Identifier"],
+                )
             else:
                 description = "Did not receive a token"
                 raise AuthError(description)
@@ -47,16 +51,22 @@ class Auth(Static):
             account = MyPlexAccount(token=token)
             return account.resources()
         else:
-            token = FileImporter.get_jwt(bootstrap_paths_dto.token_dir)
+            token, client_identifier = FileImporter.get_jwt(
+                bootstrap_paths_dto.token_dir
+            )
+            headers["X-Plex-Client-Identifier"] = client_identifier
             jwt_login = MyPlexJWTLogin(
                 token=token,
                 keypair=(f"{private_key_path!s}", f"{public_key_path!s}"),
                 headers=headers,
             )
-            # if not jwt_login.verifyJWT():
-            #     token = jwt_login.refreshJWT()
-            jwt_login.registerDevice()
-            token = jwt_login.refreshJWT()
+            if not jwt_login.verifyJWT():
+                token = jwt_login.refreshJWT()
+                FileImporter.save_jwt(
+                    bootstrap_paths_dto.token_dir,
+                    token,
+                    headers["X-Plex-Client-Identifier"],
+                )
 
             account = MyPlexAccount(token=token)
             return account.resources()
