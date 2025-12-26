@@ -41,7 +41,7 @@ class FileImporter(Static):
     def get_jwt(location: Path) -> tuple[str, str]:
         with location.open(encoding=FileImporter.encoding) as file:
             data = json.load(file)
-            return (data["token"], data["client_identifier"])
+            return (data["token"], data["X-Plex-Client-Identifier"])
 
     @staticmethod
     def save_jwt(location: Path, token: str, client_dentifier: str) -> None:
