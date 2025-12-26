@@ -30,7 +30,7 @@ def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
         user_request = Prompt.get_user_request()
-        auth = Auth().get_resources(bootstrap_paths_dto)
+        auth = Auth.get_resources(bootstrap_paths_dto)
         dropdown = [
             DropdownItemDTO(display_name=f"{x.name} - {x.device}", value=x)
             for x in auth
