@@ -126,6 +126,7 @@ class Prompt(Static):
                         f"{Icons.WARNING} Did not understand your input: "
                         f"{response} | Proceeding with default"
                     )
+                    user_response = library_setting.user_response
 
                 PlexUtilLogger.get_logger().warning(description)
 
