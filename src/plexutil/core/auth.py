@@ -1,4 +1,5 @@
 import uuid
+from importlib.metadata import PackageNotFoundError, version
 
 from plexapi.myplex import MyPlexAccount, MyPlexJWTLogin, MyPlexResource
 
@@ -18,8 +19,17 @@ class Auth(Static):
         public_key_path = bootstrap_paths_dto.public_key_dir
         token_path = bootstrap_paths_dto.token_dir
 
+        try:
+            plexutil_version = version("plexutil")
+
+        except PackageNotFoundError:
+            pyproject = FileImporter.get_pyproject()
+            plexutil_version = pyproject["project"]["version"]
+
         headers = {}
         headers["X-Plex-Client-Identifier"] = f"{uuid.uuid4()!s}"
+        headers["X-Plex-Product"] = f"Plexutil {plexutil_version} via Plexapi"
+        headers["X-Plex-Version"] = plexutil_version
 
         if (
             not private_key_path.exists()
