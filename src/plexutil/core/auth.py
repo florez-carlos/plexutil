@@ -31,10 +31,10 @@ class Auth(Static):
                 keyfiles=(f"{private_key_path!s}", f"{public_key_path!s}"),
                 overwrite=True,
             )
+            jwt_login.run()
             url = jwt_login.oauthUrl()
             description = f"\n========== Login ==========\nLogin here: {url}\n"
             PlexUtilLogger.get_console_logger().info(description)
-            jwt_login.run()
             jwt_login.waitForLogin()
             token = jwt_login.jwtToken
 
