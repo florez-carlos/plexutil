@@ -148,9 +148,9 @@ class Library(ABC):
             "Locations",
         )
         if locations:
-            locations = [Path(location) for location in locations]
+            self.locations = [Path(location) for location in locations]
         else:
-            locations = [Path.cwd()]
+            self.locations = [Path.cwd()]
 
     def assign_name(self) -> None:
         """
