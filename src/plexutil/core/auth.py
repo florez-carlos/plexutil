@@ -53,6 +53,8 @@ class Auth(Static):
                 keypair=(f"{private_key_path!s}", f"{public_key_path!s}"),
                 headers=headers,
             )
+            # if not jwt_login.verifyJWT():
+            #     token = jwt_login.refreshJWT()
             jwt_login.registerDevice()
             token = jwt_login.refreshJWT()
 

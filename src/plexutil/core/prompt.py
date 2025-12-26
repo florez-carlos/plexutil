@@ -162,7 +162,7 @@ class Prompt(Static):
         items = [
             DropdownItemDTO(
                 display_name=library.get_display_name(),
-                value=library.get_value(),
+                value=library,
             )
             for library in libraries
         ]
@@ -172,7 +172,7 @@ class Prompt(Static):
             dropdown=items,
         )
 
-        return LibraryType.get_from_str(response.display_name)
+        return response.value
 
     @staticmethod
     def confirm_language() -> Language:
@@ -180,7 +180,7 @@ class Prompt(Static):
         items = [
             DropdownItemDTO(
                 display_name=language.get_display_name(),
-                value=language.get_value(),
+                value=language,
             )
             for language in languages
         ]
@@ -192,7 +192,7 @@ class Prompt(Static):
             is_multi_column=True,
         )
 
-        return Language.get_from_str(response.display_name)
+        return response.value
 
     @staticmethod
     def confirm_text(title: str, description: str, question: str) -> list[str]:

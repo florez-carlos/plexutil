@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from plexutil.core.prompt import Prompt
-from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.exception.library_unsupported_error import (
     LibraryUnsupportedError,
 )
@@ -30,17 +29,7 @@ class LibraryFactory(Static):
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> Library:
-        library_types = LibraryType.get_all()
-        dropdown = [
-            DropdownItemDTO(
-                display_name=x.get_display_name(), value=x.get_value()
-            )
-            for x in library_types
-        ]
-        response = Prompt.draw_dropdown(
-            "Choose the Library Type", "Available Library Types", dropdown
-        )
-        library_type = response.value
+        library_type = Prompt.confirm_library_type()
 
         match library_type:
             case LibraryType.MOVIE:
