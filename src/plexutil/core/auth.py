@@ -1,3 +1,5 @@
+import uuid
+
 from plexapi.myplex import MyPlexAccount, MyPlexJWTLogin, MyPlexResource
 
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
@@ -16,14 +18,15 @@ class Auth(Static):
         public_key_path = bootstrap_paths_dto.public_key_dir
         token_path = bootstrap_paths_dto.token_dir
 
+        headers = {}
+        headers["X-Plex-Client-Identifier"] = f"{uuid.uuid4()!s}"
+
         if (
             not private_key_path.exists()
             or not public_key_path.exists()
             or not token_path.exists()
         ):
-            jwt_login = MyPlexJWTLogin(
-                oauth=True,
-            )
+            jwt_login = MyPlexJWTLogin(oauth=True, headers=headers)
             jwt_login.generateKeypair(
                 keyfiles=(f"{private_key_path!s}", f"{public_key_path!s}"),
                 overwrite=True,
@@ -48,6 +51,7 @@ class Auth(Static):
             jwt_login = MyPlexJWTLogin(
                 token=token,
                 keypair=(f"{private_key_path!s}", f"{public_key_path!s}"),
+                headers=headers,
             )
             jwt_login.registerDevice()
             token = jwt_login.refreshJWT()
