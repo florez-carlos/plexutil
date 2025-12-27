@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from plexapi.exceptions import NotFound
 
 from plexutil.core.prompt import Prompt
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
@@ -247,12 +248,25 @@ class Library(ABC):
         op_type = "DELETE"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        self.assign_name()
+        sections = self.get_sections()
+
+        dropdown = [
+            DropdownItemDTO(
+                display_name=section.title,
+                value=section,
+            )
+            for section in sections
+        ]
+        user_response = Prompt.draw_dropdown(
+            title="Library Delete Selection",
+            description="Choose the Library to DELETE",
+            dropdown=dropdown,
+        )
 
         try:
-            self.get_section().delete()
+            user_response.value.delete()
         except LibrarySectionMissingError as e:
-            description = f"Does not exist: {self.name}"
+            description = f"Does not exist: {user_response.value.title}"
             raise LibraryOpError(
                 op_type=op_type,
                 description=description,
@@ -426,7 +440,27 @@ class Library(ABC):
             LibrarySectionMissingError: If no library of the same
             type and name exist
         """
+        filtered_sections = self.get_sections()
 
+        for filtered_section in filtered_sections:
+            if filtered_section.title == self.name:
+                return filtered_section
+
+        if self.name:
+            description = f"Library not found: {self.name}"
+        else:
+            description = "Library Name (-libn) not specified, see -h"
+        raise LibrarySectionMissingError(description)
+
+    def get_sections(self) -> list[LibrarySection]:
+        """
+        Gets an up-to-date list of all Sections for this LibraryType
+
+        Returns:
+            list[LibrarySection]: A current list of all Sections
+            for this LibraryType
+
+        """
         time.sleep(2)  # Slow devices
         sections = self.plex_server.library.sections()
 
@@ -445,16 +479,7 @@ class Library(ABC):
 
         description = f"Filtered Sections: {filtered_sections!s}"
         PlexUtilLogger.get_logger().debug(description)
-
-        for filtered_section in filtered_sections:
-            if filtered_section.title == self.name:
-                return filtered_section
-
-        if self.name:
-            description = f"Library not found: {self.name}"
-        else:
-            description = "Library Name (-libn) not specified, see -h"
-        raise LibrarySectionMissingError(description)
+        return filtered_sections
 
     def __get_local_files(
         self,
