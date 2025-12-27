@@ -247,6 +247,8 @@ class Library(ABC):
         op_type = "DELETE"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
+        self.assign_name()
+
         try:
             self.get_section().delete()
         except LibrarySectionMissingError as e:
