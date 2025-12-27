@@ -31,6 +31,7 @@ def main() -> None:
         dropdown = [
             DropdownItemDTO(display_name=f"{x.name} - {x.device}", value=x)
             for x in auth
+            if x.product == "Plex Media Server"
         ]
         user_response = Prompt.draw_dropdown(
             "Available Servers", "Choose a server to connect to", dropdown
