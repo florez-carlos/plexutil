@@ -127,7 +127,7 @@ class MusicLibrary(Library):
                     )
                 )
 
-            self.set_settings(settings=library_settings)
+            super().set_settings(settings=library_settings)
             self.get_section().refresh()
         else:
             description = "Malformed Music Query"
