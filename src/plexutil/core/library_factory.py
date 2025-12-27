@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 from plexutil.core.movie_library import MovieLibrary
 from plexutil.core.music_library import MusicLibrary
-from plexutil.core.playlist import Playlist
 from plexutil.core.tv_library import TVLibrary
 from plexutil.static import Static
 

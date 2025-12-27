@@ -354,9 +354,10 @@ class Library(ABC):
             DropdownItemDTO(display_name=section.title, value=section)
             for section in sections
         ]
+        library_type_name = self.library_type.get_display_name()
         Prompt.draw_dropdown(
-            f"{self.library_type}",
-            "Available",
+            f"{library_type_name}",
+            f"Displaying Available {library_type_name} Libraries",
             dropdown=dropdown,
             expect_input=False,
         )
@@ -537,7 +538,7 @@ class Library(ABC):
             for this LibraryType
 
         """
-        time.sleep(2)  # Slow devices
+        time.sleep(1)  # Slow devices need more time
         sections = self.plex_server.library.sections()
 
         description = (

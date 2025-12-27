@@ -215,7 +215,10 @@ class Prompt(Static):
             f"\n========== {title} ==========\n"
             f"\n{description}\n"
             f"Available Options:\n"
-            f"(Default: {dropdown[0].display_name})\n\n"
+            if expect_input
+            else f"(Default: {dropdown[0].display_name})\n\n"
+            if expect_input
+            else ""
         )
         dropdown_count = 1
         columns_count = 1
