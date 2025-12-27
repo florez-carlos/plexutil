@@ -9,8 +9,6 @@ from pathlib import Path
 
 import toml
 
-from plexutil.exception.bootstrap_error import BootstrapError
-
 if platform.system() == "Windows":
     import win32evtlog  # pyright: ignore # noqa: PGH003
     import win32evtlogutil  # pyright: ignore # noqa: PGH003
@@ -76,12 +74,6 @@ class FileImporter(Static):
                 home_folder = os.getenv("HOME") or ""
                 session = os.getenv("XDG_SESSION_TYPE") or ""
                 session = session.lower()
-
-                if not session.startswith("x11") and not session.startswith(
-                    "wayland"
-                ):
-                    description = "Graphical session REQUIRED (X11/Wayland)."
-                    raise BootstrapError(description)  # noqa: TRY301
 
             else:
                 description = f"Unsupported OS: {system}"
