@@ -245,7 +245,7 @@ class Prompt(Static):
 
         PlexUtilLogger.get_console_logger().info(description)
         if not expect_input:
-            sys.exit(0)
+            return DropdownItemDTO()
         response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
 
         user_response = 0

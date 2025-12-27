@@ -349,13 +349,16 @@ class Library(ABC):
         return True
 
     def display(self) -> None:
-        items = self.query()
+        sections = self.get_sections()
         dropdown = [
-            DropdownItemDTO(display_name=item.originalTitle, value=item)
-            for item in items
+            DropdownItemDTO(display_name=section.title, value=section)
+            for section in sections
         ]
         Prompt.draw_dropdown(
-            f"{self.library_type}", "Available", dropdown=dropdown
+            f"{self.library_type}",
+            "Available",
+            dropdown=dropdown,
+            expect_input=False,
         )
 
     def error_if_exists(self) -> None:
