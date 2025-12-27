@@ -21,15 +21,13 @@ if TYPE_CHECKING:
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
     from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
     from plexutil.dto.song_dto import SongDTO
-    from plexutil.enums.user_request import UserRequest
-
-
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
+from plexutil.enums.user_request import UserRequest
 from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
 from plexutil.plex_util_logger import PlexUtilLogger
@@ -51,15 +49,22 @@ class Playlist(Library):
         scanner: Scanner = Scanner.get_default(LibraryType.MUSIC),
     ) -> None:
         super().__init__(
-            plex_server,
-            name,
-            library_type,
-            agent,
-            scanner,
-            locations,
-            language,
-            user_request,
-            bootstrap_paths_dto,
+            supported_requests=[
+                UserRequest.CREATE,
+                UserRequest.DELETE,
+                UserRequest.DISPLAY,
+                UserRequest.UPLOAD,
+                UserRequest.DOWNLOAD,
+            ],
+            plex_server=plex_server,
+            name=name,
+            library_type=library_type,
+            agent=agent,
+            scanner=scanner,
+            locations=locations,
+            language=language,
+            user_request=user_request,
+            bootstrap_paths_dto=bootstrap_paths_dto,
         )
         self.playlist_name = playlist_name
         self.songs = PathOps.get_local_songs(locations)

@@ -38,7 +38,11 @@ class MusicLibrary(Library):
         language: Language = Language.ENGLISH_US,
     ) -> None:
         super().__init__(
-            supported_requests=[UserRequest.CREATE, UserRequest.DELETE],
+            supported_requests=[
+                UserRequest.CREATE,
+                UserRequest.DELETE,
+                UserRequest.DISPLAY,
+            ],
             plex_server=plex_server,
             name=name,
             library_type=LibraryType.MUSIC,
