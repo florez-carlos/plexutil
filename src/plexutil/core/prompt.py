@@ -279,10 +279,7 @@ class Prompt(Static):
         else:
             PlexUtilLogger.get_logger().warning(description)
 
-        description = (
-            f"Prompt for Library Type Selection | "
-            f"User Chose: {dropdown[user_response].value!s}"
-        )
+        description = f"User Chose: {dropdown[user_response].value!s}"
         PlexUtilLogger.get_logger().debug(description)
 
         return dropdown[user_response]

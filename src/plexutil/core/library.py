@@ -257,11 +257,17 @@ class Library(ABC):
             )
             for section in sections
         ]
-        user_response = Prompt.draw_dropdown(
-            title="Library Delete Selection",
-            description="Choose the Library to DELETE",
-            dropdown=dropdown,
-        )
+        if dropdown:
+            user_response = Prompt.draw_dropdown(
+                title="Library Delete Selection",
+                description="Choose the Library to DELETE",
+                dropdown=dropdown,
+            )
+
+        else:
+            description = f"No Available {self.library_type} Libraries"
+            PlexUtilLogger.get_console_logger().warning(description)
+            return
 
         try:
             user_response.value.delete()
