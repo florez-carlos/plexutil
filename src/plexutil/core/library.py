@@ -265,7 +265,10 @@ class Library(ABC):
             )
 
         else:
-            description = f"No Available {self.library_type} Libraries"
+            description = (
+                f"{Icons.WARNING}No Available "
+                f"{self.library_type.get_display_name()} Libraries"
+            )
             PlexUtilLogger.get_console_logger().warning(description)
             return
 
