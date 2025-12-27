@@ -211,15 +211,22 @@ class Prompt(Static):
         is_multi_column: bool = False,
         expect_input: bool = True,
     ) -> DropdownItemDTO:
-        description = (
-            f"\n========== {title} ==========\n"
-            f"\n{description}\n"
-            f"Available Options:\n"
-            if expect_input
-            else f"(Default: {dropdown[0].display_name})\n\n"
-            if expect_input
-            else ""
-        )
+        if dropdown:
+            description = (
+                f"\n========== {title} ==========\n"
+                f"\n{description}\n"
+                f"Available Options:\n"
+                if expect_input
+                else f"\n(Default: {dropdown[0].display_name})\n\n"
+                if expect_input
+                else "\n"
+            )
+        else:
+            description = (
+                f"\n========== {title} ==========\n"
+                f"\n{description}\n"
+                f"\nNothing Available\n"
+            )
         dropdown_count = 1
         columns_count = 1
         max_columns = 3 if is_multi_column else 1
