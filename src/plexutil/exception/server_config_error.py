@@ -1,2 +1,0 @@
-class ServerConfigError(Exception):
-    pass

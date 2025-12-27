@@ -1,7 +1,5 @@
 import sys
 
-from jsonschema.exceptions import ValidationError
-
 from plexutil.core.auth import Auth
 from plexutil.core.library_factory import LibraryFactory
 from plexutil.core.prompt import Prompt
@@ -17,7 +15,6 @@ from plexutil.exception.library_poll_timeout_error import (
 from plexutil.exception.library_section_missing_error import (
     LibrarySectionMissingError,
 )
-from plexutil.exception.server_config_error import ServerConfigError
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
 )
@@ -55,12 +52,6 @@ def main() -> None:
             description = f"\n=====Unexpected Error=====\n{e!s}"
             PlexUtilLogger.get_logger().exception(description)
             raise
-
-    except ServerConfigError as e:
-        sys.tracebacklimit = 0
-        description = f"\n=====Server Config Error=====\n{e!s}"
-        PlexUtilLogger.get_logger().error(description)
-        sys.exit(1)
 
     except UserError as e:
         sys.tracebacklimit = 0
@@ -102,11 +93,6 @@ def main() -> None:
             description += "-> " + argument + "\n"
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
-
-    except ValidationError as e:
-        sys.tracebacklimit = 0
-        description = f"\n=====Invalid Schema Error=====\n{e!s}"
-        PlexUtilLogger.get_logger().error(description)
 
     # No regular logger can be expected to be initialized
     except BootstrapError as e:
