@@ -67,7 +67,7 @@ class Prompt(Static):
             PlexUtilLogger.get_logger().info(plexutil_version)
             sys.exit(0)
 
-        debug = f"Received a User Request: {request or None}\n"
+        debug = f"Received a User Request: {request or None}"
         PlexUtilLogger.get_logger().debug(debug)
 
         return UserRequest.get_user_request_from_str(request)

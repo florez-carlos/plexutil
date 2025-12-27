@@ -19,33 +19,31 @@ from plexutil.util.path_ops import PathOps
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.server import Playlist, PlexServer
-
-    from plexutil.dto.library_preferences_dto import LibraryPreferencesDTO
+    from plexapi.server import Playlist
 
 
 class PlexOps(Static):
-    @staticmethod
-    def set_server_settings(
-        plex_server: PlexServer,
-        library_preferences_dto: LibraryPreferencesDTO,
-    ) -> None:
-        """
-        Sets Plex Server Settings
-
-        Args:
-            plex_server (plexapi.server.PlexServer): A Plex Server instance
-            library_preferences_dto (LibraryPreferencesDTO): Library Preference
-
-
-        Returns:
-            None: This method does not return a value
-
-        """
-        server_settings = library_preferences_dto.plex_server_settings
-        for setting_id, setting_value in server_settings.items():
-            plex_server.settings.get(setting_id).set(setting_value)
-        plex_server.settings.save()
+    # @staticmethod
+    # def set_server_settings(
+    #     plex_server: PlexServer,
+    #     library_preferences_dto: LibraryPreferencesDTO,
+    # ) -> None:
+    #     """
+    #     Sets Plex Server Settings
+    #
+    #     Args:
+    #         plex_server (plexapi.server.PlexServer): A Plex Server instance
+    #         library_preferences_dto (LibraryPreferencesDTO): Library Preference
+    #
+    #
+    #     Returns:
+    #         None: This method does not return a value
+    #
+    #     """
+    #     server_settings = library_preferences_dto.plex_server_settings
+    #     for setting_id, setting_value in server_settings.items():
+    #         plex_server.settings.get(setting_id).set(setting_value)
+    #     plex_server.settings.save()
 
     @staticmethod
     def get_music_playlist_entity(playlist: Playlist) -> MusicPlaylistEntity:
