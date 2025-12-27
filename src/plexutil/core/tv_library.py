@@ -13,9 +13,6 @@ if TYPE_CHECKING:
     from plexapi.video import Show
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
-    from plexutil.enums.user_request import UserRequest
-
-
 from plexutil.core.library import Library
 from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
@@ -23,6 +20,7 @@ from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
+from plexutil.enums.user_request import UserRequest
 from plexutil.plex_util_logger import PlexUtilLogger
 
 
@@ -39,15 +37,16 @@ class TVLibrary(Library):
         language: Language = Language.get_default(),
     ) -> None:
         super().__init__(
-            plex_server,
-            name,
-            LibraryType.TV,
-            agent,
-            scanner,
-            locations,
-            language,
-            user_request,
-            bootstrap_paths_dto,
+            supported_requests=[UserRequest.CREATE, UserRequest.DELETE],
+            plex_server=plex_server,
+            name=name,
+            library_type=LibraryType.TV,
+            agent=agent,
+            scanner=scanner,
+            locations=locations,
+            language=language,
+            user_request=user_request,
+            bootstrap_paths_dto=bootstrap_paths_dto,
         )
 
     def add_item(self) -> None:

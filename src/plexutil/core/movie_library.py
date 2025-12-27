@@ -12,15 +12,13 @@ if TYPE_CHECKING:
     from plexapi.video import Movie
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
-    from plexutil.enums.user_request import UserRequest
-
-
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
+from plexutil.enums.user_request import UserRequest
 
 
 class MovieLibrary(Library):
@@ -36,6 +34,7 @@ class MovieLibrary(Library):
         name: str = LibraryName.get_default(LibraryType.MOVIE).value,
     ) -> None:
         super().__init__(
+            supported_requests=[UserRequest.CREATE, UserRequest.DELETE],
             plex_server=plex_server,
             name=name,
             library_type=LibraryType.MOVIE,

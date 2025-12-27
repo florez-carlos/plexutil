@@ -75,7 +75,7 @@ class LibrarySetting(Enum):
             "When scanning this library, prefer "
             "embedded tags and local files if present\n"
         ),
-        [LibraryType.MOVIE, LibraryType.TV],
+        [LibraryType.MOVIE, LibraryType.TV, LibraryType.MUSIC],
         True,
         False,
         False,
@@ -113,6 +113,106 @@ class LibrarySetting(Enum):
             DropdownItemDTO(display_name="IMDb", value="imdb"),
             DropdownItemDTO(
                 display_name="The Movie Database", value="themoviedb"
+            ),
+        ],
+        0,
+    )
+
+    ARTIST_BIOS = (
+        "artistBios",
+        "Artist Bios",
+        ("Load artist biography data from the cloud\n"),
+        [LibraryType.MUSIC],
+        True,
+        False,
+        False,
+        [],
+        False,
+    )
+
+    ALBUM_REVIEWS = (
+        "albumReviews",
+        "Album Reviews and Critic Ratings",
+        (
+            "Load album reviews and critic ratings from the cloud. "
+            "Might make you reconsider your taste in music\n"
+        ),
+        [LibraryType.MUSIC],
+        True,
+        False,
+        False,
+        [],
+        False,
+    )
+
+    POPULAR_TRACKS = (
+        "popularTracks",
+        "Popular Tracks",
+        (
+            "Load popular track data, which powers radio stations "
+            "and the popular tracks area\n"
+        ),
+        [LibraryType.MUSIC],
+        True,
+        False,
+        False,
+        [],
+        False,
+    )
+
+    FIND_LYRICS = (
+        "useExternalLyrics",
+        "Find Lyrics",
+        ("Find lyrics for tracks in this library automatically\n"),
+        [LibraryType.MUSIC],
+        True,
+        False,
+        False,
+        [],
+        True,
+    )
+
+    CONCERTS = (
+        "concerts",
+        "Concerts",
+        ("Load concert data for artists, in case you leave the house\n"),
+        [LibraryType.MUSIC],
+        True,
+        False,
+        False,
+        [],
+        True,
+    )
+
+    GENRES = (
+        "genres",
+        "Genres",
+        "Where to automatically obtain genres for artists and albums\n",
+        [LibraryType.MUSIC],
+        False,
+        False,
+        True,
+        [
+            DropdownItemDTO(display_name="Embedded Tags", value=2),
+            DropdownItemDTO(display_name="Plex Music", value=1),
+            DropdownItemDTO(display_name="None", value=0),
+        ],
+        0,
+    )
+
+    ALBUM_POSTERS = (
+        "albumPosters",
+        "Album Art",
+        "Where to automatically obtain album cover art\n",
+        [LibraryType.MUSIC],
+        False,
+        False,
+        True,
+        [
+            DropdownItemDTO(display_name="Local Files Only", value=3),
+            DropdownItemDTO(display_name="Plex Music Only", value=2),
+            DropdownItemDTO(
+                display_name="Both Plex Music and Local Files", value=1
             ),
         ],
         0,

@@ -13,15 +13,13 @@ if TYPE_CHECKING:
     from plexapi.server import PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
-    from plexutil.enums.user_request import UserRequest
-
-
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
+from plexutil.enums.user_request import UserRequest
 from plexutil.exception.library_op_error import LibraryOpError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.query_builder import QueryBuilder
@@ -40,6 +38,7 @@ class MusicLibrary(Library):
         language: Language = Language.ENGLISH_US,
     ) -> None:
         super().__init__(
+            supported_requests=[UserRequest.CREATE, UserRequest.DELETE],
             plex_server=plex_server,
             name=name,
             library_type=LibraryType.MUSIC,
@@ -80,16 +79,12 @@ class MusicLibrary(Library):
 
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        if self.exists():
-            description = f"Music Library '{self.name}' already exists"
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=LibraryType.MUSIC,
-                description=description,
-            )
+        super().assign_name()
+        super().error_if_exists()
+        super().assign_scanner()
+        super().assign_agent()
 
         part = ""
-
         query_builder = QueryBuilder(
             "/library/sections",
             name=self.name,
@@ -100,7 +95,6 @@ class MusicLibrary(Library):
             location=self.locations,
             # prefs=self.preferences.music,
         )
-
         part = query_builder.build()
 
         description = f"Query: {part}\n"

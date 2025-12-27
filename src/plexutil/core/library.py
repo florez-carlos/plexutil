@@ -53,6 +53,7 @@ from plexutil.exception.library_unsupported_error import (
 class Library(ABC):
     def __init__(
         self,
+        supported_requests: list[UserRequest],
         plex_server: PlexServer,
         name: str,
         library_type: LibraryType,
@@ -63,6 +64,7 @@ class Library(ABC):
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> None:
+        self.supported_requests = supported_requests
         self.plex_server = plex_server
         self.name = name
         self.library_type = library_type
@@ -141,18 +143,9 @@ class Library(ABC):
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         self.assign_name()
-
-        if self.exists():
-            description = (
-                f"{LibraryName.get_default(self.library_type)} "
-                f"Library '{self.name}' already exists"
-            )
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=self.library_type,
-                description=description,
-            )
-
+        self.error_if_exists()
+        self.assign_scanner()
+        self.assign_agent()
         self.assign_locations()
         self.assign_language()
 
@@ -233,6 +226,55 @@ class Library(ABC):
             else LibraryName.get_default(self.library_type).value
         )
 
+    def assign_scanner(self) -> None:
+        """
+        Ask user for a Scanner
+
+        Returns:
+            None: This method does not return a value.
+        """
+        scanners = Scanner.get_all()
+        filtered_scanners = [
+            scanner
+            for scanner in scanners
+            if scanner.is_compatible(self.library_type)
+        ]
+        dropdown = [
+            DropdownItemDTO(
+                display_name=filtered_scanner.get_label(),
+                value=filtered_scanner,
+            )
+            for filtered_scanner in filtered_scanners
+        ]
+        user_response = Prompt.draw_dropdown(
+            "Scanner Selection", "Choose a Scanner", dropdown=dropdown
+        )
+
+        self.scanner = user_response.value
+
+    def assign_agent(self) -> None:
+        """
+        Ask user for an Agent
+
+        Returns:
+            None: This method does not return a value.
+        """
+        agents = Agent.get_all()
+        filtered_agents = [
+            agent for agent in agents if agent.is_compatible(self.library_type)
+        ]
+        dropdown = [
+            DropdownItemDTO(
+                display_name=filtered_agent.get_label(self.library_type),
+                value=filtered_agent,
+            )
+            for filtered_agent in filtered_agents
+        ]
+        user_response = Prompt.draw_dropdown(
+            "Agent Selection", "Choose an Agent", dropdown=dropdown
+        )
+        self.agent = user_response.value
+
     @abstractmethod
     def delete(self) -> None:
         """
@@ -307,6 +349,20 @@ class Library(ABC):
         description = f"Exists: {library}"
         PlexUtilLogger.get_logger().debug(description)
         return True
+
+    def error_if_exists(self) -> None:
+        op_type = "ERROR IF EXISTS"
+
+        if self.exists():
+            description = (
+                f"{self.library_type.get_display_name()} with name "
+                f"{self.name} already exists"
+            )
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=self.library_type,
+                description=description,
+            )
 
     def poll(
         self,

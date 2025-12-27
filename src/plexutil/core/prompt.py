@@ -8,7 +8,6 @@ from importlib.metadata import PackageNotFoundError, version
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.language import Language
-from plexutil.enums.library_type import LibraryType
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
@@ -156,24 +155,6 @@ class Prompt(Static):
             dropdown=library_setting.dropdown,
             user_response=user_response,
         )
-
-    @staticmethod
-    def confirm_library_type() -> LibraryType:
-        libraries = LibraryType.get_all()
-        items = [
-            DropdownItemDTO(
-                display_name=library.get_display_name(),
-                value=library,
-            )
-            for library in libraries
-        ]
-        response = Prompt.draw_dropdown(
-            title="Library Type Selection",
-            description="Choose the Library Type",
-            dropdown=items,
-        )
-
-        return response.value
 
     @staticmethod
     def confirm_language() -> Language:
