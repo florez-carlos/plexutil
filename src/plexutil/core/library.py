@@ -8,9 +8,11 @@ from typing import TYPE_CHECKING
 from plexapi.exceptions import NotFound
 
 from plexutil.core.prompt import Prompt
+from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_name import LibraryName
+from plexutil.enums.library_setting import LibrarySetting
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.library_illegal_state_error import (
@@ -34,7 +36,6 @@ if TYPE_CHECKING:
     from plexapi.video import Movie, Show
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
-    from plexutil.dto.library_setting_dto import LibrarySettingDTO
     from plexutil.dto.movie_dto import MovieDTO
     from plexutil.dto.song_dto import SongDTO
     from plexutil.dto.tv_series_dto import TVSeriesDTO
@@ -124,7 +125,69 @@ class Library(ABC):
 
     @abstractmethod
     def create(self) -> None:
-        raise NotImplementedError
+        """
+        Creates a Library
+        Logs a warning if a specific Library Setting is rejected by the server
+
+        Returns:
+            None: This method does not return a value
+
+        Raises:
+            LibraryOpError: If Library already exists
+        """
+        op_type = "CREATE"
+
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+
+        self.assign_name()
+
+        if self.exists():
+            description = (
+                f"{LibraryName.get_default(self.library_type)} "
+                f"Library '{self.name}' already exists"
+            )
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=self.library_type,
+                description=description,
+            )
+
+        self.assign_locations()
+        self.assign_language()
+
+        self.plex_server.library.add(
+            name=self.name,
+            type=self.library_type.get_value(),
+            agent=self.agent.get_value(),
+            scanner=self.scanner.get_value(),
+            location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
+            language=self.language.get_value(),
+        )
+
+        description = f"Successfully created: {self.name}"
+        PlexUtilLogger.get_logger().debug(description)
+
+        settings = LibrarySetting.get_all(self.library_type)
+
+        library_settings = []
+
+        for setting in settings:
+            library_settings.append(  # noqa: PERF401
+                LibrarySettingDTO(
+                    name=setting.get_name(),
+                    display_name=setting.get_display_name(),
+                    description=setting.get_description(),
+                    user_response=setting.get_default_selection(),
+                    is_toggle=setting.is_toggle(),
+                    is_value=setting.is_value(),
+                    is_dropdown=setting.is_dropdown(),
+                    dropdown=setting.get_dropdown(),
+                    is_from_server=False,
+                )
+            )
+
+        self.set_settings(settings=library_settings)
+        self.get_section().refresh()
 
     def assign_language(self) -> None:
         """

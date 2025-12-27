@@ -3,10 +3,7 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
-from plexutil.dto.library_setting_dto import LibrarySettingDTO
-from plexutil.enums.library_setting import LibrarySetting
 from plexutil.exception.library_op_error import LibraryOpError
-from plexutil.plex_util_logger import PlexUtilLogger
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -63,67 +60,7 @@ class MovieLibrary(Library):
         raise NotImplementedError
 
     def create(self) -> None:
-        """
-        Creates a Movie Library
-        Logs a warning if a specific movie preference is rejected by the server
-        Logs a warning if no Movie Preferences available
-
-        Returns:
-            None: This method does not return a value
-
-        Raises:
-            LibraryOpError: If Library already exists
-        """
-        op_type = "CREATE"
-
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
-
-        super().assign_name()
-
-        if self.exists():
-            description = f"Movie Library '{self.name}' already exists"
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=LibraryType.MOVIE,
-                description=description,
-            )
-
-        super().assign_locations()
-        super().assign_language()
-
-        self.plex_server.library.add(
-            name=self.name,
-            type=self.library_type.get_value(),
-            agent=self.agent.get_value(),
-            scanner=self.scanner.get_value(),
-            location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
-            language=self.language.get_value(),
-        )
-
-        description = f"Successfully created: {self.name}"
-        PlexUtilLogger.get_logger().debug(description)
-
-        settings = LibrarySetting.get_all(LibraryType.MOVIE)
-
-        library_settings = []
-
-        for setting in settings:
-            library_settings.append(  # noqa: PERF401
-                LibrarySettingDTO(
-                    name=setting.get_name(),
-                    display_name=setting.get_display_name(),
-                    description=setting.get_description(),
-                    user_response=setting.get_default_selection(),
-                    is_toggle=setting.is_toggle(),
-                    is_value=setting.is_value(),
-                    is_dropdown=setting.is_dropdown(),
-                    dropdown=setting.get_dropdown(),
-                    is_from_server=False,
-                )
-            )
-
-        self.set_settings(settings=library_settings)
-        self.get_section().refresh()
+        super().create()
 
     def query(self) -> list[Movie]:
         """
