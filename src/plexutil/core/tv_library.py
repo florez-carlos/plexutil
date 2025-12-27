@@ -67,11 +67,13 @@ class TVLibrary(Library):
 
     def modify_show_language(self) -> None:
         self.probe_library()
-        shows = cast("list[Show]", self.get_section().searchShows())
+        shows = self.query()
+
         dropdown = [
             DropdownItemDTO(display_name=show.originalTitle, value=show)
             for show in shows
         ]
+
         user_response = Prompt.draw_dropdown(
             title="TV Show Selection",
             description="Pick the Show to modify language",
@@ -80,22 +82,7 @@ class TVLibrary(Library):
 
         show = user_response.value
 
-        languages = Language.get_all()
-        dropdown = [
-            DropdownItemDTO(
-                display_name=language.get_display_name(),
-                value=language.get_value(),
-            )
-            for language in languages
-        ]
-        user_response = Prompt.draw_dropdown(
-            title="TV Show Language Selection",
-            description=f"Pick the language to set for {show.originalTitle}",
-            dropdown=dropdown,
-        )
-
-        language = user_response.value
-
+        language = Prompt.confirm_language()
         show.value.editAdvanced(languageOverride=language.get_value())
         show.refresh()
         description = (
