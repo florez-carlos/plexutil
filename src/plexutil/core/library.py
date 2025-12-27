@@ -105,10 +105,8 @@ class Library(ABC):
                 self.download()
             case UserRequest.UPLOAD:
                 self.upload()
-            case UserRequest.ADD_ITEM:
-                self.add_item()
-            case UserRequest.DELETE_ITEM:
-                self.delete_item()
+            case UserRequest.DISPLAY:
+                self.display()
 
     @abstractmethod
     def add_item(self) -> None:
@@ -349,6 +347,16 @@ class Library(ABC):
         description = f"Exists: {library}"
         PlexUtilLogger.get_logger().debug(description)
         return True
+
+    def display(self) -> None:
+        items = self.query()
+        dropdown = [
+            DropdownItemDTO(display_name=item.originalTitle, value=item)
+            for item in items
+        ]
+        Prompt.draw_dropdown(
+            f"{self.library_type}", "Available", dropdown=dropdown
+        )
 
     def error_if_exists(self) -> None:
         op_type = "ERROR IF EXISTS"

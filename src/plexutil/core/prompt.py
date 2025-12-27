@@ -209,6 +209,7 @@ class Prompt(Static):
         description: str,
         dropdown: list[DropdownItemDTO],
         is_multi_column: bool = False,
+        expect_input: bool = True,
     ) -> DropdownItemDTO:
         description = (
             f"\n========== {title} ==========\n"
@@ -243,6 +244,8 @@ class Prompt(Static):
             )
 
         PlexUtilLogger.get_console_logger().info(description)
+        if not expect_input:
+            sys.exit(0)
         response = input(f"Pick (1-{len(dropdown)}): ").strip().lower()
 
         user_response = 0

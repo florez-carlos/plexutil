@@ -4,15 +4,14 @@ from enum import Enum
 
 
 class UserRequest(Enum):
-    CONFIG = "config"
-    SET_SERVER_SETTINGS = "set_server_settings"
+    SETTINGS = "settings"
     CREATE = "create"
-    ADD_ITEM = "add_item"
-    DELETE_ITEM = "delete_item"
     MODIFY = "modify"
     DELETE = "delete"
     DOWNLOAD = "download"
     UPLOAD = "upload"
+    CHANGE_SHOW_LANGUAGE = "change_show_language"
+    DISPLAY = "display"
 
     @staticmethod
     # Forward Reference used here in type hint
