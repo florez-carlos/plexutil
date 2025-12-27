@@ -48,14 +48,14 @@ class LibraryFactory(Static):
                 bootstrap_paths_dto=bootstrap_paths_dto,
             )
         )
-        libraries.append(
-            Playlist(
-                plex_server=plex_server,
-                user_request=user_request,
-                bootstrap_paths_dto=bootstrap_paths_dto,
-                playlist_name="",
-            )
-        )
+        # libraries.append(
+        #     Playlist(
+        #         plex_server=plex_server,
+        #         user_request=user_request,
+        #         bootstrap_paths_dto=bootstrap_paths_dto,
+        #         playlist_name="",
+        #     )
+        # )
 
         dropdown = [
             DropdownItemDTO(
