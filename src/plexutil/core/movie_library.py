@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
+from plexutil.core.prompt import Prompt
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.exception.library_op_error import LibraryOpError
 
 if TYPE_CHECKING:
@@ -67,10 +69,12 @@ class MovieLibrary(Library):
         super().create()
 
     def update(self) -> None:
-        super().update()
+        user_response = self.__draw_items(expect_input=True)
+        user_response.value.update()
+        user_response.value.refresh()
 
     def display(self) -> None:
-        super().display()
+        self.__draw_items(expect_input=False)
 
     def query(self) -> list[Movie]:
         """
@@ -94,3 +98,21 @@ class MovieLibrary(Library):
 
     def exists(self) -> bool:
         return super().exists()
+
+    def __draw_items(self, expect_input: bool = False) -> DropdownItemDTO:
+        sections = super().get_sections()
+        dropdown = []
+        for section in sections:
+            media_count = len(self.query())
+            display_name = f"{section.title} ({media_count!s} Movies)"
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=section)
+            )
+
+        library_type_name = self.library_type.get_display_name()
+        return Prompt.draw_dropdown(
+            f"{library_type_name}",
+            f"Displaying Available {library_type_name} Libraries",
+            dropdown=dropdown,
+            expect_input=expect_input,
+        )

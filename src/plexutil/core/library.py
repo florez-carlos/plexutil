@@ -3,10 +3,9 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from plexapi.exceptions import NotFound
-from plexapi.library import MovieSection, MusicSection, ShowSection
 
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
@@ -123,6 +122,14 @@ class Library(ABC):
 
     @abstractmethod
     def upload(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def update(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def display(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -340,37 +347,6 @@ class Library(ABC):
         description = f"Exists: {library}"
         PlexUtilLogger.get_logger().debug(description)
         return True
-
-    @abstractmethod
-    def update(self) -> None:
-        self.get_section().update()
-        self.get_section().refresh()
-
-    @abstractmethod
-    def display(self) -> None:
-        sections = self.get_sections()
-        dropdown = []
-        for section in sections:
-            if isinstance(section, MovieSection):
-                media_count = len(cast("MovieSection", section).searchMovies())
-            elif isinstance(section, ShowSection):
-                media_count = len(cast("ShowSection", section).searchShows())
-            elif isinstance(section, MusicSection):
-                media_count = len(cast("MusicSection", section).searchTracks())
-            else:
-                media_count = 0
-            display_name = f"{section.title} ({media_count!s} items)"
-            dropdown.append(
-                DropdownItemDTO(display_name=display_name, value=section)
-            )
-
-        library_type_name = self.library_type.get_display_name()
-        Prompt.draw_dropdown(
-            f"{library_type_name}",
-            f"Displaying Available {library_type_name} Libraries",
-            dropdown=dropdown,
-            expect_input=False,
-        )
 
     def error_if_exists(self) -> None:
         op_type = "ERROR IF EXISTS"
