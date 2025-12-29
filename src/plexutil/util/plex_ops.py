@@ -127,13 +127,13 @@ class PlexOps(Static):
 
         if isinstance(media, Track):
             name = location.stem
-            return SongDTO(name=name, location=location)
+            return SongDTO(name=name.lower(), location=location)
         elif isinstance(media, Movie):
             name, year = PathOps.get_show_name_and_year_from_str(str(location))
-            return MovieDTO(name=name, year=year, location=location)
+            return MovieDTO(name=name.lower(), year=year, location=location)
         elif isinstance(media, Show):
             name, year = PathOps.get_show_name_and_year_from_str(str(location))
-            return TVSeriesDTO(name=name, year=year, location=location)
+            return TVSeriesDTO(name=name.lower(), year=year, location=location)
         else:
             description = f"unsupported media: {type(media)}"
             raise ValueError(description)

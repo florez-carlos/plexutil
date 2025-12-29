@@ -129,7 +129,7 @@ class PathOps(Static):
             try:
                 extension = path.suffix.replace(".", "")
                 FileType.get_musical_file_type_from_str(extension)
-                song_dto = SongDTO(name=path.stem, location=path)
+                song_dto = SongDTO(name=path.stem.lower(), location=path)
                 songs.append(song_dto)
             except ValueError:
                 unknown.append(path)
@@ -179,7 +179,7 @@ class PathOps(Static):
                         tv_dir.name
                     )
                     tv_series_dto = TVSeriesDTO(
-                        name=name, year=year, location=tv_dir
+                        name=name.lower(), year=year, location=tv_dir
                     )
                 except UnexpectedNamingPatternError:
                     description = (
@@ -237,7 +237,7 @@ class PathOps(Static):
                         file_name
                     )
                     movies.append(
-                        MovieDTO(name=name, year=year, location=child)
+                        MovieDTO(name=name.lower(), year=year, location=child)
                     )
                 except UnexpectedNamingPatternError:
                     description = (
