@@ -162,3 +162,9 @@ class MusicLibrary(Library):
 
     def exists(self) -> bool:
         return super().exists()
+
+    def update(self) -> None:
+        return super().update()
+
+    def display(self) -> None:
+        return super().display()

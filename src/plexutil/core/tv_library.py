@@ -109,3 +109,9 @@ class TVLibrary(Library):
 
     def exists(self) -> bool:
         return super().exists()
+
+    def display(self) -> None:
+        return super().display()
+
+    def update(self) -> None:
+        return super().update()

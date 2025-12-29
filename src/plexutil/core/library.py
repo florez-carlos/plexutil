@@ -3,9 +3,10 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from plexapi.exceptions import NotFound
+from plexapi.library import MovieSection, MusicSection, ShowSection
 
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
@@ -142,9 +143,9 @@ class Library(ABC):
 
         self.assign_name()
         self.error_if_exists()
+        self.assign_locations()
         self.assign_scanner()
         self.assign_agent()
-        self.assign_locations()
         self.assign_language()
 
         self.plex_server.library.add(
@@ -180,7 +181,6 @@ class Library(ABC):
 
         self.set_settings(settings=library_settings)
         self.get_section().refresh()
-        self.probe_library()
 
     def assign_language(self) -> None:
         """
@@ -298,20 +298,12 @@ class Library(ABC):
             )
             for section in sections
         ]
-        if dropdown:
-            user_response = Prompt.draw_dropdown(
-                title="Library Delete Selection",
-                description="Choose the Library to DELETE",
-                dropdown=dropdown,
-            )
 
-        else:
-            description = (
-                f"{Icons.WARNING}No Available "
-                f"{self.library_type.get_display_name()} Libraries"
-            )
-            PlexUtilLogger.get_console_logger().warning(description)
-            return
+        user_response = Prompt.draw_dropdown(
+            title="Library Delete Selection",
+            description="Choose the Library to DELETE",
+            dropdown=dropdown,
+        )
 
         try:
             user_response.value.delete()
@@ -349,12 +341,29 @@ class Library(ABC):
         PlexUtilLogger.get_logger().debug(description)
         return True
 
+    @abstractmethod
+    def update(self) -> None:
+        self.get_section().update()
+        self.get_section().refresh()
+
+    @abstractmethod
     def display(self) -> None:
         sections = self.get_sections()
-        dropdown = [
-            DropdownItemDTO(display_name=section.title, value=section)
-            for section in sections
-        ]
+        dropdown = []
+        for section in sections:
+            if isinstance(section, MovieSection):
+                media_count = len(cast("MovieSection", section).searchMovies())
+            elif isinstance(section, ShowSection):
+                media_count = len(cast("ShowSection", section).searchShows())
+            elif isinstance(section, MusicSection):
+                media_count = len(cast("MusicSection", section).searchTracks())
+            else:
+                media_count = 0
+            display_name = f"{section.title} ({media_count!s} items)"
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=section)
+            )
+
         library_type_name = self.library_type.get_display_name()
         Prompt.draw_dropdown(
             f"{library_type_name}",

@@ -228,8 +228,9 @@ class Prompt(Static):
             description = (
                 f"\n========== {title} ==========\n"
                 f"\n{description}\n"
-                f"\nNothing Available\n"
+                f"\n{Icons.WARNING} Nothing Available\n"
             )
+            sys.exit(0)
         dropdown_count = 1
         columns_count = 1
         max_columns = 3 if is_multi_column else 1

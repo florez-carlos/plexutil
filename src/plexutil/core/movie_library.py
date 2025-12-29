@@ -38,6 +38,7 @@ class MovieLibrary(Library):
                 UserRequest.CREATE,
                 UserRequest.DELETE,
                 UserRequest.DISPLAY,
+                UserRequest.UPDATE,
             ],
             plex_server=plex_server,
             name=name,
@@ -64,6 +65,12 @@ class MovieLibrary(Library):
 
     def create(self) -> None:
         super().create()
+
+    def update(self) -> None:
+        super().update()
+
+    def display(self) -> None:
+        super().display()
 
     def query(self) -> list[Movie]:
         """
