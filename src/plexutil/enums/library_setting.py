@@ -38,7 +38,7 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        1,
+        0,
     )
 
     LOCALIZED_ARTWORK = (

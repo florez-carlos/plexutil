@@ -73,7 +73,7 @@ class TVLibrary(Library):
         shows = self.query()
 
         dropdown = [
-            DropdownItemDTO(display_name=show.originalTitle, value=show)
+            DropdownItemDTO(display_name=show.title, value=show)
             for show in shows
         ]
 
@@ -89,8 +89,7 @@ class TVLibrary(Library):
         show.value.editAdvanced(languageOverride=language.get_value())
         show.refresh()
         description = (
-            f"TV Show Language override ({language.value}): "
-            f"{show.originalTitle}"
+            f"TV Show Language override ({language.value}): {show.title}"
         )
         PlexUtilLogger.get_logger().debug(description)
 
