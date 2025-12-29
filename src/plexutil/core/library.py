@@ -180,6 +180,7 @@ class Library(ABC):
 
         self.set_settings(settings=library_settings)
         self.get_section().refresh()
+        self.probe_library()
 
     def assign_language(self) -> None:
         """

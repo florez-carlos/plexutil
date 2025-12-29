@@ -3,9 +3,6 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
-from plexutil.dto.library_setting_dto import LibrarySettingDTO
-from plexutil.enums.library_setting import LibrarySetting
-
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -21,8 +18,6 @@ from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.library_op_error import LibraryOpError
-from plexutil.plex_util_logger import PlexUtilLogger
-from plexutil.util.query_builder import QueryBuilder
 
 
 class MusicLibrary(Library):
@@ -79,69 +74,70 @@ class MusicLibrary(Library):
             LibraryOpError: If Library already exists
             or when failure to create a Query
         """
-        op_type = "CREATE"
-
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
-
-        super().assign_name()
-        super().error_if_exists()
-        super().assign_scanner()
-        super().assign_agent()
-
-        part = ""
-        query_builder = QueryBuilder(
-            "/library/sections",
-            name=self.name,
-            the_type="music",
-            agent=self.agent.get_value(),
-            scanner=self.scanner.get_value(),
-            language=self.language.get_value(),
-            location=self.locations,
-            # prefs=self.preferences.music,
-        )
-        part = query_builder.build()
-
-        description = f"Query: {part}\n"
-        PlexUtilLogger.get_logger().debug(description)
-
-        # This posts a music library
-        if part:
-            self.plex_server.query(
-                part,
-                method=self.plex_server._session.post,
-            )
-            description = f"Successfully created: {self.name}"
-            PlexUtilLogger.get_logger().debug(description)
-
-            settings = LibrarySetting.get_all(LibraryType.MUSIC)
-            library_settings = []
-
-            for setting in settings:
-                library_settings.append(  # noqa: PERF401
-                    LibrarySettingDTO(
-                        name=setting.get_name(),
-                        display_name=setting.get_display_name(),
-                        description=setting.get_description(),
-                        user_response=setting.get_default_selection(),
-                        is_toggle=setting.is_toggle(),
-                        is_value=setting.is_value(),
-                        is_dropdown=setting.is_dropdown(),
-                        dropdown=setting.get_dropdown(),
-                        is_from_server=False,
-                    )
-                )
-
-            super().set_settings(settings=library_settings)
-            self.get_section().refresh()
-        else:
-            description = "Malformed Music Query"
-            raise LibraryOpError(
-                op_type="CREATE",
-                library_type=self.library_type,
-                description=description,
-            )
-
-        self.probe_library()
+        super().create()
+        # op_type = "CREATE"
+        #
+        # self.log_library(operation=op_type, is_info=False, is_debug=True)
+        #
+        # super().assign_name()
+        # super().error_if_exists()
+        # super().assign_scanner()
+        # super().assign_agent()
+        #
+        # part = ""
+        # query_builder = QueryBuilder(
+        #     "/library/sections",
+        #     name=self.name,
+        #     the_type="music",
+        #     agent=self.agent.get_value(),
+        #     scanner=self.scanner.get_value(),
+        #     language=self.language.get_value(),
+        #     location=self.locations,
+        #     # prefs=self.preferences.music,
+        # )
+        # part = query_builder.build()
+        #
+        # description = f"Query: {part}\n"
+        # PlexUtilLogger.get_logger().debug(description)
+        #
+        # # This posts a music library
+        # if part:
+        #     self.plex_server.query(
+        #         part,
+        #         method=self.plex_server._session.post,
+        #     )
+        #     description = f"Successfully created: {self.name}"
+        #     PlexUtilLogger.get_logger().debug(description)
+        #
+        #     settings = LibrarySetting.get_all(LibraryType.MUSIC)
+        #     library_settings = []
+        #
+        #     for setting in settings:
+        #         library_settings.append(
+        #             LibrarySettingDTO(
+        #                 name=setting.get_name(),
+        #                 display_name=setting.get_display_name(),
+        #                 description=setting.get_description(),
+        #                 user_response=setting.get_default_selection(),
+        #                 is_toggle=setting.is_toggle(),
+        #                 is_value=setting.is_value(),
+        #                 is_dropdown=setting.is_dropdown(),
+        #                 dropdown=setting.get_dropdown(),
+        #                 is_from_server=False,
+        #             )
+        #         )
+        #
+        #     super().set_settings(settings=library_settings)
+        #     self.get_section().refresh()
+        # else:
+        #     description = "Malformed Music Query"
+        #     raise LibraryOpError(
+        #         op_type="CREATE",
+        #         library_type=self.library_type,
+        #         description=description,
+        #     )
+        #
+        # self.probe_library()
 
     def query(self) -> list[Track]:
         """

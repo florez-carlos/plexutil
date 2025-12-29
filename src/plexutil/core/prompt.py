@@ -212,15 +212,18 @@ class Prompt(Static):
         expect_input: bool = True,
     ) -> DropdownItemDTO:
         if dropdown:
-            description = (
-                f"\n========== {title} ==========\n"
-                f"\n{description}\n"
-                f"Available Options:\n"
-                if expect_input
-                else f"\n(Default: {dropdown[0].display_name})\n\n"
-                if expect_input
-                else "\n"
-            )
+            if expect_input:
+                description = (
+                    f"\n========== {title} ==========\n"
+                    f"\n{description}\n"
+                    f"Available Options:\n"
+                    f" \n(Default: {dropdown[0].display_name})\n\n"
+                )
+            else:
+                description = (
+                    f"\n========== {title} ==========\n\n{description}\n"
+                )
+
         else:
             description = (
                 f"\n========== {title} ==========\n"
