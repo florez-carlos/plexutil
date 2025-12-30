@@ -10,7 +10,6 @@ from plexutil.service.music_playlist_service import MusicPlaylistService
 from plexutil.service.song_music_playlist_composite_service import (
     SongMusicPlaylistCompositeService,
 )
-from plexutil.util.path_ops import PathOps
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -24,7 +23,6 @@ if TYPE_CHECKING:
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
-from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
@@ -34,23 +32,21 @@ from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.plex_ops import PlexOps
 
 
-class Playlist(Library):
+class MusicPlaylist(Library):
     def __init__(
         self,
         plex_server: PlexServer,
-        playlist_name: str,
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
         locations: list[Path] = field(default_factory=list),
-        name: str = LibraryName.get_default(LibraryType.MUSIC).value,
-        library_type: LibraryType = LibraryType.MUSIC,
+        name: str = LibraryType.MUSIC_PLAYLIST.get_display_name(),
+        library_type: LibraryType = LibraryType.MUSIC_PLAYLIST,
         language: Language = Language.get_default(),
-        agent: Agent = Agent.get_default(LibraryType.MUSIC),
-        scanner: Scanner = Scanner.get_default(LibraryType.MUSIC),
+        agent: Agent = Agent.get_default(LibraryType.MUSIC_PLAYLIST),
+        scanner: Scanner = Scanner.get_default(LibraryType.MUSIC_PLAYLIST),
     ) -> None:
         super().__init__(
             supported_requests=[
-                UserRequest.CREATE,
                 UserRequest.DELETE,
                 UserRequest.DISPLAY,
                 UserRequest.UPLOAD,
@@ -66,8 +62,12 @@ class Playlist(Library):
             user_request=user_request,
             bootstrap_paths_dto=bootstrap_paths_dto,
         )
-        self.playlist_name = playlist_name
-        self.songs = PathOps.get_local_songs(locations)
+
+    def update(self) -> None:
+        raise NotImplementedError
+
+    def display(self) -> None:
+        raise NotImplementedError
 
     def create(self) -> None:
         """

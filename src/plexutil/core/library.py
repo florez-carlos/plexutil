@@ -12,7 +12,6 @@ from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
-from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_setting import LibrarySetting
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
@@ -224,13 +223,9 @@ class Library(ABC):
             None: This method does not return a value.
         """
         text = Prompt.confirm_text(
-            "Library Name", "Type a name for the Library", "Library Name?: "
+            "Library Name", "Type a name for the Library", "Library Name"
         )
-        self.name = (
-            text[0]
-            if text
-            else LibraryName.get_default(self.library_type).value
-        )
+        self.name = text[0] if text else self.library_type.get_display_name()
 
     def assign_scanner(self) -> None:
         """

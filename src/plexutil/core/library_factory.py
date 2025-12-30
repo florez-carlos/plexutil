@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from plexutil.core.music_playlist import MusicPlaylist
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 
@@ -47,14 +48,13 @@ class LibraryFactory(Static):
                 bootstrap_paths_dto=bootstrap_paths_dto,
             )
         )
-        # libraries.append(
-        #     Playlist(
-        #         plex_server=plex_server,
-        #         user_request=user_request,
-        #         bootstrap_paths_dto=bootstrap_paths_dto,
-        #         playlist_name="",
-        #     )
-        # )
+        libraries.append(
+            MusicPlaylist(
+                plex_server=plex_server,
+                user_request=user_request,
+                bootstrap_paths_dto=bootstrap_paths_dto,
+            )
+        )
 
         dropdown = [
             DropdownItemDTO(
