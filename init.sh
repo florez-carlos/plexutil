@@ -38,12 +38,3 @@ fi
 pip install -r requirements.txt
 
 export PYTHONPATH=$VIRTUAL_ENV/lib/python"$required_python_version_path_name"/site-packages/
-
-mkdir -p "$HOME"/plexutil/config
-mkdir -p "$HOME"/plexutil/log
-
-cp src/plexutil/sample/manifests/* "$HOME"/plexutil/config
-cp src/plexutil/sample/preferences/* "$HOME"/plexutil/config
-
-
-
