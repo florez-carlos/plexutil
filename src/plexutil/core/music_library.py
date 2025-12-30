@@ -98,6 +98,7 @@ class MusicLibrary(Library):
 
         super().assign_name()
         super().error_if_exists()
+        super().assign_locations()
         super().assign_scanner()
         super().assign_agent()
 
