@@ -169,7 +169,7 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        True,
+        0,
     )
 
     CONCERTS = (
@@ -181,7 +181,7 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        True,
+        0,
     )
 
     GENRES = (
