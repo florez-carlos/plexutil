@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
+from plexapi.library import MovieSection
+
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.exception.library_op_error import LibraryOpError
@@ -103,7 +105,7 @@ class MovieLibrary(Library):
         sections = super().get_sections()
         dropdown = []
         for section in sections:
-            media_count = len(self.query())
+            media_count = len(cast("list[MovieSection]", section.searchMovies()))
             display_name = f"{section.title} ({media_count!s} Movies)"
             dropdown.append(
                 DropdownItemDTO(display_name=display_name, value=section)
