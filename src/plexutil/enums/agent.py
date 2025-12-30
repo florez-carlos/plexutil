@@ -86,15 +86,17 @@ class Agent(Enum):
                 or self is Agent.PERSONAL_MEDIA
                 or self is Agent.PLEX_PERSONAL_MEDIA
             )
-        elif library_type is LibraryType.MUSIC:
+
+        elif (
+            library_type is LibraryType.MUSIC
+            or library_type is LibraryType.MUSIC_PLAYLIST
+        ):
             return (
                 self is Agent.MUSIC
                 or self is Agent.LASTFM
                 or self is Agent.PLEX_PERSONAL_MEDIA
             )
-        else:
-            op_type = "Agent Is Compatible"
-            raise LibraryUnsupportedError(op_type, library_type)
+        return False
 
     @staticmethod
     def get_from_str(candidate: str, library_type: LibraryType) -> Agent:
@@ -156,7 +158,10 @@ class Agent(Enum):
             return Agent.MOVIE
         elif library_type is LibraryType.TV:
             return Agent.TV
-        elif library_type is LibraryType.MUSIC:
+        elif (
+            library_type is LibraryType.MUSIC
+            or library_type is LibraryType.MUSIC_PLAYLIST
+        ):
             return Agent.MUSIC
         else:
             op_type = "Agent Get Default"

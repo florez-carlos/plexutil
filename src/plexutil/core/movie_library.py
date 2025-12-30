@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
-from plexapi.library import MovieSection
-
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.exception.library_op_error import LibraryOpError
@@ -12,6 +10,7 @@ from plexutil.exception.library_op_error import LibraryOpError
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexapi.library import MovieSection
     from plexapi.server import PlexServer
     from plexapi.video import Movie
 
@@ -19,7 +18,6 @@ if TYPE_CHECKING:
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
-from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
@@ -35,7 +33,7 @@ class MovieLibrary(Library):
         language: Language = Language.get_default(),
         agent: Agent = Agent.get_default(LibraryType.MOVIE),
         scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
-        name: str = LibraryName.get_default(LibraryType.MOVIE).value,
+        name: str = LibraryType.MOVIE.get_display_name(),
     ) -> None:
         super().__init__(
             supported_requests=[

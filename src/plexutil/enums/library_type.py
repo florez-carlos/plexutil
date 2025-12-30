@@ -55,6 +55,10 @@ class LibraryType(Enum):
                 and library_type is LibraryType.MUSIC
             )
             or (
+                isinstance(library_section, MusicSection)
+                and library_type is LibraryType.MUSIC_PLAYLIST
+            )
+            or (
                 isinstance(library_section, ShowSection)
                 and library_type is LibraryType.TV
             )

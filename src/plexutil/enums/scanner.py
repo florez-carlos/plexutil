@@ -59,11 +59,13 @@ class Scanner(Enum):
             )
         elif library_type is LibraryType.TV:
             return self is Scanner.TV or self is Scanner.TV_LEGACY
-        elif library_type is LibraryType.MUSIC:
+        elif (
+            library_type is LibraryType.MUSIC
+            or library_type is LibraryType.MUSIC_PLAYLIST
+        ):
             return self is Scanner.MUSIC or self is Scanner.MUSIC_LEGACY
-        else:
-            op_type = "Scanner Is Compatible"
-            raise LibraryUnsupportedError(op_type, library_type)
+
+        return False
 
     @staticmethod
     def get_from_str(candidate: str, library_type: LibraryType) -> Scanner:
@@ -125,7 +127,10 @@ class Scanner(Enum):
             return Scanner.MOVIE
         elif library_type is LibraryType.TV:
             return Scanner.TV
-        elif library_type is LibraryType.MUSIC:
+        elif (
+            library_type is LibraryType.MUSIC
+            or library_type is LibraryType.MUSIC_PLAYLIST
+        ):
             return Scanner.MUSIC
         else:
             op_type = "Scanner Get Default"

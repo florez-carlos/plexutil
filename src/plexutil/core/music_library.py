@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
-from plexapi.library import MusicSection
-
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
@@ -16,13 +14,13 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.audio import Track
+    from plexapi.library import MusicSection
     from plexapi.server import PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.core.library import Library
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
-from plexutil.enums.library_name import LibraryName
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
@@ -36,10 +34,10 @@ class MusicLibrary(Library):
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
         locations: list[Path] = field(default_factory=list),
-        agent: Agent = Agent.get_default(LibraryType.MOVIE),
-        scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
-        name: str = LibraryName.MUSIC.value,
-        language: Language = Language.ENGLISH_US,
+        agent: Agent = Agent.get_default(LibraryType.MUSIC),
+        scanner: Scanner = Scanner.get_default(LibraryType.MUSIC),
+        name: str = LibraryType.MUSIC.get_display_name(),
+        language: Language = Language.get_default(),
     ) -> None:
         super().__init__(
             supported_requests=[
@@ -107,7 +105,7 @@ class MusicLibrary(Library):
         prefs = {}
 
         for setting in settings:
-            library_settings.append(
+            library_settings.append(  # noqa: PERF401
                 LibrarySettingDTO(
                     name=setting.get_name(),
                     display_name=setting.get_display_name(),
