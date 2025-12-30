@@ -230,6 +230,7 @@ class Prompt(Static):
                 f"\n{description}\n"
                 f"\n{Icons.WARNING} Nothing Available\n"
             )
+            PlexUtilLogger.get_console_logger().warning(description)
             sys.exit(0)
         dropdown_count = 1
         columns_count = 1
