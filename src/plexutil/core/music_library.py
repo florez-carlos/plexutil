@@ -102,6 +102,29 @@ class MusicLibrary(Library):
         super().assign_scanner()
         super().assign_agent()
 
+        settings = LibrarySetting.get_all(LibraryType.MUSIC)
+        library_settings = []
+        prefs = {}
+
+        for setting in settings:
+            library_settings.append(
+                LibrarySettingDTO(
+                    name=setting.get_name(),
+                    display_name=setting.get_display_name(),
+                    description=setting.get_description(),
+                    user_response=setting.get_default_selection(),
+                    is_toggle=setting.is_toggle(),
+                    is_value=setting.is_value(),
+                    is_dropdown=setting.is_dropdown(),
+                    dropdown=setting.get_dropdown(),
+                    is_from_server=False,
+                )
+            )
+
+        for setting in library_settings:
+            response = Prompt.confirm_library_setting(setting)
+            prefs[setting.get_name()] = response.user_response
+
         part = ""
         query_builder = QueryBuilder(
             "/library/sections",
@@ -111,7 +134,7 @@ class MusicLibrary(Library):
             scanner=self.scanner.get_value(),
             language=self.language.get_value(),
             location=self.locations,
-            # prefs=self.preferences.music,
+            prefs=prefs,
         )
         part = query_builder.build()
 
@@ -126,27 +149,6 @@ class MusicLibrary(Library):
             )
             description = f"Successfully created: {self.name}"
             PlexUtilLogger.get_logger().debug(description)
-
-            settings = LibrarySetting.get_all(LibraryType.MUSIC)
-            library_settings = []
-
-            for setting in settings:
-                library_settings.append(
-                    LibrarySettingDTO(
-                        name=setting.get_name(),
-                        display_name=setting.get_display_name(),
-                        description=setting.get_description(),
-                        user_response=setting.get_default_selection(),
-                        is_toggle=setting.is_toggle(),
-                        is_value=setting.is_value(),
-                        is_dropdown=setting.is_dropdown(),
-                        dropdown=setting.get_dropdown(),
-                        is_from_server=False,
-                    )
-                )
-
-            super().set_settings(settings=library_settings)
-            self.get_section().refresh()
         else:
             description = "Malformed Music Query"
             raise LibraryOpError(
