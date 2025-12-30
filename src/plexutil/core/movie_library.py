@@ -105,7 +105,9 @@ class MovieLibrary(Library):
         sections = super().get_sections()
         dropdown = []
         for section in sections:
-            media_count = len(cast("list[MovieSection]", section.searchMovies()))
+            media_count = len(
+                cast("list[MovieSection]", section.searchMovies())
+            )
             display_name = f"{section.title} ({media_count!s} Movies)"
             dropdown.append(
                 DropdownItemDTO(display_name=display_name, value=section)

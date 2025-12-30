@@ -180,7 +180,9 @@ class MusicLibrary(Library):
         sections = super().get_sections()
         dropdown = []
         for section in sections:
-            media_count = len(cast("list[MusicSection]", section.searchTracks()))
+            media_count = len(
+                cast("list[MusicSection]", section.searchTracks())
+            )
             display_name = f"{section.title} ({media_count!s} Tracks)"
             dropdown.append(
                 DropdownItemDTO(display_name=display_name, value=section)

@@ -221,7 +221,7 @@ class Prompt(Static):
                 )
             else:
                 description = (
-                    f"\n========== {title} ==========\n\n{description}\n"
+                    f"\n========== {title} ==========\n\n{description}\n\n"
                 )
 
         else:
