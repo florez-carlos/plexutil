@@ -123,7 +123,7 @@ class MusicLibrary(Library):
 
         for setting in library_settings:
             response = Prompt.confirm_library_setting(setting)
-            prefs[setting.get_name()] = response.user_response
+            prefs[setting.name] = response.user_response
 
         part = ""
         query_builder = QueryBuilder(
