@@ -140,7 +140,7 @@ class PlexOps(Static):
 
     @staticmethod
     def validate_local_files(
-        plex_files: list[Track] | list[Show] | list[Movie],
+        plex_files: list[Track] | list[Show] | list[Movie] | list[Playlist],
         locations: list[Path],
     ) -> None:
         """
@@ -148,7 +148,7 @@ class PlexOps(Static):
         in the locations indicated
 
         Args:
-            tracks ([plexapi.audio.Track]): plexapi tracks.
+            plex_files ([Track] | [Show] | [Movie] | [Playlist]): plexapi media
             locations ([Path]): local file locations.
 
         Returns:

@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
+from plexutil.core.prompt import Prompt
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.service.music_playlist_service import MusicPlaylistService
 from plexutil.service.song_music_playlist_composite_service import (
     SongMusicPlaylistCompositeService,
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.audio import Track
-    from plexapi.server import PlexServer
+    from plexapi.server import Playlist, PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
     from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
@@ -66,12 +68,14 @@ class MusicPlaylist(Library):
         raise NotImplementedError
 
     def display(self) -> None:
-        raise NotImplementedError
+        op_type = "DISPLAY"
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+        self.draw_libraries(expect_input=False)
 
     def create(self) -> None:
         raise NotImplementedError
 
-    def query(self) -> list[Track]:
+    def query(self) -> list[Playlist]:
         op_type = "QUERY"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
@@ -82,8 +86,7 @@ class MusicPlaylist(Library):
                 library_type=LibraryType.MUSIC_PLAYLIST,
                 description=description,
             )
-
-        return cast("list[Track]", self.get_section().searchTracks())
+        return self.get_section().playlists()
 
     def delete(self) -> None:
         op_type = "DELETE"
@@ -164,8 +167,8 @@ class MusicPlaylist(Library):
 
             if self.exists():
                 info = (
-                    f"{Icons.WARNING} Music Playlist: {self.playlist_name} for "
-                    f"Library '{self.name}' already exists"
+                    f"{Icons.WARNING} Music Playlist: {self.playlist_name} for"
+                    f" Library '{self.name}' already exists"
                     f"Skipping create..."
                 )
                 PlexUtilLogger.get_logger().warning(info)
@@ -307,3 +310,23 @@ class MusicPlaylist(Library):
         description = f"Filtered Tracks: {filtered_tracks!s}"
         PlexUtilLogger.get_logger().debug(description)
         return filtered_tracks
+
+    def draw_libraries(self, expect_input: bool = False) -> None:
+        dropdown = []
+        playlists = self.query()
+        for playlist in playlists:
+            media_count = len(playlist.items())
+            display_name = f"{playlist.title} ({media_count!s} items)"
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=playlist)
+            )
+
+        library_type_name = self.library_type.get_display_name()
+        user_response = Prompt.draw_dropdown(
+            f"{library_type_name}",
+            f"Displaying Available {library_type_name}",
+            dropdown=dropdown,
+            expect_input=expect_input,
+        )
+        if expect_input:
+            self.playlist_name = user_response.value.title

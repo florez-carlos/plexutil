@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from plexapi.exceptions import NotFound
 
@@ -33,11 +33,8 @@ if TYPE_CHECKING:
     from plexapi.audio import Track
     from plexapi.library import (
         LibrarySection,
-        MovieSection,
-        MusicSection,
-        ShowSection,
     )
-    from plexapi.server import PlexServer
+    from plexapi.server import Playlist, PlexServer
     from plexapi.video import Movie, Show
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
@@ -433,7 +430,7 @@ class Library(ABC):
         PlexUtilLogger.get_logger().debug(debug)
 
     @abstractmethod
-    def query(self) -> list[Track] | list[Show] | list[Movie]:
+    def query(self) -> list[Track] | list[Show] | list[Movie] | list[Playlist]:
         raise NotImplementedError
 
     def log_library(
@@ -624,26 +621,8 @@ class Library(ABC):
         sections = self.get_sections()
         dropdown = []
         for section in sections:
-            if self.library_type is LibraryType.MOVIE:
-                media_count = len(
-                    cast("list[MovieSection]", section.searchMovies())
-                )
-                display_name = f"{section.title} ({media_count!s} Movies)"
-            elif self.library_type is LibraryType.TV:
-                media_count = len(
-                    cast("list[ShowSection]", section.searchShows())
-                )
-                display_name = f"{section.title} ({media_count!s} Shows)"
-            elif (
-                self.library_type is LibraryType.MUSIC
-                or self.library_type is LibraryType.MUSIC_PLAYLIST
-            ):
-                media_count = len(
-                    cast("list[MusicSection]", section.searchTracks())
-                )
-                display_name = f"{section.title} ({media_count!s} Tracks)"
-            else:
-                display_name = ""
+            media_count = len(self.query())
+            display_name = f"{section.title} ({media_count!s} items)"
 
             dropdown.append(
                 DropdownItemDTO(display_name=display_name, value=section)
