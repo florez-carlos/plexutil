@@ -3,13 +3,11 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
-from plexutil.exception.library_unsupported_error import (
-    LibraryUnsupportedError,
-)
 from plexutil.service.music_playlist_service import MusicPlaylistService
 from plexutil.service.song_music_playlist_composite_service import (
     SongMusicPlaylistCompositeService,
 )
+from plexutil.util.icons import Icons
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -62,6 +60,7 @@ class MusicPlaylist(Library):
             user_request=user_request,
             bootstrap_paths_dto=bootstrap_paths_dto,
         )
+        self.playlist_name = ""
 
     def update(self) -> None:
         raise NotImplementedError
@@ -70,34 +69,7 @@ class MusicPlaylist(Library):
         raise NotImplementedError
 
     def create(self) -> None:
-        """
-        Creates a Music Playlist
-        Logs a warning if Playlist already exists and returns
-
-        Returns:
-            None: This method does not return a value
-        """
-        op_type = "CREATE"
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
-
-        if self.exists():
-            info = (
-                f"WARNING: Playlist '{self.playlist_name}' for "
-                f"Library '{self.name}' of "
-                f"type {self.library_type.value} already exists."
-                f"Skipping create..."
-            )
-            PlexUtilLogger.get_logger().warning(info)
-            return
-
-        self.probe_library()
-
-        self.get_section().createPlaylist(
-            title=self.playlist_name, items=self.__get_filtered_tracks()
-        )
-
-        description = f"Created Playlist: {self.playlist_name}"
-        PlexUtilLogger.get_logger().info(description)
+        raise NotImplementedError
 
     def query(self) -> list[Track]:
         op_type = "QUERY"
@@ -107,7 +79,7 @@ class MusicPlaylist(Library):
             description = f"Music Library '{self.name}' does not exist"
             raise LibraryOpError(
                 op_type=op_type,
-                library_type=LibraryType.MUSIC,
+                library_type=LibraryType.MUSIC_PLAYLIST,
                 description=description,
             )
 
@@ -159,41 +131,53 @@ class MusicPlaylist(Library):
         return exists
 
     def download(self) -> None:
-        if self.library_type is LibraryType.MUSIC:
-            # Remove existing playlist.db file
-            self.bootstrap_paths_dto.plexutil_playlists_db_dir.unlink(
-                missing_ok=True
-            )
+        # Remove existing playlist.db file
+        self.bootstrap_paths_dto.plexutil_playlists_db_dir.unlink(
+            missing_ok=True
+        )
 
-            music_playlist_dtos = self.get_all_playlists()
+        music_playlist_dtos = self.get_all_playlists()
 
-            service = SongMusicPlaylistCompositeService(
-                self.bootstrap_paths_dto.plexutil_playlists_db_dir
-            )
-            service.add_many(music_playlist_dtos)
-        else:
-            op_type = "export"
-            raise LibraryUnsupportedError(
-                op_type, library_type=self.library_type
-            )
+        service = SongMusicPlaylistCompositeService(
+            self.bootstrap_paths_dto.plexutil_playlists_db_dir
+        )
+        service.add_many(music_playlist_dtos)
 
     def upload(self) -> None:
-        if self.library_type is LibraryType.MUSIC:
-            composite_service = SongMusicPlaylistCompositeService(
-                self.bootstrap_paths_dto.plexutil_playlists_db_dir
-            )
-            playlist_service = MusicPlaylistService(
-                self.bootstrap_paths_dto.plexutil_playlists_db_dir
-            )
-            music_playlist_dtos = composite_service.get(
-                entities=playlist_service.get_all(),
-                tracks=cast("list[Track]", self.query()),
+        composite_service = SongMusicPlaylistCompositeService(
+            self.bootstrap_paths_dto.plexutil_playlists_db_dir
+        )
+        playlist_service = MusicPlaylistService(
+            self.bootstrap_paths_dto.plexutil_playlists_db_dir
+        )
+        music_playlist_dtos = composite_service.get(
+            entities=playlist_service.get_all(),
+            tracks=cast("list[Track]", self.query()),
+        )
+
+        self.probe_library()
+        for dto in music_playlist_dtos:
+            self.songs = dto.songs
+            self.playlist_name = dto.name
+            section = self.get_section()
+            self.name = section.title
+
+            if self.exists():
+                info = (
+                    f"{Icons.WARNING} Music Playlist: {self.playlist_name} for "
+                    f"Library '{self.name}' already exists"
+                    f"Skipping create..."
+                )
+                PlexUtilLogger.get_logger().warning(info)
+                return
+
+            section.createPlaylist(
+                title=self.playlist_name,
+                items=self.__get_filtered_tracks(),
             )
 
-            for dto in music_playlist_dtos:
-                self.songs = dto.songs
-                self.playlist_name = dto.name
-                self.create()
+            description = f"Created Playlist: {self.playlist_name}"
+            PlexUtilLogger.get_logger().info(description)
 
     def get_all_playlists(self) -> list[MusicPlaylistDTO]:
         """

@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from plexapi.exceptions import NotFound
 
@@ -31,7 +31,12 @@ from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
     from plexapi.audio import Track
-    from plexapi.library import LibrarySection
+    from plexapi.library import (
+        LibrarySection,
+        MovieSection,
+        MusicSection,
+        ShowSection,
+    )
     from plexapi.server import PlexServer
     from plexapi.video import Movie, Show
 
@@ -99,13 +104,21 @@ class Library(ABC):
             case UserRequest.CREATE:
                 self.create()
             case UserRequest.DELETE:
+                self.draw_libraries(expect_input=True)
                 self.delete()
             case UserRequest.DOWNLOAD:
+                self.draw_libraries(expect_input=True)
                 self.download()
             case UserRequest.UPLOAD:
+                self.draw_libraries(expect_input=True)
                 self.upload()
             case UserRequest.DISPLAY:
-                self.display()
+                self.draw_libraries(expect_input=False)
+            case UserRequest.UPDATE:
+                self.draw_libraries(expect_input=True)
+                section = self.get_section()
+                section.update()
+                section.refresh()
 
     @abstractmethod
     def add_item(self) -> None:
@@ -121,14 +134,6 @@ class Library(ABC):
 
     @abstractmethod
     def upload(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def update(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def display(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -291,26 +296,11 @@ class Library(ABC):
         op_type = "DELETE"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        sections = self.get_sections()
-
-        dropdown = [
-            DropdownItemDTO(
-                display_name=section.title,
-                value=section,
-            )
-            for section in sections
-        ]
-
-        user_response = Prompt.draw_dropdown(
-            title="Library Delete Selection",
-            description="Choose the Library to DELETE",
-            dropdown=dropdown,
-        )
-
+        section = self.get_section()
         try:
-            user_response.value.delete()
+            section.delete()
         except LibrarySectionMissingError as e:
-            description = f"Does not exist: {user_response.value.title}"
+            description = f"Does not exist: {section.title}"
             raise LibraryOpError(
                 op_type=op_type,
                 description=description,
@@ -629,3 +619,42 @@ class Library(ABC):
                 )
                 PlexUtilLogger.get_logger().warning(description)
                 continue
+
+    def draw_libraries(self, expect_input: bool = False) -> None:
+        sections = self.get_sections()
+        dropdown = []
+        for section in sections:
+            if self.library_type is LibraryType.MOVIE:
+                media_count = len(
+                    cast("list[MovieSection]", section.searchMovies())
+                )
+                display_name = f"{section.title} ({media_count!s} Movies)"
+            elif self.library_type is LibraryType.TV:
+                media_count = len(
+                    cast("list[ShowSection]", section.searchShows())
+                )
+                display_name = f"{section.title} ({media_count!s} Shows)"
+            elif (
+                self.library_type is LibraryType.MUSIC
+                or self.library_type is LibraryType.MUSIC_PLAYLIST
+            ):
+                media_count = len(
+                    cast("list[MusicSection]", section.searchTracks())
+                )
+                display_name = f"{section.title} ({media_count!s} Tracks)"
+            else:
+                display_name = ""
+
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=section)
+            )
+
+        library_type_name = self.library_type.get_display_name()
+        user_response = Prompt.draw_dropdown(
+            f"{library_type_name}",
+            f"Displaying Available {library_type_name} Libraries",
+            dropdown=dropdown,
+            expect_input=expect_input,
+        )
+        if expect_input:
+            self.name = user_response.value.title
