@@ -3,11 +3,10 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
-from plexutil.exception.library_op_error import LibraryOpError
-
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexapi.library import MovieSection
     from plexapi.server import PlexServer
     from plexapi.video import Movie
 
@@ -73,14 +72,8 @@ class MovieLibrary(Library):
             list[plexapi.video.Movie]: Movies from the current Section
         """
         op_type = "QUERY"
-        if not self.exists():
-            description = f"Movie Library '{self.name}' does not exist"
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=LibraryType.MOVIE,
-                description=description,
-            )
-        return cast("list[Movie]", self.get_section().searchMovies())
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+        return cast("MovieSection", self.get_section()).searchMovies()
 
     def delete(self) -> None:
         return super().delete()

@@ -4,11 +4,11 @@ from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
-from plexutil.exception.library_op_error import LibraryOpError
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexapi.library import ShowSection
     from plexapi.server import PlexServer
     from plexapi.video import Show
 
@@ -94,14 +94,8 @@ class TVLibrary(Library):
 
     def query(self) -> list[Show]:
         op_type = "QUERY"
-        if not self.exists():
-            description = f"TV Library '{self.name}' does not exist"
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=LibraryType.TV,
-                description=description,
-            )
-        return cast("list[Show]", self.get_section().searchShows())
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+        return cast("ShowSection", self.get_section()).searchShows()
 
     def delete(self) -> None:
         return super().delete()

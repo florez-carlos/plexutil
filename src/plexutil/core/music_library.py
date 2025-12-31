@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.audio import Track
+    from plexapi.library import MusicSection
     from plexapi.server import PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
@@ -153,15 +154,8 @@ class MusicLibrary(Library):
             list[plexapi.audio.Track]: Tracks from the current Section
         """
         op_type = "QUERY"
-        if not self.exists():
-            description = f"Music Library '{self.name}' does not exist"
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=LibraryType.MUSIC,
-                description=description,
-            )
-
-        return cast("list[Track]", self.get_section().searchTracks())
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+        return cast("MusicSection", self.get_section()).searchTracks()
 
     def delete(self) -> None:
         return super().delete()

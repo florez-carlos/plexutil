@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from plexapi.exceptions import NotFound
 
@@ -33,6 +33,9 @@ if TYPE_CHECKING:
     from plexapi.audio import Track
     from plexapi.library import (
         LibrarySection,
+        MovieSection,
+        MusicSection,
+        ShowSection,
     )
     from plexapi.server import Playlist, PlexServer
     from plexapi.video import Movie, Show
@@ -621,19 +624,38 @@ class Library(ABC):
         sections = self.get_sections()
         dropdown = []
         for section in sections:
-            media_count = len(self.query())
-            display_name = f"{section.title} ({media_count!s} items)"
-
+            if self.library_type is LibraryType.MOVIE:
+                media_count = len(
+                    cast("list[MovieSection]", section.searchMovies())
+                )
+                display_name = f"{section.title} ({media_count!s} Movies)"
+            elif self.library_type is LibraryType.TV:
+                media_count = len(
+                    cast("list[ShowSection]", section.searchShows())
+                )
+                display_name = f"{section.title} ({media_count!s} Shows)"
+            elif (
+                self.library_type is LibraryType.MUSIC
+                or self.library_type is LibraryType.MUSIC_PLAYLIST
+            ):
+                media_count = len(
+                    cast("list[MusicSection]", section.searchTracks())
+                )
+                display_name = f"{section.title} ({media_count!s} Tracks)"
+            else:
+                display_name = ""
             dropdown.append(
                 DropdownItemDTO(display_name=display_name, value=section)
             )
 
         library_type_name = self.library_type.get_display_name()
+
         user_response = Prompt.draw_dropdown(
             f"{library_type_name}",
             f"Displaying Available {library_type_name} Libraries",
             dropdown=dropdown,
             expect_input=expect_input,
         )
+
         if expect_input:
             self.name = user_response.value.title

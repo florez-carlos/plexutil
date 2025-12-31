@@ -20,7 +20,7 @@ class LibraryOpError(Exception):
         message = (
             self.op_type
             + ": "
-            + self.library_type.value
+            + self.library_type.get_value()
             + " | "
             + self.description
         )

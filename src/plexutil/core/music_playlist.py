@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from plexapi.audio import Track
+    from plexapi.library import MusicSection
     from plexapi.server import Playlist, PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
@@ -79,27 +80,13 @@ class MusicPlaylist(Library):
         op_type = "QUERY"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        if not super().exists():
-            description = f"Music Library '{self.name}' does not exist"
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=LibraryType.MUSIC_PLAYLIST,
-                description=description,
-            )
-        return cast("list[Track]", self.get_section().searchTracks())
+        return cast("MusicSection", self.get_section()).searchTracks()
 
     def query_playlists(self) -> list[Playlist]:
         op_type = "QUERY PLAYLISTS"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        if not super().exists():
-            description = f"Music Library '{self.name}' does not exist"
-            raise LibraryOpError(
-                op_type=op_type,
-                library_type=LibraryType.MUSIC_PLAYLIST,
-                description=description,
-            )
-        return self.get_section().playlists()
+        return cast("MusicSection", self.get_section()).playlists()
 
     def delete(self) -> None:
         op_type = "DELETE"
@@ -126,7 +113,10 @@ class MusicPlaylist(Library):
         raise LibraryOpError(op_type, self.library_type, description)
 
     def exists(self) -> bool:
-        plex_playlists = self.get_section().playlists()
+        return super().exists()
+
+    def exists_playlist(self) -> bool:
+        plex_playlists = self.query_playlists()
 
         debug = (
             f"Checking playlist exist\n"
@@ -172,20 +162,20 @@ class MusicPlaylist(Library):
         )
 
         self.probe_library()
+        section = self.get_section()
         for dto in music_playlist_dtos:
             self.songs = dto.songs
             self.playlist_name = dto.name
-            section = self.get_section()
             self.name = section.title
 
-            if self.exists():
+            if self.exists_playlist():
                 info = (
                     f"{Icons.WARNING} Music Playlist: {self.playlist_name} for"
                     f" Library '{self.name}' already exists"
                     f"Skipping create..."
                 )
                 PlexUtilLogger.get_logger().warning(info)
-                return
+                continue
 
             section.createPlaylist(
                 title=self.playlist_name,
