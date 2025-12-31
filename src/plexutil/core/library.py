@@ -79,26 +79,6 @@ class Library(ABC):
         self.user_request = user_request
         self.bootstrap_paths_dto = bootstrap_paths_dto
 
-        section = None
-        try:
-            section = self.get_section()
-        except LibrarySectionMissingError:
-            # No need to continue if not an existing library
-            return
-
-        self.locations = section.locations
-        self.agent = Agent.get_from_str(
-            candidate=section.agent, library_type=self.library_type
-        )
-        self.scanner = Scanner.get_from_str(
-            candidate=section.agent, library_type=self.library_type
-        )
-        self.locations = [
-            PathOps.get_path_from_str(location)
-            for location in section.locations
-        ]
-        self.language = Language.get_from_str(section.language)
-
     def do(self) -> None:
         match self.user_request:
             case UserRequest.CREATE:
@@ -658,4 +638,16 @@ class Library(ABC):
         )
 
         if expect_input:
-            self.name = user_response.value.title
+            section = user_response.value
+            self.name = section.title
+            self.agent = Agent.get_from_str(
+                candidate=section.agent, library_type=self.library_type
+            )
+            self.scanner = Scanner.get_from_str(
+                candidate=section.scanner, library_type=self.library_type
+            )
+            self.locations = [
+                PathOps.get_path_from_str(location)
+                for location in section.locations
+            ]
+            self.language = Language.get_from_str(section.language)
