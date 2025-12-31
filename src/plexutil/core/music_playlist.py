@@ -70,13 +70,26 @@ class MusicPlaylist(Library):
     def display(self) -> None:
         op_type = "DISPLAY"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
-        self.draw_libraries(expect_input=False)
+        self.draw_items(expect_input=False)
 
     def create(self) -> None:
         raise NotImplementedError
 
-    def query(self) -> list[Playlist]:
+    def query(self) -> list[Track]:
         op_type = "QUERY"
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+
+        if not super().exists():
+            description = f"Music Library '{self.name}' does not exist"
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=LibraryType.MUSIC_PLAYLIST,
+                description=description,
+            )
+        return cast("list[Track]", self.get_section().searchTracks())
+
+    def query_playlists(self) -> list[Playlist]:
+        op_type = "QUERY PLAYLISTS"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         if not super().exists():
@@ -311,9 +324,10 @@ class MusicPlaylist(Library):
         PlexUtilLogger.get_logger().debug(description)
         return filtered_tracks
 
-    def draw_libraries(self, expect_input: bool = False) -> None:
+    def draw_items(self, expect_input: bool = False) -> None:
+        super().draw_libraries(expect_input=True)
         dropdown = []
-        playlists = self.query()
+        playlists = self.query_playlists()
         for playlist in playlists:
             media_count = len(playlist.items())
             display_name = f"{playlist.title} ({media_count!s} items)"
