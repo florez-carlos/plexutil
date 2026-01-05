@@ -4,6 +4,7 @@ from plexutil.core.auth import Auth
 from plexutil.core.library_factory import LibraryFactory
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
+from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -21,6 +22,7 @@ from plexutil.exception.unexpected_argument_error import (
 from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
+from plexutil.util.plex_ops import PlexOps
 
 
 def main() -> None:
@@ -38,12 +40,15 @@ def main() -> None:
         )
         plex_server = user_response.value.connect()
 
-        library = LibraryFactory.get(
-            user_request=user_request,
-            plex_server=plex_server,
-            bootstrap_paths_dto=bootstrap_paths_dto,
-        )
-        library.do()
+        if user_request is UserRequest.SETTINGS:
+            PlexOps.set_server_settings(plex_server=plex_server)
+        else:
+            library = LibraryFactory.get(
+                user_request=user_request,
+                plex_server=plex_server,
+                bootstrap_paths_dto=bootstrap_paths_dto,
+            )
+            library.do()
 
     except SystemExit as e:
         if e.code == 0:

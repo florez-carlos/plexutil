@@ -5,9 +5,12 @@ from typing import TYPE_CHECKING, cast
 from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
+from plexutil.core.prompt import Prompt
+from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.dto.tv_series_dto import TVSeriesDTO
+from plexutil.enums.server_setting import ServerSetting
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
@@ -19,31 +22,41 @@ from plexutil.util.path_ops import PathOps
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.server import Playlist
+    from plexapi.server import Playlist, PlexServer
 
 
 class PlexOps(Static):
-    # @staticmethod
-    # def set_server_settings(
-    #     plex_server: PlexServer,
-    #     library_preferences_dto: LibraryPreferencesDTO,
-    # ) -> None:
-    #     """
-    #     Sets Plex Server Settings
-    #
-    #     Args:
-    #         plex_server (plexapi.server.PlexServer): A Plex Server instance
-    #         library_preferences_dto (LibraryPreferencesDTO): Library Preference
-    #
-    #
-    #     Returns:
-    #         None: This method does not return a value
-    #
-    #     """
-    #     server_settings = library_preferences_dto.plex_server_settings
-    #     for setting_id, setting_value in server_settings.items():
-    #         plex_server.settings.get(setting_id).set(setting_value)
-    #     plex_server.settings.save()
+    @staticmethod
+    def set_server_settings(
+        plex_server: PlexServer,
+    ) -> None:
+        """
+        Sets Plex Server Settings
+
+        Args:
+            plex_server (plexapi.server.PlexServer): A Plex Server instance
+
+        Returns:
+            None: This method does not return a value
+
+        """
+        server_settings = ServerSetting.get_all()
+
+        for server_setting in server_settings:
+            setting = LibrarySettingDTO(
+                name=server_setting.get_name(),
+                display_name=server_setting.get_display_name(),
+                description=server_setting.get_description(),
+                is_toggle=server_setting.is_toggle(),
+                is_value=server_setting.is_value(),
+                is_dropdown=server_setting.is_dropdown(),
+                dropdown=server_setting.get_dropdown(),
+                user_response=server_setting.get_default_selection(),
+            )
+            response = Prompt.confirm_library_setting(library_setting=setting)
+            plex_server.settings.get(response.name).set(response.user_response)
+
+        plex_server.settings.save()
 
     @staticmethod
     def get_music_playlist_entity(playlist: Playlist) -> MusicPlaylistEntity:
