@@ -38,6 +38,7 @@ class TVLibrary(Library):
         super().__init__(
             supported_requests=[
                 UserRequest.CREATE,
+                UserRequest.UPDATE,
                 UserRequest.DELETE,
                 UserRequest.DISPLAY,
             ],
