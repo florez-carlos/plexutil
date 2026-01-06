@@ -15,6 +15,16 @@ class Auth(Static):
     def get_resources(
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> list[MyPlexResource]:
+        """
+        Login to Plex and returns a list of all the available Plex Resources
+        (Servers and Clients)
+
+        Args:
+            bootstrap_paths_dto (BootstrapPathsDTO): Used to locate auth dir
+
+        Returns:
+            list[MyPlexResource]: Plex Resources
+        """
         private_key_path = bootstrap_paths_dto.private_key_dir
         public_key_path = bootstrap_paths_dto.public_key_dir
         token_path = bootstrap_paths_dto.token_dir
@@ -36,6 +46,8 @@ class Auth(Static):
             or not public_key_path.exists()
             or not token_path.exists()
         ):
+            description = "Auth corrupt or not initialized"
+            PlexUtilLogger.get_logger().debug(description)
             jwt_login = MyPlexJWTLogin(oauth=True, headers=headers)
             jwt_login.generateKeypair(
                 keyfiles=(f"{private_key_path!s}", f"{public_key_path!s}"),
@@ -49,6 +61,8 @@ class Auth(Static):
             token = jwt_login.jwtToken
 
             if isinstance(token, str):
+                description = "Successful Login. Saving Token..."
+                PlexUtilLogger.get_logger().debug(description)
                 FileImporter.save_jwt(
                     bootstrap_paths_dto.token_dir,
                     token,
@@ -58,9 +72,9 @@ class Auth(Static):
                 description = "Did not receive a token"
                 raise AuthError(description)
 
-            account = MyPlexAccount(token=token)
-            return account.resources()
         else:
+            description = "Auth exists"
+            PlexUtilLogger.get_logger().debug(description)
             token, client_identifier = FileImporter.get_jwt(
                 bootstrap_paths_dto.token_dir
             )
@@ -72,11 +86,16 @@ class Auth(Static):
             )
             if not jwt_login.verifyJWT():
                 token = jwt_login.refreshJWT()
+                description = "Refreshing Token and saving..."
+                PlexUtilLogger.get_logger().debug(description)
                 FileImporter.save_jwt(
                     bootstrap_paths_dto.token_dir,
                     token,
                     headers["X-Plex-Client-Identifier"],
                 )
 
-            account = MyPlexAccount(token=token)
-            return account.resources()
+        account = MyPlexAccount(token=token)
+        resources = account.resources()
+        description = f"Available Resources: {resources}"
+        PlexUtilLogger.get_logger().debug(description)
+        return resources
