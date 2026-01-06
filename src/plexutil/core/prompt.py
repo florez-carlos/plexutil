@@ -137,6 +137,7 @@ class Prompt(Static):
                 title=library_setting.display_name,
                 description=library_setting.description,
                 dropdown=dropdown,
+                is_multi_column=True,
             ).value
 
         description = (

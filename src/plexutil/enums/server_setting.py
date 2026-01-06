@@ -12,7 +12,7 @@ class ServerSetting(Enum):
         "ButlerStartHour",
         "Time at which tasks start to run",
         (
-            "The time at which the server starts running background"
+            "The time at which the server starts running background "
             "maintenance tasks"
         ),
         False,

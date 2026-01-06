@@ -61,7 +61,9 @@ class PlexOps(Static):
                 user_response=user_response,
                 is_from_server=is_from_server,
             )
-            response = Prompt.confirm_library_setting(library_setting=setting)
+            response = Prompt.confirm_library_setting(
+                library_setting=setting,
+            )
             plex_setting.set(response.user_response)
 
         plex_server.settings.save()
