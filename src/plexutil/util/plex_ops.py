@@ -43,6 +43,13 @@ class PlexOps(Static):
         server_settings = ServerSetting.get_all()
 
         for server_setting in server_settings:
+            is_from_server = False
+            user_response = server_setting.get_default_selection()
+            plex_setting = plex_server.settings.get(server_setting.get_name())
+            if plex_setting:
+                user_response = plex_setting.value
+                is_from_server = True
+
             setting = LibrarySettingDTO(
                 name=server_setting.get_name(),
                 display_name=server_setting.get_display_name(),
@@ -51,10 +58,11 @@ class PlexOps(Static):
                 is_value=server_setting.is_value(),
                 is_dropdown=server_setting.is_dropdown(),
                 dropdown=server_setting.get_dropdown(),
-                user_response=server_setting.get_default_selection(),
+                user_response=user_response,
+                is_from_server=is_from_server,
             )
             response = Prompt.confirm_library_setting(library_setting=setting)
-            plex_server.settings.get(response.name).set(response.user_response)
+            plex_setting.set(response.user_response)
 
         plex_server.settings.save()
 
