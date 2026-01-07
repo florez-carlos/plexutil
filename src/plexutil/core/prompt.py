@@ -69,6 +69,8 @@ class Prompt(Static):
                 pyproject = FileImporter.get_pyproject()
                 plexutil_version = pyproject["project"]["version"]
 
+            debug = f"Received a User Request: version"
+            PlexUtilLogger.get_logger().debug(debug)
             PlexUtilLogger.get_logger().info(plexutil_version)
             sys.exit(0)
 

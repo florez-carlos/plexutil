@@ -109,7 +109,7 @@ class FileImporter(Static):
 
             PlexUtilLogger(log_dir, log_config)
 
-            description = f"Bootstrap successful. Dir: {plexutil_dir!s}"
+            description = f"Bootstrap successful. Dir -> {plexutil_dir!s}"
             PlexUtilLogger.get_logger().debug(description)
 
             return BootstrapPathsDTO(
