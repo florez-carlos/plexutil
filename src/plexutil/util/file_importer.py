@@ -5,6 +5,7 @@ import json
 import os
 import platform
 import syslog
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import toml
@@ -86,6 +87,17 @@ class FileImporter(Static):
             plexutil_dir.mkdir(exist_ok=True)
             auth_dir.mkdir(exist_ok=True)
             log_dir.mkdir(exist_ok=True)
+
+            # Delete logs older than 30 days
+            for log_file in log_dir.iterdir():
+                if not log_file.is_file():
+                    continue
+                log_date = datetime.fromtimestamp(
+                    log_file.stat().st_ctime, tz=UTC
+                )
+                log_limit_date = datetime.now(tz=UTC) - timedelta(days=30)
+                if log_date > log_limit_date:
+                    log_file.unlink()
 
             log_config_file_path = (
                 PathOps.get_project_root()
