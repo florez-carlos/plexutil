@@ -26,6 +26,17 @@ class LibraryFactory(Static):
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
     ) -> Library:
+        """
+        Prompts user for a LibraryType
+
+        Args:
+            plex_server (PlexServer): Used by Libraries
+            user_request (UserRequest): Used by Libraries
+            bootstrap_paths_dto (BootstrapPathsDTO): Used by Libraries
+
+        Returns:
+            Library: The initiazed Library chosen by the user
+        """
         libraries = []
         libraries.append(
             MovieLibrary(

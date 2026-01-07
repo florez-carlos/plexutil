@@ -21,6 +21,12 @@ from plexutil.util.icons import Icons
 class Prompt(Static):
     @staticmethod
     def get_user_request() -> UserRequest:
+        """
+        Receives initial user input with a request or --version
+
+        Returns:
+            UserRequest: Based on user's input
+        """
         parser = argparse.ArgumentParser(
             description="Plexutil", formatter_class=RawTextHelpFormatter
         )
