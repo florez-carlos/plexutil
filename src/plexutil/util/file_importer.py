@@ -4,7 +4,6 @@ import ctypes.wintypes
 import json
 import os
 import platform
-import syslog
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -123,13 +122,15 @@ class FileImporter(Static):
             )
 
         except Exception as e:
-            if platform.system == "Windows":
+            if platform.system() == "Windows":
                 win32evtlogutil.ReportEvent(  # pyright: ignore # noqa: PGH003
                     "plexutil",
                     eventID=1,
                     eventType=win32evtlog.EVENTLOG_ERROR_TYPE,  # pyright: ignore # noqa: PGH003
                     strings=[""],
                 )
-            elif platform.system == "Linux":
+            elif platform.system() == "Linux":
+                import syslog  # noqa: PLC0415
+
                 syslog.syslog(str(e))
             raise
