@@ -96,7 +96,7 @@ class FileImporter(Static):
                     log_file.stat().st_ctime, tz=UTC
                 )
                 log_limit_date = datetime.now(tz=UTC) - timedelta(days=30)
-                if log_date > log_limit_date:
+                if log_date < log_limit_date:
                     log_file.unlink()
 
             log_config_file_path = (
