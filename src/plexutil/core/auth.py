@@ -1,13 +1,16 @@
 import uuid
 from importlib.metadata import PackageNotFoundError, version
 
+from plexapi.exceptions import BadRequest
 from plexapi.myplex import MyPlexAccount, MyPlexJWTLogin, MyPlexResource
+from plexapi.utils import sys
 
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.exception.auth_error import AuthError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.file_importer import FileImporter
+from plexutil.util.icons import Icons
 
 
 class Auth(Static):
@@ -85,7 +88,25 @@ class Auth(Static):
                 headers=headers,
             )
             if not jwt_login.verifyJWT():
-                token = jwt_login.refreshJWT()
+                try:
+                    token = jwt_login.refreshJWT()
+                except BadRequest as e:
+                    debug = (
+                        "RefreshJWT [BAD REQUEST]: "
+                        f"{e.args[0] if e.args else []}"
+                    )
+                    PlexUtilLogger.get_logger().debug(debug)
+                    description = (
+                        f"{Icons.WARNING} Existing Auth keys could not "
+                        f"be refreshed. Existing keys will be eliminated\n"
+                        f" -> Run again and reuthenticate."
+                    )
+                    PlexUtilLogger.get_logger().warning(description)
+                    bootstrap_paths_dto.private_key_dir.unlink(missing_ok=True)
+                    bootstrap_paths_dto.public_key_dir.unlink(missing_ok=True)
+                    bootstrap_paths_dto.token_dir.unlink(missing_ok=True)
+                    sys.exit(0)
+
                 description = "Refreshing Token and saving..."
                 PlexUtilLogger.get_logger().debug(description)
                 FileImporter.save_jwt(
