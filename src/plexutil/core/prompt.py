@@ -189,9 +189,9 @@ class Prompt(Static):
     def confirm_remote() -> bool:
         response = (
             input(
-                "\nIs the selected server, this device?"
-                "(Selecting yes will verify local media files in this device "
-                "matches those in the server)\n"
+                "\nIs the selected server this device?\n"
+                "(yes will check local media files stored in this device "
+                "match those in the server)\n"
                 "(Default: y) (y/n): "
             )
             .strip()
@@ -201,9 +201,9 @@ class Prompt(Static):
         PlexUtilLogger.get_logger().debug(description)
 
         if response in {"y", "yes"}:
-            return True
-        elif response in {"n", "no"}:
             return False
+        elif response in {"n", "no"}:
+            return True
         else:
             description = (
                 f"{Icons.WARNING} Did not understand your input: "

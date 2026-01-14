@@ -67,7 +67,7 @@ class Library(ABC):
         language: Language,
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
-        is_remote: bool = False,
+        is_remote: bool,
     ) -> None:
         self.supported_requests = supported_requests
         self.plex_server = plex_server
