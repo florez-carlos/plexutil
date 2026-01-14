@@ -67,6 +67,7 @@ class Library(ABC):
         language: Language,
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
+        is_remote: bool = False,
     ) -> None:
         self.supported_requests = supported_requests
         self.plex_server = plex_server
@@ -78,6 +79,7 @@ class Library(ABC):
         self.language = language
         self.user_request = user_request
         self.bootstrap_paths_dto = bootstrap_paths_dto
+        self.is_remote = is_remote
 
     def do(self) -> None:
         match self.user_request:
@@ -553,6 +555,8 @@ class Library(ABC):
             LibraryIllegalStateError: If local files do not match server
             LibraryUnsupportedError: If Library Type isn't supported
         """
+        if self.is_remote:
+            return
         local_files = self.__get_local_files()
         plex_files = self.query()
         try:
@@ -646,8 +650,11 @@ class Library(ABC):
             self.scanner = Scanner.get_from_str(
                 candidate=section.scanner, library_type=self.library_type
             )
-            self.locations = [
-                PathOps.get_path_from_str(location)
-                for location in section.locations
-            ]
             self.language = Language.get_from_str(section.language)
+            if not self.is_remote:
+                self.locations = [
+                    PathOps.get_path_from_str(location)
+                    for location in section.locations
+                ]
+            else:
+                self.locations = []

@@ -37,12 +37,14 @@ class LibraryFactory(Static):
         Returns:
             Library: The initiazed Library chosen by the user
         """
+        is_remote = Prompt.confirm_remote()
         libraries = []
         libraries.append(
             MovieLibrary(
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
+                is_remote=is_remote,
             )
         )
         libraries.append(
@@ -50,6 +52,7 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
+                is_remote=is_remote,
             )
         )
         libraries.append(
@@ -57,6 +60,7 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
+                is_remote=is_remote,
             )
         )
         libraries.append(
@@ -64,6 +68,7 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
+                is_remote=is_remote,
             )
         )
 

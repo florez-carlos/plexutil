@@ -37,6 +37,7 @@ class MusicLibrary(Library):
         scanner: Scanner = Scanner.get_default(LibraryType.MUSIC),
         name: str = LibraryType.MUSIC.get_display_name(),
         language: Language = Language.get_default(),
+        is_remote: bool = False,
     ) -> None:
         super().__init__(
             supported_requests=[
@@ -54,6 +55,7 @@ class MusicLibrary(Library):
             language=language,
             user_request=user_request,
             bootstrap_paths_dto=bootstrap_paths_dto,
+            is_remote=is_remote,
         )
 
     def add_item(self) -> None:

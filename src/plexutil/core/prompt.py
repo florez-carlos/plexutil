@@ -186,6 +186,33 @@ class Prompt(Static):
         return response.value
 
     @staticmethod
+    def confirm_remote() -> bool:
+        response = (
+            input(
+                "\nIs the selected server, this device?"
+                "(Selecting yes will verify local media files in this device "
+                "matches those in the server)\n"
+                "(Default: y) (y/n): "
+            )
+            .strip()
+            .lower()
+        )
+        description = f"IS REMOTE? {response}"
+        PlexUtilLogger.get_logger().debug(description)
+
+        if response in {"y", "yes"}:
+            return True
+        elif response in {"n", "no"}:
+            return False
+        else:
+            description = (
+                f"{Icons.WARNING} Did not understand your input: "
+                f"{response} | Proceeding with default"
+            )
+            PlexUtilLogger.get_logger().warning(description)
+            return True
+
+    @staticmethod
     def confirm_text(title: str, description: str, question: str) -> list[str]:
         """
         Prompts the user for text,
