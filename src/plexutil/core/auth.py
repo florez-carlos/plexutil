@@ -22,6 +22,9 @@ class Auth(Static):
         Login to Plex and returns a list of all the available Plex Resources
         (Servers and Clients)
 
+        *Deletes existing keys/token and terminates early if unable to refresh
+        existing token
+
         Args:
             bootstrap_paths_dto (BootstrapPathsDTO): Used to locate auth dir
 

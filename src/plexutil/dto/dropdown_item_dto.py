@@ -9,3 +9,4 @@ from typing import Any
 class DropdownItemDTO:
     display_name: str = ""
     value: Any = 0
+    is_default: bool = False

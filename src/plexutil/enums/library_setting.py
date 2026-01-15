@@ -108,7 +108,9 @@ class LibrarySetting(Enum):
         True,
         [
             DropdownItemDTO(
-                display_name="Rotten Tomatoes", value="rottentomatoes"
+                display_name="Rotten Tomatoes",
+                value="rottentomatoes",
+                is_default=True,
             ),
             DropdownItemDTO(display_name="IMDb", value="imdb"),
             DropdownItemDTO(
@@ -116,6 +118,18 @@ class LibrarySetting(Enum):
             ),
         ],
         0,
+    )
+
+    SONIC_ANALYSIS = (
+        "musicAnalysis",
+        "Sonic Analysis",
+        ("Analyze tracks for sonic features\n"),
+        [LibraryType.MUSIC],
+        True,
+        False,
+        False,
+        [],
+        False,
     )
 
     ARTIST_BIOS = (
@@ -193,7 +207,9 @@ class LibrarySetting(Enum):
         False,
         True,
         [
-            DropdownItemDTO(display_name="Embedded Tags", value=2),
+            DropdownItemDTO(
+                display_name="Embedded Tags", value=2, is_default=True
+            ),
             DropdownItemDTO(display_name="Plex Music", value=1),
             DropdownItemDTO(display_name="None", value=0),
         ],
@@ -209,7 +225,9 @@ class LibrarySetting(Enum):
         False,
         True,
         [
-            DropdownItemDTO(display_name="Local Files Only", value=3),
+            DropdownItemDTO(
+                display_name="Local Files Only", value=3, is_default=True
+            ),
             DropdownItemDTO(display_name="Plex Music Only", value=2),
             DropdownItemDTO(
                 display_name="Both Plex Music and Local Files", value=1

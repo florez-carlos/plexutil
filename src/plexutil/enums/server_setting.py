@@ -42,7 +42,7 @@ class ServerSetting(Enum):
             DropdownItemDTO(display_name="20:00", value=20),
             DropdownItemDTO(display_name="21:00", value=21),
             DropdownItemDTO(display_name="22:00", value=22),
-            DropdownItemDTO(display_name="23:00", value=23),
+            DropdownItemDTO(display_name="23:00", value=23, is_default=True),
             DropdownItemDTO(display_name="24:00", value=24),
         ],
         0,
@@ -61,7 +61,7 @@ class ServerSetting(Enum):
             DropdownItemDTO(display_name="3:00", value=3),
             DropdownItemDTO(display_name="4:00", value=4),
             DropdownItemDTO(display_name="5:00", value=5),
-            DropdownItemDTO(display_name="6:00", value=6),
+            DropdownItemDTO(display_name="6:00", value=6, is_default=True),
             DropdownItemDTO(display_name="7:00", value=7),
             DropdownItemDTO(display_name="8:00", value=8),
             DropdownItemDTO(display_name="9:00", value=9),
@@ -93,7 +93,9 @@ class ServerSetting(Enum):
         [
             DropdownItemDTO(display_name="never", value="never"),
             DropdownItemDTO(
-                display_name="as a scheduled task", value="scheduled"
+                display_name="as a scheduled task",
+                value="scheduled",
+                is_default=True,
             ),
             DropdownItemDTO(
                 display_name="as a scheduled task and when media is added",
@@ -113,7 +115,9 @@ class ServerSetting(Enum):
         [
             DropdownItemDTO(display_name="never", value="never"),
             DropdownItemDTO(
-                display_name="as a scheduled task", value="scheduled"
+                display_name="as a scheduled task",
+                value="scheduled",
+                is_default=True,
             ),
             DropdownItemDTO(
                 display_name="as a scheduled task and when media is added",
