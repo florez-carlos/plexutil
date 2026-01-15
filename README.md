@@ -49,7 +49,6 @@ plexutil create
 ```bash
 plexutil delete
 ```
----
 
 ### Exporting/Importing Music Playlists
 Music Playlists can be exported to a playlists.db file, this file can later be imported to another Plex server with plexutil
@@ -63,8 +62,6 @@ plexutil upload
 ```
 > [!NOTE]
 > The songs in the Music Library of the importing server must match the songs in the exporting server
-
----
 
 ## Development
 > [!NOTE]
