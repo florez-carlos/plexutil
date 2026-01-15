@@ -189,10 +189,11 @@ class Prompt(Static):
     def confirm_remote() -> bool:
         response = (
             input(
-                "\nIs the selected server this device?\n"
-                "(yes will check local media files stored in this device "
-                "match those in the server)\n"
-                "(Default: y) (y/n): "
+                "\n========== Is it this device? ==========\n"
+                "Selecting yes will check local media files stored in this "
+                "device match those in the server\n"
+                "Pick no if this isn't the device Plex Server is running on\n"
+                "Is the selected server this device? (Default: y) (y/n): "
             )
             .strip()
             .lower()
