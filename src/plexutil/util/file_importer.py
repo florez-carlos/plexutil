@@ -68,7 +68,7 @@ class FileImporter(Static):
                 home_folder = buf.value or ""
                 if not home_folder:
                     description = "Could not locate Documents folder"
-                    raise FileNotFoundError(description)  # noqa: TRY301
+                    raise FileNotFoundError(description)
 
             elif system == "Linux":
                 home_folder = os.getenv("HOME") or ""
@@ -77,7 +77,7 @@ class FileImporter(Static):
 
             else:
                 description = f"Unsupported OS: {system}"
-                raise OSError(description)  # noqa: TRY301
+                raise OSError(description)
 
             plexutil_dir = Path(home_folder) / "plexutil"
             auth_dir = plexutil_dir / "auth"

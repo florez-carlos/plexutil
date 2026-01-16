@@ -28,13 +28,20 @@ from plexutil.util.plex_ops import PlexOps
 def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
-        user_request = Prompt.get_user_request()
-        auth = Auth.get_resources(bootstrap_paths_dto)
-        dropdown = [
-            DropdownItemDTO(display_name=f"{x.name} - {x.device}", value=x)
-            for x in auth
-            if x.product == "Plex Media Server"
-        ]
+        user_request = Prompt.confirm_user_request()
+        resources = Auth.get_resources(bootstrap_paths_dto)
+        dropdown = []
+        default = True
+        for resource in resources:
+            if resource.product == "Plex Media Server":
+                item = DropdownItemDTO(
+                    display_name=f"{resource.name} - {resource.device}",
+                    value=resource,
+                    is_default=default,
+                )
+                default = False
+                dropdown.append(item)
+
         user_response = Prompt.draw_dropdown(
             "Available Servers", "Choose a server to connect to", dropdown
         )

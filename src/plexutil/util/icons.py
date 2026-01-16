@@ -22,4 +22,4 @@ class Icons(Static):
     CHEVRON_RIGHT = (
         "► " if sys.stdout.encoding.lower().startswith("utf") else "> "
     )
-    STAR = "⋆" if sys.stdout.encoding.lower().startswith("utf") else "*"
+    STAR = "●" if sys.stdout.encoding.lower().startswith("utf") else "*"

@@ -231,6 +231,8 @@ class Library(ABC):
             DropdownItemDTO(
                 display_name=filtered_scanner.get_label(),
                 value=filtered_scanner,
+                is_default=Scanner.get_default(self.library_type)
+                is filtered_scanner,
             )
             for filtered_scanner in filtered_scanners
         ]
