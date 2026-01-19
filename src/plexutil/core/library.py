@@ -67,7 +67,7 @@ class Library(ABC):
         language: Language,
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
-        is_remote: bool,
+        is_strict: bool,
     ) -> None:
         self.supported_requests = supported_requests
         self.plex_server = plex_server
@@ -79,7 +79,7 @@ class Library(ABC):
         self.language = language
         self.user_request = user_request
         self.bootstrap_paths_dto = bootstrap_paths_dto
-        self.is_remote = is_remote
+        self.is_strict = is_strict
 
     def do(self) -> None:
         match self.user_request:
@@ -222,74 +222,25 @@ class Library(ABC):
 
     def assign_scanner(self) -> None:
         """
-        Ask user for a Scanner
+        Prompt user for a Scanner
 
         Returns:
             None: This method does not return a value.
         """
-        description = (
-            "Scanners in Plex are the server components "
-            "that go look at the media locations you specify "
-            "for your libraries and then figure out:\n\n"
-            "1. Whether the file is appropriate for that library "
-            "(e.g. is it a TV episode for a TV library?)\n"
-            "2. If it's the appropriate type, then which item is it "
-            "(e.g. it's season 3, episode 7 of the show Futurama)\n\n"
-        )
-
-        scanners = Scanner.get_all()
-        filtered_scanners = [
-            scanner
-            for scanner in scanners
-            if scanner.is_compatible(self.library_type)
-        ]
-        dropdown = [
-            DropdownItemDTO(
-                display_name=filtered_scanner.get_label(),
-                value=filtered_scanner,
-                is_default=Scanner.get_default(self.library_type)
-                is filtered_scanner,
-            )
-            for filtered_scanner in filtered_scanners
-        ]
-        user_response = Prompt.draw_dropdown(
-            title="Scanner Selection",
-            description=description,
-            dropdown=dropdown,
-        )
-
-        self.scanner = user_response.value
+        self.scanner = Prompt.confirm_scanner(
+            self.library_type
+        ) or Scanner.get_default(self.library_type)
 
     def assign_agent(self) -> None:
         """
-        Ask user for an Agent
+        Prompt user for an Agent
 
         Returns:
             None: This method does not return a value.
         """
-        description = (
-            "Metadata Agents are the server component that's responsible \n"
-            "for taking the information from the scanner and then acting on \n"
-            "it to help bring in the rich metadata (plot summary, "
-            "cast info, cover art, music album reviews, etc.) \n\n"
-        )
-        agents = Agent.get_all()
-        filtered_agents = [
-            agent for agent in agents if agent.is_compatible(self.library_type)
-        ]
-        dropdown = [
-            DropdownItemDTO(
-                display_name=filtered_agent.get_label(self.library_type),
-                value=filtered_agent,
-                is_default=Agent.get_default(self.library_type)
-                is filtered_agent,
-            )
-            for filtered_agent in filtered_agents
-        ]
-        user_response = Prompt.draw_dropdown(
-            "Agent Selection", description, dropdown=dropdown
-        )
-        self.agent = user_response.value
+        self.agent = Prompt.confirm_agent(
+            self.library_type
+        ) or Agent.get_default(self.library_type)
 
     @abstractmethod
     def delete(self) -> None:
@@ -583,7 +534,7 @@ class Library(ABC):
             LibraryIllegalStateError: If local files do not match server
             LibraryUnsupportedError: If Library Type isn't supported
         """
-        if self.is_remote:
+        if not self.is_strict:
             return
         local_files = self.__get_local_files()
         plex_files = self.query()
@@ -679,7 +630,7 @@ class Library(ABC):
                 candidate=section.scanner, library_type=self.library_type
             )
             self.language = Language.get_from_str(section.language)
-            if not self.is_remote:
+            if self.is_strict:
                 self.locations = [
                     PathOps.get_path_from_str(location)
                     for location in section.locations

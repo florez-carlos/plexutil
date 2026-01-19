@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from plexutil.core.music_playlist import MusicPlaylist
 from plexutil.core.prompt import Prompt
-from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 
 if TYPE_CHECKING:
     from plexapi.server import PlexServer
@@ -37,14 +36,14 @@ class LibraryFactory(Static):
         Returns:
             Library: The initiazed Library chosen by the user
         """
-        is_remote = Prompt.confirm_remote()
+        is_strict = Prompt.confirm_strict()
         libraries = []
         libraries.append(
             MovieLibrary(
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_remote=is_remote,
+                is_strict=is_strict,
             )
         )
         libraries.append(
@@ -52,7 +51,7 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_remote=is_remote,
+                is_strict=is_strict,
             )
         )
         libraries.append(
@@ -60,7 +59,7 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_remote=is_remote,
+                is_strict=is_strict,
             )
         )
         libraries.append(
@@ -68,21 +67,13 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_remote=is_remote,
+                is_strict=is_strict,
             )
         )
-
-        dropdown = [
-            DropdownItemDTO(
-                display_name=library.library_type.get_display_name(),
-                value=library,
-            )
-            for library in libraries
-            if user_request in library.supported_requests
-        ]
-        user_response = Prompt.draw_dropdown(
-            "Library Type",
-            f"Choose a Library Type to {user_request.value}",
-            dropdown=dropdown,
+        return Prompt.confirm_library(
+            user_request=user_request,
+            libraries=libraries,
+            is_multi_column=False,
+            expect_input=True,
+            is_from_server=False,
         )
-        return user_response.value

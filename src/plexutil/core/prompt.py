@@ -6,14 +6,17 @@ from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
 from typing import cast
 
+from plexutil.core.library import Library
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
+from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
+from plexutil.enums.library_type import LibraryType
+from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
 )
-from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.file_importer import FileImporter
@@ -87,15 +90,13 @@ class Prompt(Static):
         library_setting: LibrarySettingDTO,
     ) -> LibrarySettingDTO:
         user_response = library_setting.user_response
-        response = library_setting.user_response
-        default_selection = bool(library_setting.user_response)
 
         if library_setting.is_toggle:
             response = Prompt.__get_toggle_response(
                 title=library_setting.display_name,
                 description=library_setting.description,
                 question=library_setting.display_name,
-                default_selection=default_selection,
+                default_selection=bool(library_setting.user_response),
                 is_from_server=library_setting.is_from_server,
             )
             user_response = (
@@ -108,7 +109,7 @@ class Prompt(Static):
             pass
         elif library_setting.is_dropdown:
             dropdown = library_setting.dropdown
-            user_response = Prompt.draw_dropdown(
+            user_response = Prompt.__draw_dropdown(
                 title=library_setting.display_name,
                 description=library_setting.description,
                 dropdown=dropdown,
@@ -144,7 +145,7 @@ class Prompt(Static):
             for language in languages
         ]
 
-        response = Prompt.draw_dropdown(
+        response = Prompt.__draw_dropdown(
             title="Language Selection",
             description="Choose the Language",
             dropdown=items,
@@ -154,7 +155,7 @@ class Prompt(Static):
         return response.value
 
     @staticmethod
-    def confirm_remote() -> bool:
+    def confirm_strict() -> bool:
         """
         Prompts user if this device is running the Plex Server
 
@@ -162,18 +163,25 @@ class Prompt(Static):
             bool: Is this a remote device (Not the Plex Server)
         """
         description = (
-            "Selecting yes will check local media files stored in this "
-            "device match those in the server\n"
-            "*Pick no if this isn't the device the Plex Server is running on\n"
+            "When running strict mode, the files in this device\n"
+            "will be compared against those in the chosen Plex Server\n"
+            "This is useful to avoid conflicts with certain operations\n"
+            "such as trying to add songs to a playlist\n"
+            "but the songs haven't been added to the server yet\n"
+            "DO NOT PICK YES IF PLEX SERVER IS RUNNING ON A DIFFERENT DEVICE"
+        )
+        question = (
+            "Enforce strict conformity between the files "
+            "in this device and the files in the chosen server"
         )
         response = Prompt.__get_toggle_response(
-            title="Is the selected device hosting the Plex Server?",
+            title="Strict Mode",
             description=description,
-            question="Is the selected server this device",
-            default_selection=True,
+            question=question,
+            default_selection=False,
             is_from_server=False,
         )
-        return not response
+        return bool(response)
 
     @staticmethod
     def confirm_text(title: str, description: str, question: str) -> list[str]:
@@ -189,61 +197,169 @@ class Prompt(Static):
         Returns:
             str: The User's response
         """
-        Prompt.__draw_banner(
-            title=title,
-            description=description,
-            question=question,
-        )
         return cast(
-            "str", Prompt.__get_multi_response(default_selection="")
+            "str",
+            Prompt.__get_text_response(
+                title=title,
+                description=description,
+                question=question,
+            ),
         ).split(",")
 
     @staticmethod
-    def draw_dropdown(
+    def confirm_scanner(library_type: LibraryType) -> Scanner:
+        """
+        Prompt user for a Scanner
+
+        Returns:
+            Scanner: The chosen Scanner
+        """
+        description = (
+            "Scanners in Plex are the server components "
+            "that go look at the media locations you specify "
+            "for your libraries and then figure out:\n\n"
+            "1. Whether the file is appropriate for that library "
+            "(e.g. is it a TV episode for a TV library?)\n"
+            "2. If it's the appropriate type, then which item is it "
+            "(e.g. it's season 3, episode 7 of the show Futurama)\n\n"
+        )
+
+        scanners = Scanner.get_all()
+        filtered_scanners = [
+            scanner
+            for scanner in scanners
+            if scanner.is_compatible(library_type)
+        ]
+        dropdown = [
+            DropdownItemDTO(
+                display_name=filtered_scanner.get_label(),
+                value=filtered_scanner,
+                is_default=Scanner.get_default(library_type)
+                is filtered_scanner,
+            )
+            for filtered_scanner in filtered_scanners
+        ]
+        user_response = Prompt.__draw_dropdown(
+            title="Scanner Selection",
+            description=description,
+            dropdown=dropdown,
+        )
+
+        return user_response.value
+
+    @staticmethod
+    def confirm_agent(library_type: LibraryType) -> None:
+        """
+        Prompt user for an Agent
+
+        Returns:
+            None: This method does not return a value.
+        """
+        description = (
+            "Metadata Agents are the server component that's responsible \n"
+            "for taking the information from the scanner and then acting on \n"
+            "it to help bring in the rich metadata (plot summary, "
+            "cast info, cover art, music album reviews, etc.) \n\n"
+        )
+        agents = Agent.get_all()
+        filtered_agents = [
+            agent for agent in agents if agent.is_compatible(library_type)
+        ]
+        dropdown = [
+            DropdownItemDTO(
+                display_name=filtered_agent.get_label(library_type),
+                value=filtered_agent,
+                is_default=Agent.get_default(library_type) is filtered_agent,
+            )
+            for filtered_agent in filtered_agents
+        ]
+        user_response = Prompt.__draw_dropdown(
+            "Agent Selection", description, dropdown=dropdown
+        )
+        return user_response.value
+
+    @staticmethod
+    def confirm_library(
+        user_request: UserRequest,
+        libraries: list[Library],
+        is_multi_column: bool = False,
+        expect_input: bool = True,
+        is_from_server: bool = False,
+    ) -> Library:
+        """
+        Prompts user for a Library Selection
+
+        Args:
+            user_request (UserRequest): Required to filter the compatible
+            library to display
+            dropdown (list[Library]): The libraries to consider
+            is_multi_column (bool): Display the dropdown in multiple columns
+            expect_input (bool): Prompt the user for a response
+            is_from_server (bool): is default_selection an existing value
+            from the plex server?
+
+        Returns:
+            Library: The selected Library
+            DropdownItemDTO: The selected item or the default in the dropdown
+        """
+        dropdown = [
+            DropdownItemDTO(
+                display_name=library.library_type.get_display_name(),
+                value=library,
+                is_default=library.library_type is LibraryType.get_default(),
+            )
+            for library in libraries
+            if user_request in library.supported_requests
+        ]
+
+        return Prompt.__draw_dropdown(
+            title="Library Type",
+            description=f"Choose a Library Type to {user_request.value}",
+            dropdown=dropdown,
+            is_multi_column=is_multi_column,
+            expect_input=expect_input,
+            is_from_server=is_from_server,
+        ).value
+
+    @staticmethod
+    def __draw_dropdown(
         title: str,
         description: str,
         dropdown: list[DropdownItemDTO],
         is_multi_column: bool = False,
         expect_input: bool = True,
+        is_from_server: bool = False,
     ) -> DropdownItemDTO:
-        if dropdown:
-            default_display_name = dropdown[0].display_name
-            default_selection_idx = 0
-            idx = 0
-            for item in dropdown:
-                if item.is_default:
-                    default_display_name = item.display_name
-                    default_selection_idx = idx
-                    break
-                idx = idx + 1
+        """
+        Draws a banner and a dropdown
 
-            if expect_input:
-                description = f"{description}\nAvailable Options:\n"
+        Args:
+            title (str): Message to display at the top of the banner
+            description (str): helpful message to display in banner body
+            dropdown (list[DropdownItemDTO]): The items to display
+            is_multi_column (bool): Display the dropdown in multiple columns
+            expect_input (bool): Prompt the user for a response
+            is_from_server (bool): is default_selection an existing value
+            from the plex server?
 
-            Prompt.__draw_banner(
-                title=title,
-                description=description,
-                default_selection=default_display_name,
-                is_from_server=False,
-            )
-
-        else:
-            description = (
-                f"\n{description}\n\n{Icons.WARNING} Nothing Available\n"
-            )
-            Prompt.__draw_banner(
-                title=title, description=description, is_from_server=False
-            )
-            sys.exit(0)
+        Returns:
+            DropdownItemDTO: The selected item or the default in the dropdown
+        """
+        if not dropdown:
+            Prompt.__draw_banner(title=title, description=description)
+            description = f"\n\n{Icons.WARNING} Nothing Available\n"
+            PlexUtilLogger.get_console_logger().warning(description)
+            return DropdownItemDTO()
 
         dropdown_count = 1
         columns_count = 1
         max_columns = 3 if is_multi_column else 1
         max_column_width = 25
+        max_single_space = 10
+        max_double_space = 100
         space = ""
         newline = "\n"
 
-        description = ""
         for item in dropdown:
             if item.is_default:
                 offset = max_column_width - (len(item.display_name) + 1)
@@ -251,11 +367,12 @@ class Prompt(Static):
                 offset = max_column_width - len(item.display_name)
 
             space = " " * offset
-            number_format = (
-                f"[ {dropdown_count}] "
-                if dropdown_count < 10  # noqa: PLR2004
-                else f"[{dropdown_count}] "
-            )
+            if dropdown_count < max_single_space:
+                number_format = f"[  {dropdown_count}] "
+            elif dropdown_count < max_double_space:
+                number_format = f"[ {dropdown_count}] "
+            else:
+                number_format = f"[{dropdown_count}] "
 
             if item.is_default:
                 display_name = f"{item.display_name} {Icons.STAR}"
@@ -274,26 +391,21 @@ class Prompt(Static):
 
         PlexUtilLogger.get_console_logger().info(description)
 
-        if not expect_input:
+        if expect_input:
+            return Prompt.__get_dropdown_response(
+                title=title,
+                description=description,
+                dropdown=dropdown,
+                is_from_server=is_from_server,
+            )
+
+        else:
             return DropdownItemDTO()
-
-        response = cast(
-            "int",
-            Prompt.__get_multi_response(
-                default_selection=default_selection_idx,
-                dropdown_length=len(dropdown),
-                is_from_server=False,
-            ),
-        )
-
-        return dropdown[response]
 
     @staticmethod
     def __draw_banner(
         title: str,
         description: str,
-        default_selection: bool | int | str = "",
-        is_from_server: bool = False,
         question: str = "",
     ) -> None:
         """
@@ -339,23 +451,27 @@ class Prompt(Static):
             description (str): helpful message to display in banner body
             question (str): The question, ? (y/n) is appended after it
             default_selection (bool): The default value
-            is_current (bool): is default_selection an existing value
+            is_from_server (bool): is default_selection an existing value
             from the plex server?
 
         Returns:
-            bool: yes/no selection from user
+            bool: yes/no selection from user or
+            str: The text input by the ser or
+            int: The index chosen by the user
+            bool or str or int: default_selection if user input nor recognized
         """
         Prompt.__draw_banner(
             title=title,
             description=description,
             question=question,
-            default_selection=default_selection,
-            is_from_server=is_from_server,
         )
+        if default_selection:
+            description = f"\nAnswer ({Icons.STAR} y/n) {Icons.CHEVRON_RIGHT}"
+        else:
+            description = f"\nAnswer (y/{Icons.STAR} n) {Icons.CHEVRON_RIGHT}"
 
-        response = (
-            input(f"\nAnswer (y/n) {Icons.CHEVRON_RIGHT}").strip().lower()
-        )
+        response = input(description).strip().lower()
+
         description = f"{question}? User chose: {response}"
         PlexUtilLogger.get_logger().debug(description)
 
@@ -376,69 +492,97 @@ class Prompt(Static):
                     f"{response} | Proceeding with default "
                     f"({'y' if default_selection else 'n'})"
                 )
-                PlexUtilLogger.get_logger().warning(description)
+            PlexUtilLogger.get_logger().warning(description)
             return default_selection
 
     @staticmethod
-    def __get_multi_response(
-        default_selection: bool | str | int = "",
-        dropdown_length: int = 0,
+    def __get_text_response(
+        title: str,
+        description: str,
+        question: str,
+        is_multi_value: bool = False,
+    ) -> str:
+        """
+        Prompt user for a text response
+
+        Args:
+            title (str): Message to display at the top of the banner
+            description (str): helpful message to display in banner body
+            question (str): The question, ? (y/n) is appended after it
+            is_multi_value (bool): Suggest user to separate values w/ comma
+
+        Returns:
+            str: The text input by the user
+        """
+        Prompt.__draw_banner(
+            title=title,
+            description=description,
+            question=question,
+        )
+        if is_multi_value:
+            description = (
+                f"\nEnter text (For multiple values, "
+                f"separate with comma i.e text1,text2) {Icons.CHEVRON_RIGHT}"
+            )
+        else:
+            description = f"\nEnter text {Icons.CHEVRON_RIGHT}"
+        response = input(description).strip()
+
+        description = f"{question}? User chose: {response}"
+        PlexUtilLogger.get_logger().debug(description)
+
+        return response
+
+    @staticmethod
+    def __get_dropdown_response(
+        title: str,
+        description: str,
+        dropdown: list[DropdownItemDTO],
         is_from_server: bool = False,
-    ) -> bool | str | int:
+    ) -> DropdownItemDTO:
+        """
+        Prompt user for a dropdown response
+
+        Args:
+            title (str): Message to display at the top of the banner
+            description (str): helpful message to display in banner body
+            dropdown (list[DropdownItemDTO]): The items to display
+            is_current (bool): is default_selection an existing value
+            from the plex server?
+
+        Returns:
+            DropdownItemDTO: The selection from the user or the default
+        """
+        Prompt.__draw_banner(
+            title=title,
+            description=description,
+        )
         response = ""
+        dropdown_length = len(dropdown)
+        default_item = next(x for x in dropdown if x.is_default)
 
-        try:
-            if isinstance(default_selection, bool):
-                if default_selection:
-                    description = (
-                        f"\nAnswer ({Icons.STAR} y/n) {Icons.CHEVRON_RIGHT}"
-                    )
-                else:
-                    description = (
-                        f"\nAnswer (y/{Icons.STAR} n) {Icons.CHEVRON_RIGHT}"
-                    )
+        description = f"Pick (1-{dropdown_length!s}) {Icons.CHEVRON_RIGHT} "
+        response = input(description).strip()
 
-                response = input(description).strip().lower()
+        if response.isdigit():
+            int_response = int(response)
+            if int_response > 0 and int_response <= dropdown_length:
+                response = dropdown[int_response - 1]
+                description = f"{title} | User chose: {response.display_name}"
+                PlexUtilLogger.get_logger().debug(description)
+                return response
 
-                if response in {"y", "yes"}:
-                    return True
-                elif response in {"n", "no"}:
-                    return False
-                else:
-                    raise UserError
-
-            elif isinstance(default_selection, str):
-                description = (
-                    f"\nEnter text (For multiple values, "
-                    f"separate w/ comma) {Icons.CHEVRON_RIGHT}"
-                )
-                return input(description).strip()
-            elif dropdown_length > 0:
-                description = (
-                    f"Pick (1-{dropdown_length!s}) {Icons.CHEVRON_RIGHT} "
-                )
-                response = input(description).strip()
-                if response.isdigit():
-                    int_response = int(response)
-                    if int_response > 0 and int_response <= dropdown_length:
-                        return int_response - 1
-                    else:
-                        raise UserError
-                else:
-                    raise UserError
-            else:
-                return default_selection
-
-        except UserError:
-            if is_from_server:
-                description = (
-                    f"{Icons.WARNING} Did not understand your input: "
-                    f"{response} | Setting Remains Unchanged"
-                )
-            else:
-                description = (
-                    f"{Icons.WARNING} Did not understand your input: "
-                    f"{response} | Proceeding with default"
-                )
-                PlexUtilLogger.get_logger().warning(description)
-            return default_selection
+        if is_from_server:
+            description = (
+                f"{Icons.WARNING} Did not understand your input: "
+                f"{response} | Setting Remains Unchanged "
+                f"({default_item.display_name})"
+            )
+        else:
+            description = (
+                f"{Icons.WARNING} Did not understand your input: "
+                f"{response} | Proceeding with default "
+                f"({default_item.display_name})"
+            )
+        PlexUtilLogger.get_logger().warning(description)
+        return default_item
