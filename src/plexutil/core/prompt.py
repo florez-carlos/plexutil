@@ -139,6 +139,7 @@ class Prompt(Static):
             DropdownItemDTO(
                 display_name=language.get_display_name(),
                 value=language,
+                is_default=Language.get_default() is language,
             )
             for language in languages
         ]
@@ -161,7 +162,7 @@ class Prompt(Static):
             bool: Is this a remote device (Not the Plex Server)
         """
         description = (
-            "\nSelecting yes will check local media files stored in this "
+            "Selecting yes will check local media files stored in this "
             "device match those in the server\n"
             "*Pick no if this isn't the device the Plex Server is running on\n"
         )
@@ -217,7 +218,7 @@ class Prompt(Static):
                 idx = idx + 1
 
             if expect_input:
-                description = f"{description}\nAvailable Options:\n\n"
+                description = f"{description}\nAvailable Options:\n"
 
             Prompt.__draw_banner(
                 title=title,
@@ -311,7 +312,7 @@ class Prompt(Static):
             None: This method does not return a value
         """
         question = question.replace("?", "")
-        question = f"\n{question}?\n" if question else ""
+        question = f"\n{question}?" if question else ""
 
         banner = (
             f"\n{Icons.BANNER_LEFT} {title} {Icons.BANNER_RIGHT}\n"
@@ -353,7 +354,7 @@ class Prompt(Static):
         )
 
         response = (
-            input(f"\n\nAnswer (y/n) {Icons.CHEVRON_RIGHT}").strip().lower()
+            input(f"\nAnswer (y/n) {Icons.CHEVRON_RIGHT}").strip().lower()
         )
         description = f"{question}? User chose: {response}"
         PlexUtilLogger.get_logger().debug(description)
@@ -388,7 +389,14 @@ class Prompt(Static):
 
         try:
             if isinstance(default_selection, bool):
-                description = f"\n\nAnswer (y/n) {Icons.CHEVRON_RIGHT}"
+                if default_selection:
+                    description = (
+                        f"\nAnswer ({Icons.STAR} y/n) {Icons.CHEVRON_RIGHT}"
+                    )
+                else:
+                    description = (
+                        f"\nAnswer (y/{Icons.STAR} n) {Icons.CHEVRON_RIGHT}"
+                    )
 
                 response = input(description).strip().lower()
 
@@ -401,7 +409,7 @@ class Prompt(Static):
 
             elif isinstance(default_selection, str):
                 description = (
-                    f"\n\nEnter text (For multiple values, "
+                    f"\nEnter text (For multiple values, "
                     f"separate w/ comma) {Icons.CHEVRON_RIGHT}"
                 )
                 return input(description).strip()

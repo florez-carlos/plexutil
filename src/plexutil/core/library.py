@@ -191,10 +191,14 @@ class Library(ABC):
         Returns:
             None: This method does not return a value.
         """
+        description = (
+            "Type Locations for this Library, separated by comma\n"
+            "i.e /storage/media/tv,/storage/media/more_tv"
+        )
         locations = Prompt.confirm_text(
-            "Locations",
-            "Type Locations for this Library, separated by comma",
-            "Locations",
+            title="Locations",
+            description=description,
+            question="",
         )
         if locations:
             self.locations = [Path(location) for location in locations]
@@ -210,7 +214,9 @@ class Library(ABC):
             None: This method does not return a value.
         """
         text = Prompt.confirm_text(
-            "Library Name", "Type a name for the Library", "Library Name"
+            "Library Name",
+            "Library requires a name",
+            "What should the library name be",
         )
         self.name = text[0] if text else self.library_type.get_display_name()
 
@@ -221,6 +227,16 @@ class Library(ABC):
         Returns:
             None: This method does not return a value.
         """
+        description = (
+            "Scanners in Plex are the server components "
+            "that go look at the media locations you specify "
+            "for your libraries and then figure out:\n\n"
+            "1. Whether the file is appropriate for that library "
+            "(e.g. is it a TV episode for a TV library?)\n"
+            "2. If it's the appropriate type, then which item is it "
+            "(e.g. it's season 3, episode 7 of the show Futurama)\n\n"
+        )
+
         scanners = Scanner.get_all()
         filtered_scanners = [
             scanner
@@ -237,7 +253,9 @@ class Library(ABC):
             for filtered_scanner in filtered_scanners
         ]
         user_response = Prompt.draw_dropdown(
-            "Scanner Selection", "Choose a Scanner", dropdown=dropdown
+            title="Scanner Selection",
+            description=description,
+            dropdown=dropdown,
         )
 
         self.scanner = user_response.value
@@ -249,6 +267,12 @@ class Library(ABC):
         Returns:
             None: This method does not return a value.
         """
+        description = (
+            "Metadata Agents are the server component that's responsible \n"
+            "for taking the information from the scanner and then acting on \n"
+            "it to help bring in the rich metadata (plot summary, "
+            "cast info, cover art, music album reviews, etc.) \n\n"
+        )
         agents = Agent.get_all()
         filtered_agents = [
             agent for agent in agents if agent.is_compatible(self.library_type)
@@ -257,11 +281,13 @@ class Library(ABC):
             DropdownItemDTO(
                 display_name=filtered_agent.get_label(self.library_type),
                 value=filtered_agent,
+                is_default=Agent.get_default(self.library_type)
+                is filtered_agent,
             )
             for filtered_agent in filtered_agents
         ]
         user_response = Prompt.draw_dropdown(
-            "Agent Selection", "Choose an Agent", dropdown=dropdown
+            "Agent Selection", description, dropdown=dropdown
         )
         self.agent = user_response.value
 
