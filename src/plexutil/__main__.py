@@ -3,7 +3,6 @@ import sys
 from plexutil.core.auth import Auth
 from plexutil.core.library_factory import LibraryFactory
 from plexutil.core.prompt import Prompt
-from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.library_illegal_state_error import (
@@ -29,23 +28,10 @@ def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
         user_request = Prompt.confirm_user_request()
-        resources = Auth.get_resources(bootstrap_paths_dto)
-        dropdown = []
-        default = True
-        for resource in resources:
-            if resource.product == "Plex Media Server":
-                item = DropdownItemDTO(
-                    display_name=f"{resource.name} - {resource.device}",
-                    value=resource,
-                    is_default=default,
-                )
-                default = False
-                dropdown.append(item)
-
-        user_response = Prompt.draw_dropdown(
-            "Available Servers", "Choose a server to connect to", dropdown
-        )
-        plex_server = user_response.value.connect()
+        plex_resources = Auth.get_resources(bootstrap_paths_dto)
+        plex_server = Prompt.confirm_server(
+            plex_resources=plex_resources
+        ).connect()
 
         if user_request is UserRequest.SETTINGS:
             PlexOps.set_server_settings(plex_server=plex_server)

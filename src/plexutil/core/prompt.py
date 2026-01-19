@@ -4,9 +4,13 @@ import argparse
 import sys
 from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
-from plexutil.core.library import Library
+if TYPE_CHECKING:
+    from plexapi.myplex import MyPlexResource
+
+    from plexutil.core.library import Library
+
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.agent import Agent
@@ -319,6 +323,36 @@ class Prompt(Static):
             is_multi_column=is_multi_column,
             expect_input=expect_input,
             is_from_server=is_from_server,
+        ).value
+
+    @staticmethod
+    def confirm_server(plex_resources: list[MyPlexResource]) -> MyPlexResource:
+        """
+        Prompts user for a Plex Media Server selection
+
+        Args:
+            plex_resources (list[MyPlexResource]): Plex resources,
+            anything other than a Plex Media Server is filtered
+
+        Returns:
+            MyPlexResource: The chosen Plex Media Server
+        """
+        is_default = True
+        dropdown = []
+        for resource in plex_resources:
+            if resource.product == "Plex Media Server":
+                item = DropdownItemDTO(
+                    display_name=f"{resource.name} ({resource.device})",
+                    value=resource,
+                    is_default=is_default,
+                )
+                is_default = False
+                dropdown.append(item)
+
+        return Prompt.__draw_dropdown(
+            title="Available Servers",
+            description="Choose a server to connect to",
+            dropdown=dropdown,
         ).value
 
     @staticmethod
