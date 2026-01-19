@@ -42,6 +42,10 @@ class LibraryType(Enum):
         return self.value[1]
 
     @staticmethod
+    def get_default() -> LibraryType:
+        return LibraryType.MOVIE
+
+    @staticmethod
     def is_eq(
         library_type: LibraryType, library_section: LibrarySection
     ) -> bool:
