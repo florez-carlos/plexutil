@@ -369,8 +369,8 @@ class Prompt(Static):
         library_type_name = library_type.get_display_name()
 
         return Prompt.__draw_dropdown(
-            f"{library_type_name}",
-            f"Displaying Available {library_type_name} Libraries",
+            title=f"{library_type_name}",
+            description=f"Displaying Available {library_type_name} Libraries",
             dropdown=dropdown,
             expect_input=expect_input,
         ).value
@@ -535,6 +535,7 @@ class Prompt(Static):
             )
 
         else:
+            Prompt.__draw_banner(title=title, description=description)
             return DropdownItemDTO()
 
     @staticmethod
