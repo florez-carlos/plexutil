@@ -329,7 +329,7 @@ class Library(ABC):
         time_start = time.time()
 
         debug = (
-            f"\n===== POLL BEGIN =====\n"
+            f"\n{Icons.BANNER_LEFT}POLL BEGIN{Icons.BANNER_RIGHT}\n"
             f"Attempts: {requested_attempts!s}\n"
             f"Interval: {interval_seconds!s}\n"
             f"Current count: {current_count!s}\n"
@@ -363,7 +363,7 @@ class Library(ABC):
                         f"Expected {expected_count!s} items in the library "
                         f"but Plex Server has {current_count!s}\n"
                         f"Failed in {time_complete:.2f}s\n"
-                        f"===== POLL END =====\n"
+                        f"{Icons.BANNER_LEFT}POLL END{Icons.BANNER_RIGHT}\n"
                     )
                     raise LibraryIllegalStateError(description)
 
@@ -376,7 +376,7 @@ class Library(ABC):
                         "Did not reach the expected"
                         f"library count: {expected_count!s}\n"
                         f"Failed in {time_complete:.2f}s\n"
-                        f"===== POLL END =====\n"
+                        f"{Icons.BANNER_LEFT}POLL END{Icons.BANNER_RIGHT}\n"
                     )
                     raise LibraryPollTimeoutError(description)
 
@@ -384,7 +384,7 @@ class Library(ABC):
         time_complete = time_end - time_start
         debug = (
             f"Reached expected: {expected_count!s} in {time_complete:.2f}s\n"
-            f"===== POLL END =====\n"
+            f"{Icons.BANNER_LEFT}POLL END{Icons.BANNER_RIGHT}\n"
         )
 
         PlexUtilLogger.get_logger().debug(debug)
@@ -415,7 +415,8 @@ class Library(ABC):
         library = self.plex_server.library
         library_id = library.key if library else "UNKNOWN"
         info = (
-            f"\n===== {self.library_type} | {operation} | BEGIN =====\n"
+            f"\n{Icons.BANNER_LEFT}{self.library_type} | {operation} | "
+            f"BEGIN{Icons.BANNER_RIGHT}\n"
             f"ID: {library_id}\n"
             f"Name: {self.name}\n"
             f"Type: {self.library_type.get_value()}\n"
@@ -423,7 +424,8 @@ class Library(ABC):
             f"Scanner: {self.scanner.get_value()}\n"
             f"Locations: {self.locations!s}\n"
             f"Language: {self.language.get_value()}\n"
-            f"\n===== {self.library_type} | {operation} | END =====\n"
+            f"\n{Icons.BANNER_LEFT}{self.library_type} | {operation} | "
+            f"END{Icons.BANNER_RIGHT}\n"
         )
         if not is_console:
             if is_info:

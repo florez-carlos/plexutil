@@ -61,7 +61,10 @@ class Auth(Static):
             )
             jwt_login.run()
             url = jwt_login.oauthUrl()
-            description = f"\n========== Login ==========\nLogin here: {url}\n"
+            description = (
+                f"\n{Icons.BANNER_LEFT}Login{Icons.BANNER_RIGHT}\n"
+                f"Login {Icons.CHEVRON_RIGHT} {url}\n"
+            )
             PlexUtilLogger.get_console_logger().info(description)
             jwt_login.waitForLogin()
             token = jwt_login.jwtToken

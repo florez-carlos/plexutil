@@ -21,6 +21,7 @@ from plexutil.exception.unexpected_argument_error import (
 from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
+from plexutil.util.icons import Icons
 from plexutil.util.plex_ops import PlexOps
 
 
@@ -48,44 +49,61 @@ def main() -> None:
             description = "Successful System Exit"
             PlexUtilLogger.get_logger().debug(description)
         else:
-            description = f"\n=====Unexpected Error=====\n{e!s}"
+            description = (
+                f"\n{Icons.BANNER_LEFT}Unexpected Error"
+                f"{Icons.BANNER_RIGHT}\n{e!s}"
+            )
             PlexUtilLogger.get_logger().exception(description)
             raise
 
     except UserError as e:
         sys.tracebacklimit = 0
-        description = f"\n=====User Error=====\n{e!s}"
+        description = (
+            f"\n{Icons.BANNER_LEFT}User Error{Icons.BANNER_RIGHT}\n{e!s}"
+        )
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibraryIllegalStateError as e:
         sys.tracebacklimit = 0
-        description = f"\n=====Library Illegal State Error=====\n{e!s}"
+        description = (
+            f"\n{Icons.BANNER_LEFT}Library Illegal State Error"
+            f"{Icons.BANNER_RIGHT}\n{e!s}"
+        )
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibraryOpError as e:
         sys.tracebacklimit = 0
-        description = f"\n=====Library Operation Error=====\n{e!s}"
+        description = (
+            f"\n{Icons.BANNER_LEFT}Library Operation Error"
+            f"{Icons.BANNER_RIGHT}\n{e!s}"
+        )
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibraryPollTimeoutError as e:
         sys.tracebacklimit = 0
-        description = f"\n=====Library Poll Tiemout Error=====\n{e!s}"
+        description = (
+            f"\n{Icons.BANNER_LEFT}Library Poll Tiemout Error"
+            f"{Icons.BANNER_RIGHT}\n{e!s}"
+        )
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except LibrarySectionMissingError as e:
         sys.tracebacklimit = 0
-        description = f"\n=====Library Not Found Error=====\n{e!s}"
+        description = (
+            f"\n{Icons.BANNER_LEFT}Library Not Found Error"
+            f"{Icons.BANNER_RIGHT}\n{e!s}"
+        )
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)
 
     except UnexpectedArgumentError as e:
         sys.tracebacklimit = 0
         description = (
-            "\n=====User Argument Error=====\n"
+            f"\n{Icons.BANNER_LEFT}User Argument Error{Icons.BANNER_RIGHT}\n"
             "These arguments are unrecognized: \n"
         )
         for argument in e.args[0]:
@@ -95,12 +113,17 @@ def main() -> None:
 
     # No regular logger can be expected to be initialized
     except BootstrapError as e:
-        description = f"\n=====Program Initialization Error=====\n{e!s}"
+        description = (
+            f"\n{Icons.BANNER_LEFT}Program Initialization Error"
+            f"{Icons.BANNER_RIGHT}\n{e!s}"
+        )
         e.args = (description,)
         raise
 
     except Exception as e:  # noqa: BLE001
-        description = f"\n=====Unexpected Error=====\n{e!s}"
+        description = (
+            f"\n{Icons.BANNER_LEFT}Unexpected Error{Icons.BANNER_RIGHT}\n{e!s}"
+        )
         PlexUtilLogger.get_logger().exception(description)
 
 
