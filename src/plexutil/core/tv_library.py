@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
-from plexutil.dto.dropdown_item_dto import DropdownItemDTO
-
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -74,21 +72,17 @@ class TVLibrary(Library):
         self.probe_library()
         shows = self.query()
 
-        dropdown = [
-            DropdownItemDTO(display_name=show.title, value=show)
-            for show in shows
-        ]
-
-        user_response = Prompt.draw_dropdown(
-            title="TV Show Selection",
-            description="Pick the Show to modify language",
-            dropdown=dropdown,
+        show = cast(
+            "Show",
+            Prompt.confirm_plex_media(
+                title="TV Show Selection",
+                description="Pick the Show to modify language",
+                plex_media=shows,
+            ),
         )
 
-        show = user_response.value
-
         language = Prompt.confirm_language()
-        show.value.editAdvanced(languageOverride=language.get_value())
+        show.editAdvanced(languageOverride=language.get_value())
         show.refresh()
         description = (
             f"TV Show Language override ({language.value}): {show.title}"

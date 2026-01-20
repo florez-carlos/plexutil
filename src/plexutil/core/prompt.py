@@ -7,7 +7,9 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
+    from plexapi.audio import Audio
     from plexapi.myplex import MyPlexResource
+    from plexapi.video import Movie, Show
 
     from plexutil.core.library import Library
 
@@ -352,6 +354,33 @@ class Prompt(Static):
         return Prompt.__draw_dropdown(
             title="Available Servers",
             description="Choose a server to connect to",
+            dropdown=dropdown,
+        ).value
+
+    @staticmethod
+    def confirm_plex_media(
+        title: str,
+        description: str,
+        plex_media: list[Movie] | list[Show] | list[Audio],
+    ) -> Movie | Show | Audio:
+        """
+        Prompts user for a Plex Media Server selection
+
+        Args:
+            title (str): Message to display at the top of the banner
+            description (str): helpful message to display in banner body
+            plex_media (list[Movie | Show | Audio]): The Media items to display
+
+        Returns:
+            Movie | Show | Audio: The chosen Plex Media
+        """
+        dropdown = [
+            DropdownItemDTO(display_name=media.title, value=media)
+            for media in plex_media
+        ]
+        return Prompt.__draw_dropdown(
+            title=title,
+            description=description,
             dropdown=dropdown,
         ).value
 
