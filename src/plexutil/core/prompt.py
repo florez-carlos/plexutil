@@ -8,6 +8,12 @@ from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from plexapi.audio import Audio
+    from plexapi.library import (
+        LibrarySection,
+        MovieSection,
+        MusicSection,
+        ShowSection,
+    )
     from plexapi.myplex import MyPlexResource
     from plexapi.video import Movie, Show
 
@@ -325,6 +331,47 @@ class Prompt(Static):
             is_multi_column=is_multi_column,
             expect_input=expect_input,
             is_from_server=is_from_server,
+        ).value
+
+    @staticmethod
+    def confirm_library_section(
+        library_type: LibraryType,
+        expect_input: bool,
+        sections: list[LibrarySection],
+    ) -> LibrarySection:
+        dropdown = []
+        for section in sections:
+            if library_type is LibraryType.MOVIE:
+                media_count = len(
+                    cast("list[MovieSection]", section.searchMovies())
+                )
+                display_name = f"{section.title} ({media_count!s} Movies)"
+            elif library_type is LibraryType.TV:
+                media_count = len(
+                    cast("list[ShowSection]", section.searchShows())
+                )
+                display_name = f"{section.title} ({media_count!s} Shows)"
+            elif (
+                library_type is LibraryType.MUSIC
+                or library_type is LibraryType.MUSIC_PLAYLIST
+            ):
+                media_count = len(
+                    cast("list[MusicSection]", section.searchTracks())
+                )
+                display_name = f"{section.title} ({media_count!s} Tracks)"
+            else:
+                display_name = ""
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=section)
+            )
+
+        library_type_name = library_type.get_display_name()
+
+        return Prompt.__draw_dropdown(
+            f"{library_type_name}",
+            f"Displaying Available {library_type_name} Libraries",
+            dropdown=dropdown,
+            expect_input=expect_input,
         ).value
 
     @staticmethod

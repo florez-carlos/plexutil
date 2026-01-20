@@ -3,12 +3,11 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from plexapi.exceptions import NotFound
 
 from plexutil.core.prompt import Prompt
-from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
@@ -33,9 +32,6 @@ if TYPE_CHECKING:
     from plexapi.audio import Track
     from plexapi.library import (
         LibrarySection,
-        MovieSection,
-        MusicSection,
-        ShowSection,
     )
     from plexapi.server import Playlist, PlexServer
     from plexapi.video import Movie, Show
@@ -585,55 +581,28 @@ class Library(ABC):
 
     def draw_libraries(self, expect_input: bool = False) -> None:
         sections = self.get_sections()
-        dropdown = []
-        for section in sections:
-            if self.library_type is LibraryType.MOVIE:
-                media_count = len(
-                    cast("list[MovieSection]", section.searchMovies())
-                )
-                display_name = f"{section.title} ({media_count!s} Movies)"
-            elif self.library_type is LibraryType.TV:
-                media_count = len(
-                    cast("list[ShowSection]", section.searchShows())
-                )
-                display_name = f"{section.title} ({media_count!s} Shows)"
-            elif (
-                self.library_type is LibraryType.MUSIC
-                or self.library_type is LibraryType.MUSIC_PLAYLIST
-            ):
-                media_count = len(
-                    cast("list[MusicSection]", section.searchTracks())
-                )
-                display_name = f"{section.title} ({media_count!s} Tracks)"
-            else:
-                display_name = ""
-            dropdown.append(
-                DropdownItemDTO(display_name=display_name, value=section)
-            )
 
-        library_type_name = self.library_type.get_display_name()
-
-        user_response = Prompt.draw_dropdown(
-            f"{library_type_name}",
-            f"Displaying Available {library_type_name} Libraries",
-            dropdown=dropdown,
+        selected_section = Prompt.confirm_library_section(
+            sections=sections,
+            library_type=self.library_type,
             expect_input=expect_input,
         )
 
         if expect_input:
-            section = user_response.value
-            self.name = section.title
+            self.name = selected_section.title
             self.agent = Agent.get_from_str(
-                candidate=section.agent, library_type=self.library_type
+                candidate=selected_section.agent,
+                library_type=self.library_type,
             )
             self.scanner = Scanner.get_from_str(
-                candidate=section.scanner, library_type=self.library_type
+                candidate=selected_section.scanner,
+                library_type=self.library_type,
             )
-            self.language = Language.get_from_str(section.language)
+            self.language = Language.get_from_str(selected_section.language)
             if self.is_strict:
                 self.locations = [
                     PathOps.get_path_from_str(location)
-                    for location in section.locations
+                    for location in selected_section.locations
                 ]
             else:
                 self.locations = []
