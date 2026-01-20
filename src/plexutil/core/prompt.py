@@ -175,12 +175,13 @@ class Prompt(Static):
             bool: Is this a remote device (Not the Plex Server)
         """
         description = (
-            "When running strict mode, the files in this device\n"
-            "will be compared against those in the chosen Plex Server\n"
-            "This is useful to avoid conflicts with certain operations\n"
-            "such as trying to add songs to a playlist\n"
-            "but the songs haven't been added to the server yet\n"
-            "DO NOT PICK YES IF PLEX SERVER IS RUNNING ON A DIFFERENT DEVICE"
+            f"{Icons.CHEVRON_RIGHT}The files in this device will be "
+            "compared against those in the chosen Plex Server.\n\n"
+            f"{Icons.CHEVRON_RIGHT}This is useful to avoid conflicts with "
+            "certain operations such as trying to add songs to a playlist "
+            "but the songs haven't been added to the server yet\n\n"
+            f"{Icons.CHEVRON_RIGHT}DO NOT PICK YES IF PLEX SERVER IS RUNNING "
+            "ON A DIFFERENT DEVICE\n\n"
         )
         question = (
             "Enforce strict conformity between the files "
@@ -493,6 +494,7 @@ class Prompt(Static):
         space = ""
         newline = "\n"
 
+        description = f"{description}\n"
         for item in dropdown:
             if item.is_default:
                 offset = max_column_width - (len(item.display_name) + 1)
@@ -522,7 +524,7 @@ class Prompt(Static):
                 1 if columns_count >= max_columns else columns_count + 1
             )
 
-        PlexUtilLogger.get_console_logger().info(description)
+        # PlexUtilLogger.get_console_logger().info(description)
 
         if expect_input:
             return Prompt.__get_dropdown_response(
@@ -557,7 +559,7 @@ class Prompt(Static):
             None: This method does not return a value
         """
         question = question.replace("?", "")
-        question = f"\n{question}?" if question else ""
+        question = f"\n{question}?" if question else "\n"
 
         banner = (
             f"\n{Icons.BANNER_LEFT} {title} {Icons.BANNER_RIGHT}\n"
