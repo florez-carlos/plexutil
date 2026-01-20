@@ -7,7 +7,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from plexapi.audio import Audio
+    from plexapi.audio import Audio, Playlist
     from plexapi.library import (
         LibrarySection,
         MovieSection,
@@ -370,6 +370,29 @@ class Prompt(Static):
         return Prompt.__draw_dropdown(
             f"{library_type_name}",
             f"Displaying Available {library_type_name} Libraries",
+            dropdown=dropdown,
+            expect_input=expect_input,
+        ).value
+
+    @staticmethod
+    def confirm_playlist(
+        library_type: LibraryType,
+        playlists: list[Playlist],
+        expect_input: bool,
+    ) -> Playlist:
+        dropdown = []
+
+        for playlist in playlists:
+            media_count = len(playlist.items())
+            display_name = f"{playlist.title} ({media_count!s} items)"
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=playlist)
+            )
+
+        library_type_name = library_type.get_display_name()
+        return Prompt.__draw_dropdown(
+            f"{library_type_name}",
+            f"Displaying Available {library_type_name}",
             dropdown=dropdown,
             expect_input=expect_input,
         ).value

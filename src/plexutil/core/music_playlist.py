@@ -327,12 +327,11 @@ class MusicPlaylist(Library):
                 DropdownItemDTO(display_name=display_name, value=playlist)
             )
 
-        library_type_name = self.library_type.get_display_name()
-        user_response = Prompt.draw_dropdown(
-            f"{library_type_name}",
-            f"Displaying Available {library_type_name}",
-            dropdown=dropdown,
+        selected_playlist = Prompt.confirm_playlist(
+            playlists=playlists,
+            library_type=self.library_type,
             expect_input=expect_input,
         )
+
         if expect_input:
-            self.playlist_name = user_response.value.title
+            self.playlist_name = selected_playlist.title
