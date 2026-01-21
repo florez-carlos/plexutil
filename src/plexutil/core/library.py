@@ -82,18 +82,18 @@ class Library(ABC):
             case UserRequest.CREATE:
                 self.create()
             case UserRequest.DELETE:
-                self.draw_libraries(expect_input=True)
+                self.display(expect_input=True)
                 self.delete()
             case UserRequest.DOWNLOAD:
-                self.draw_libraries(expect_input=True)
+                self.display(expect_input=True)
                 self.download()
             case UserRequest.UPLOAD:
-                self.draw_libraries(expect_input=True)
+                self.display(expect_input=True)
                 self.upload()
             case UserRequest.DISPLAY:
-                self.draw_libraries(expect_input=False)
+                self.display(expect_input=False)
             case UserRequest.UPDATE:
-                self.draw_libraries(expect_input=True)
+                self.display(expect_input=True)
                 section = self.get_section()
                 section.update()
                 section.refresh()
@@ -289,6 +289,35 @@ class Library(ABC):
         description = f"Exists: {library}"
         PlexUtilLogger.get_logger().debug(description)
         return True
+
+    @abstractmethod
+    def display(self, expect_input: bool = False) -> None:
+        sections = self.get_sections()
+
+        selected_section = Prompt.confirm_library_section(
+            sections=sections,
+            library_type=self.library_type,
+            expect_input=expect_input,
+        )
+
+        if expect_input:
+            self.name = selected_section.title
+            self.agent = Agent.get_from_str(
+                candidate=selected_section.agent,
+                library_type=self.library_type,
+            )
+            self.scanner = Scanner.get_from_str(
+                candidate=selected_section.scanner,
+                library_type=self.library_type,
+            )
+            self.language = Language.get_from_str(selected_section.language)
+            if self.is_strict:
+                self.locations = [
+                    PathOps.get_path_from_str(location)
+                    for location in selected_section.locations
+                ]
+            else:
+                self.locations = []
 
     def error_if_exists(self) -> None:
         op_type = "ERROR IF EXISTS"
@@ -580,31 +609,3 @@ class Library(ABC):
                 )
                 PlexUtilLogger.get_logger().warning(description)
                 continue
-
-    def draw_libraries(self, expect_input: bool = False) -> None:
-        sections = self.get_sections()
-
-        selected_section = Prompt.confirm_library_section(
-            sections=sections,
-            library_type=self.library_type,
-            expect_input=expect_input,
-        )
-
-        if expect_input:
-            self.name = selected_section.title
-            self.agent = Agent.get_from_str(
-                candidate=selected_section.agent,
-                library_type=self.library_type,
-            )
-            self.scanner = Scanner.get_from_str(
-                candidate=selected_section.scanner,
-                library_type=self.library_type,
-            )
-            self.language = Language.get_from_str(selected_section.language)
-            if self.is_strict:
-                self.locations = [
-                    PathOps.get_path_from_str(location)
-                    for location in selected_section.locations
-                ]
-            else:
-                self.locations = []

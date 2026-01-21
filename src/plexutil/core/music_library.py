@@ -70,6 +70,9 @@ class MusicLibrary(Library):
     def upload(self) -> None:
         raise NotImplementedError
 
+    def display(self, expect_input: bool = False) -> None:
+        super().display(expect_input=expect_input)
+
     def create(self) -> None:
         """
         Creates a Music Library

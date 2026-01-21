@@ -70,10 +70,25 @@ class MusicPlaylist(Library):
     def update(self) -> None:
         raise NotImplementedError
 
-    def display(self) -> None:
-        op_type = "DISPLAY"
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
-        self.draw_items(expect_input=False)
+    def display(self, expect_input: bool = False) -> None:
+        super().display(expect_input=True)
+        dropdown = []
+        playlists = self.query_playlists()
+        for playlist in playlists:
+            media_count = len(playlist.items())
+            display_name = f"{playlist.title} ({media_count!s} items)"
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=playlist)
+            )
+
+        selected_playlist = Prompt.confirm_playlist(
+            playlists=playlists,
+            library_type=self.library_type,
+            expect_input=expect_input,
+        )
+
+        if expect_input:
+            self.playlist_name = selected_playlist.title
 
     def create(self) -> None:
         raise NotImplementedError
@@ -316,7 +331,7 @@ class MusicPlaylist(Library):
         PlexUtilLogger.get_logger().debug(description)
         return filtered_tracks
 
-    def draw_items(self, expect_input: bool = False) -> None:
+    def draw_libraries(self, expect_input: bool = False) -> None:
         super().draw_libraries(expect_input=True)
         dropdown = []
         playlists = self.query_playlists()
