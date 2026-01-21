@@ -494,7 +494,7 @@ class Prompt(Static):
         space = ""
         newline = "\n"
 
-        description = f"{description}\n"
+        description = f"{description}\n\n"
         for item in dropdown:
             if item.is_default:
                 offset = max_column_width - (len(item.display_name) + 1)
