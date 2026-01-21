@@ -478,6 +478,7 @@ class Prompt(Static):
         Returns:
             DropdownItemDTO: The selected item or the default in the dropdown
         """
+        min_required_for_multi_column = 6
         if not dropdown:
             Prompt.__draw_banner(title=title, description=description)
             description = f"\n\n{Icons.WARNING} Nothing Available\n"
@@ -491,6 +492,9 @@ class Prompt(Static):
                 value=dropdown[0].value,
                 is_default=True,
             )
+
+        if len(dropdown) < min_required_for_multi_column:
+            is_multi_column = False
 
         dropdown_count = 1
         columns_count = 1
