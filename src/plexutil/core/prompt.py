@@ -360,8 +360,7 @@ class Prompt(Static):
                     cast("list[MusicSection]", section.searchTracks())
                 )
                 display_name = f"{section.title} ({media_count!s} Tracks)"
-            else:
-                display_name = ""
+
             dropdown.append(
                 DropdownItemDTO(display_name=display_name, value=section)
             )
@@ -485,6 +484,14 @@ class Prompt(Static):
             PlexUtilLogger.get_console_logger().warning(description)
             return DropdownItemDTO()
 
+        has_default = any(item.is_default for item in dropdown)
+        if not has_default:
+            dropdown[0] = DropdownItemDTO(
+                display_name=dropdown[0].display_name,
+                value=dropdown[0].value,
+                is_default=True,
+            )
+
         dropdown_count = 1
         columns_count = 1
         max_columns = 3 if is_multi_column else 1
@@ -493,11 +500,14 @@ class Prompt(Static):
         max_double_space = 100
         space = ""
         newline = "\n"
+        star_space = 1 if expect_input else 0
 
         description = f"{description}\n\n"
         for item in dropdown:
             if item.is_default:
-                offset = max_column_width - (len(item.display_name) + 1)
+                offset = max_column_width - (
+                    len(item.display_name) + star_space
+                )
             else:
                 offset = max_column_width - len(item.display_name)
 
@@ -509,7 +519,7 @@ class Prompt(Static):
             else:
                 number_format = f"[{dropdown_count}] "
 
-            if item.is_default:
+            if item.is_default and expect_input:
                 display_name = f"{item.display_name} {Icons.STAR}"
             else:
                 display_name = f"{item.display_name}"
