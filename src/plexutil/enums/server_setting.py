@@ -107,7 +107,7 @@ class ServerSetting(Enum):
 
     GENERATE_CREDITS_MARKER = (
         "GenerateCreditsMarkerBehavior",
-        " Generate intro video markers",
+        " Generate credits video markers",
         ("Detects movie and episode end credits"),
         False,
         False,
