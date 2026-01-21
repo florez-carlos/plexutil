@@ -524,8 +524,6 @@ class Prompt(Static):
                 1 if columns_count >= max_columns else columns_count + 1
             )
 
-        # PlexUtilLogger.get_console_logger().info(description)
-
         if expect_input:
             return Prompt.__get_dropdown_response(
                 title=title,

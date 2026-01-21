@@ -1,9 +1,7 @@
 import uuid
 from importlib.metadata import PackageNotFoundError, version
 
-from plexapi.exceptions import BadRequest
 from plexapi.myplex import MyPlexAccount, MyPlexJWTLogin, MyPlexResource
-from plexapi.utils import sys
 
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.exception.auth_error import AuthError
@@ -81,46 +79,9 @@ class Auth(Static):
                 description = "Did not receive a token"
                 raise AuthError(description)
 
-        else:
-            description = "Auth exists"
-            PlexUtilLogger.get_logger().debug(description)
-            token, client_identifier = FileImporter.get_jwt(
-                bootstrap_paths_dto.token_dir
-            )
-            headers["X-Plex-Client-Identifier"] = client_identifier
-            jwt_login = MyPlexJWTLogin(
-                token=token,
-                keypair=(f"{private_key_path!s}", f"{public_key_path!s}"),
-                headers=headers,
-            )
-            if not jwt_login.verifyJWT():
-                try:
-                    token = jwt_login.refreshJWT()
-                except BadRequest as e:
-                    debug = (
-                        "RefreshJWT [BAD REQUEST]: "
-                        f"{e.args[0] if e.args else []}"
-                    )
-                    PlexUtilLogger.get_logger().debug(debug)
-                    description = (
-                        f"{Icons.WARNING} Existing Auth keys could not "
-                        f"be refreshed. Existing keys will be eliminated\n"
-                        f" -> Run again and reuthenticate."
-                    )
-                    PlexUtilLogger.get_logger().warning(description)
-                    bootstrap_paths_dto.private_key_dir.unlink(missing_ok=True)
-                    bootstrap_paths_dto.public_key_dir.unlink(missing_ok=True)
-                    bootstrap_paths_dto.token_dir.unlink(missing_ok=True)
-                    sys.exit(0)
-
-                description = "Refreshing Token and saving..."
-                PlexUtilLogger.get_logger().debug(description)
-                FileImporter.save_jwt(
-                    bootstrap_paths_dto.token_dir,
-                    token,
-                    headers["X-Plex-Client-Identifier"],
-                )
-
+        description = "Auth exists"
+        PlexUtilLogger.get_logger().debug(description)
+        token, _ = FileImporter.get_jwt(bootstrap_paths_dto.token_dir)
         account = MyPlexAccount(token=token)
         resources = account.resources()
         description = f"Available Resources: {resources}"

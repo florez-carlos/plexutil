@@ -1,4 +1,7 @@
 import sys
+import time
+
+from plexapi.exceptions import Unauthorized
 
 from plexutil.core.auth import Auth
 from plexutil.core.library_factory import LibraryFactory
@@ -29,7 +32,17 @@ def main() -> None:
     try:
         bootstrap_paths_dto = FileImporter.bootstrap()
         user_request = Prompt.confirm_user_request()
-        plex_resources = Auth.get_resources(bootstrap_paths_dto)
+        try:
+            plex_resources = Auth.get_resources(bootstrap_paths_dto)
+        except Unauthorized:
+            description = f"{Icons.WARNING} Reauthentication required\n"
+            PlexUtilLogger.get_logger().warning(description)
+            time.sleep(1)
+            bootstrap_paths_dto.private_key_dir.unlink(missing_ok=True)
+            bootstrap_paths_dto.public_key_dir.unlink(missing_ok=True)
+            bootstrap_paths_dto.token_dir.unlink(missing_ok=True)
+            plex_resources = Auth.get_resources(bootstrap_paths_dto)
+
         plex_server = Prompt.confirm_server(
             plex_resources=plex_resources
         ).connect()
