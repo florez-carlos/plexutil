@@ -6,6 +6,7 @@ from plexapi.audio import Track
 from plexapi.video import Movie, Show
 
 from plexutil.core.prompt import Prompt
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.movie_dto import MovieDTO
 from plexutil.dto.song_dto import SongDTO
@@ -43,12 +44,17 @@ class PlexOps(Static):
         server_settings = ServerSetting.get_all()
 
         for server_setting in server_settings:
+            dropdown = server_setting.get_dropdown()
             is_from_server = False
             user_response = server_setting.get_default_selection()
             plex_setting = plex_server.settings.get(server_setting.get_name())
             if plex_setting:
                 user_response = plex_setting.value
                 is_from_server = True
+
+                dropdown = PlexOps.override_dropdown_default(
+                    dropdown=dropdown, value=user_response
+                )
 
             setting = LibrarySettingDTO(
                 name=server_setting.get_name(),
@@ -67,6 +73,39 @@ class PlexOps(Static):
             plex_setting.set(response.user_response)
 
         plex_server.settings.save()
+
+    @staticmethod
+    def override_dropdown_default(
+        dropdown: list[DropdownItemDTO], value: bool | int | str
+    ) -> list[DropdownItemDTO]:
+        dropdown_no_default = []
+        dropdown_default = []
+        if dropdown:
+            for item in dropdown:
+                new_item = DropdownItemDTO()
+                if item.is_default:
+                    new_item = DropdownItemDTO(
+                        display_name=item.display_name,
+                        value=item.value,
+                        is_default=False,
+                    )
+                else:
+                    new_item = item
+                dropdown_no_default.append(new_item)
+
+            for item in dropdown_no_default:
+                new_item = DropdownItemDTO()
+                if item.value == value:
+                    new_item = DropdownItemDTO(
+                        display_name=item.display_name,
+                        value=item.value,
+                        is_default=True,
+                    )
+                else:
+                    new_item = item
+                dropdown_default.append(new_item)
+
+        return dropdown_default
 
     @staticmethod
     def get_music_playlist_entity(playlist: Playlist) -> MusicPlaylistEntity:
