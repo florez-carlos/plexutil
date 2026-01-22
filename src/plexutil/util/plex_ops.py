@@ -15,6 +15,9 @@ from plexutil.enums.server_setting import ServerSetting
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
 )
+from plexutil.exception.unexpected_naming_pattern_error import (
+    UnexpectedNamingPatternError,
+)
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
@@ -179,11 +182,22 @@ class PlexOps(Static):
             or Show location is a dir or media is not a Track/Movie/Show
         """
         location = PathOps.get_path_from_str(media.locations[0])
-
-        if location.is_dir() and not isinstance(media, Show):
+        if location.is_dir() and isinstance(media, Track):
             description = f"Expected to find a file not a dir:{location!s}"
             raise ValueError(description)
-        elif location.is_file() and isinstance(media, Show):
+
+        if location.is_file() and isinstance(media, Movie):
+            try:
+                PathOps.get_show_name_and_year_from_str(str(location.parent))
+                location = location.parent
+            except UnexpectedNamingPatternError:
+                description = (
+                    f"Found movie not nested in a dir: {location} "
+                    f"| Proceeding with location as is"
+                )
+                PlexUtilLogger.get_logger().debug(description)
+
+        if location.is_file() and isinstance(media, Show):
             description = f"Expected to find a dir not a file:{location!s}"
             raise ValueError(description)
 
