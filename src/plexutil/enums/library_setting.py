@@ -55,7 +55,7 @@ class LibrarySetting(Enum):
 
     USE_LOCAL_ASSETS = (
         "useLocalAssets",
-        "Prefer artwork based on library language",
+        "Use local assets",
         (
             "When scanning this library, "
             "use local posters and artwork if present\n"

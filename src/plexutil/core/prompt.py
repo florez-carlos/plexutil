@@ -183,10 +183,7 @@ class Prompt(Static):
             f"{Icons.CHEVRON_RIGHT}DO NOT PICK YES IF PLEX SERVER IS RUNNING "
             "ON A DIFFERENT DEVICE\n\n"
         )
-        question = (
-            "Enforce strict conformity between the files "
-            "in this device and the files in the chosen server"
-        )
+        question = "Enable strict mode"
         response = Prompt.__get_toggle_response(
             title="Strict Mode",
             description=description,
