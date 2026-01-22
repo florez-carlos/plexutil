@@ -170,6 +170,8 @@ class Library(ABC):
 
         self.set_settings(settings=library_settings)
         self.get_section().refresh()
+        if self.is_strict:
+            self.probe_library()
 
     def assign_language(self) -> None:
         """
