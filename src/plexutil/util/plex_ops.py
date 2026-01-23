@@ -181,16 +181,11 @@ class PlexOps(Static):
             ValueError: If Track/Movie location is not a file
             or Show location is a dir or media is not a Track/Movie/Show
         """
+        location = PathOps.get_path_from_str(path_candidate=media.locations[0])
         if isinstance(media, Track):
-            location = PathOps.get_path_from_str(
-                path_candidate=media.locations[0], is_file_expected=True
-            )
             name = location.stem
             return SongDTO(name=name, location=location)
         elif isinstance(media, Movie):
-            location = PathOps.get_path_from_str(
-                path_candidate=media.locations[0],
-            )
             if location.is_file():
                 try:
                     PathOps.get_show_name_and_year_from_str(
@@ -206,9 +201,6 @@ class PlexOps(Static):
             name, year = PathOps.get_show_name_and_year_from_str(str(location))
             return MovieDTO(name=name, year=year, location=location)
         elif isinstance(media, Show):
-            location = PathOps.get_path_from_str(
-                path_candidate=media.locations[0], is_dir_expected=True
-            )
             name, year = PathOps.get_show_name_and_year_from_str(str(location))
             return TVSeriesDTO(name=name, year=year, location=location)
         else:
