@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, cast
 
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
-from plexutil.enums import user_request
 from plexutil.service.music_playlist_service import MusicPlaylistService
 from plexutil.service.song_music_playlist_composite_service import (
     SongMusicPlaylistCompositeService,
@@ -74,8 +73,8 @@ class MusicPlaylist(Library):
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=True)
         if (
-            user_request is UserRequest.DOWNLOAD
-            or user_request is UserRequest.UPLOAD
+            self.user_request is UserRequest.DOWNLOAD
+            or self.user_request is UserRequest.UPLOAD
         ):
             return
         dropdown = []
