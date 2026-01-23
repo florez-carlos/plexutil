@@ -21,6 +21,7 @@ class PathOps(Static):
         path_candidate: str,
         is_dir_expected: bool = False,
         is_file_expected: bool = False,
+        is_missing_ok: bool = True,
     ) -> Path:
         """
         Get pathlib.Path from a str
@@ -29,6 +30,7 @@ class PathOps(Static):
             path_candidate (str): The likely Path
             is_dir_expected (bool): Is the path expected to be a dir?
             is_file_expected (bool): Is the path expected to be a file?
+            is_missing_ok (bool): Raise error if Path not exists?
 
         Returns:
             A pathlib.Path
@@ -43,7 +45,7 @@ class PathOps(Static):
 
         path = Path(path_candidate)
 
-        if not path.exists():
+        if not path.exists() and not is_missing_ok:
             description = f"Path candidate ({path_candidate}) does not exist"
             raise ValueError(description)
 
