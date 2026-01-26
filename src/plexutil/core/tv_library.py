@@ -65,6 +65,12 @@ class TVLibrary(Library):
     def upload(self) -> None:
         raise NotImplementedError
 
+    def update(self) -> None:
+        super().update()
+
+    def modify(self) -> None:
+        super().update()
+
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=expect_input)
 

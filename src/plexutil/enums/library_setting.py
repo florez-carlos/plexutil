@@ -5,6 +5,7 @@ from enum import Enum
 from plexutil.dto.dropdown_item_dto import (
     DropdownItemDTO,
 )
+from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.library_type import LibraryType
 from plexutil.util.icons import Icons
 
@@ -325,3 +326,25 @@ class LibrarySetting(Enum):
             bool | int | str: The Default selection
         """
         return self.value[8]
+
+    def to_dto(self, is_from_server: bool = False) -> LibrarySettingDTO:
+        """
+        Maps to a LibrarySettingDTO
+
+        Args:
+            is_from_server (bool): Is setting from Plex Server?
+
+        Returns:
+            LibrarySettingDTO: The mapped DTO
+        """
+        return LibrarySettingDTO(
+            name=self.get_name(),
+            display_name=self.get_display_name(),
+            description=self.get_description(),
+            user_response=self.get_default_selection(),
+            is_toggle=self.is_toggle(),
+            is_value=self.is_value(),
+            is_dropdown=self.is_dropdown(),
+            dropdown=self.get_dropdown(),
+            is_from_server=is_from_server,
+        )

@@ -5,10 +5,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from plexapi.exceptions import NotFound
-
 from plexutil.core.prompt import Prompt
-from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_setting import LibrarySetting
@@ -94,9 +91,11 @@ class Library(ABC):
                 self.display(expect_input=False)
             case UserRequest.UPDATE:
                 self.display(expect_input=True)
-                section = self.get_section()
-                section.update()
-                section.refresh()
+                self.update()
+            case UserRequest.MODIFY:
+                self.display(expect_input=True)
+                self.modify()
+                self.update()
 
     @abstractmethod
     def add_item(self) -> None:
@@ -113,6 +112,22 @@ class Library(ABC):
     @abstractmethod
     def upload(self) -> None:
         raise NotImplementedError
+
+    @abstractmethod
+    def update(self) -> None:
+        section = self.get_section()
+        section.update()
+        section.refresh()
+
+    @abstractmethod
+    def modify(self) -> None:
+        settings = LibrarySetting.get_all(self.library_type)
+
+        PlexOps.set_library_settings(
+            plex_server=self.plex_server,
+            section=self.get_section(),
+            settings=[x.to_dto(is_from_server=True) for x in settings],
+        )
 
     @abstractmethod
     def create(self) -> None:
@@ -151,24 +166,14 @@ class Library(ABC):
 
         settings = LibrarySetting.get_all(self.library_type)
 
-        library_settings = []
+        library_settings = [x.to_dto() for x in settings]
 
-        for setting in settings:
-            library_settings.append(  # noqa: PERF401
-                LibrarySettingDTO(
-                    name=setting.get_name(),
-                    display_name=setting.get_display_name(),
-                    description=setting.get_description(),
-                    user_response=setting.get_default_selection(),
-                    is_toggle=setting.is_toggle(),
-                    is_value=setting.is_value(),
-                    is_dropdown=setting.is_dropdown(),
-                    dropdown=setting.get_dropdown(),
-                    is_from_server=False,
-                )
-            )
+        PlexOps.set_library_settings(
+            plex_server=self.plex_server,
+            section=self.get_section(),
+            settings=library_settings,
+        )
 
-        self.set_settings(settings=library_settings)
         self.get_section().refresh()
         if self.is_strict:
             self.probe_library()
@@ -586,28 +591,3 @@ class Library(ABC):
         self.poll(100, expected_count, 10)
         plex_files = self.query()
         PlexOps.validate_local_files(plex_files, self.locations)
-
-    def set_settings(self, settings: list[LibrarySettingDTO]) -> None:
-        """
-        Sets Library Settings
-        Logs a warning if setting doesn't exist
-
-        Args:
-            settings (LibrarySettingDTO): The Setting to apply to this Library
-
-        Returns:
-            None: This method does not return a value
-        """
-        section = self.get_section()
-        for setting in settings:
-            response = Prompt.confirm_library_setting(setting)
-            try:
-                section.editAdvanced(**{response.name: response.user_response})
-            except NotFound:
-                description = (
-                    f"{Icons.WARNING} Library Setting not accepted "
-                    f"by the server: {response.name}\n"
-                    f"Skipping -> {response.name}:{response.user_response}"
-                )
-                PlexUtilLogger.get_logger().warning(description)
-                continue

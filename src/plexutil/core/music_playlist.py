@@ -70,6 +70,9 @@ class MusicPlaylist(Library):
     def update(self) -> None:
         raise NotImplementedError
 
+    def modify(self) -> None:
+        raise NotImplementedError
+
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=True)
         if (
@@ -335,23 +338,3 @@ class MusicPlaylist(Library):
         description = f"Filtered Tracks: {filtered_tracks!s}"
         PlexUtilLogger.get_logger().debug(description)
         return filtered_tracks
-
-    def draw_libraries(self, expect_input: bool = False) -> None:
-        super().draw_libraries(expect_input=True)
-        dropdown = []
-        playlists = self.query_playlists()
-        for playlist in playlists:
-            media_count = len(playlist.items())
-            display_name = f"{playlist.title} ({media_count!s} items)"
-            dropdown.append(
-                DropdownItemDTO(display_name=display_name, value=playlist)
-            )
-
-        selected_playlist = Prompt.confirm_playlist(
-            playlists=playlists,
-            library_type=self.library_type,
-            expect_input=expect_input,
-        )
-
-        if expect_input:
-            self.playlist_name = selected_playlist.title

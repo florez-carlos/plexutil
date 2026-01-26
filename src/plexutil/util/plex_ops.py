@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 from plexapi.audio import Track
+from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
 
 from plexutil.core.prompt import Prompt
@@ -21,11 +22,13 @@ from plexutil.exception.unexpected_naming_pattern_error import (
 from plexutil.model.music_playlist_entity import MusicPlaylistEntity
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
+from plexutil.util.icons import Icons
 from plexutil.util.path_ops import PathOps
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from plexapi.library import LibrarySection
     from plexapi.server import Playlist, PlexServer
 
 
@@ -58,24 +61,71 @@ class PlexOps(Static):
                 dropdown = PlexOps.override_dropdown_default(
                     dropdown=dropdown, value=user_response
                 )
-
-            setting = LibrarySettingDTO(
-                name=server_setting.get_name(),
-                display_name=server_setting.get_display_name(),
-                description=server_setting.get_description(),
-                is_toggle=server_setting.is_toggle(),
-                is_value=server_setting.is_value(),
-                is_dropdown=server_setting.is_dropdown(),
-                dropdown=server_setting.get_dropdown(),
-                user_response=user_response,
-                is_from_server=is_from_server,
-            )
             response = Prompt.confirm_library_setting(
-                library_setting=setting,
+                library_setting=server_setting.to_dto(
+                    is_from_server=is_from_server
+                ),
             )
             plex_setting.set(response.user_response)
 
         plex_server.settings.save()
+
+    @staticmethod
+    def set_library_settings(
+        plex_server: PlexServer,
+        section: LibrarySection,
+        settings: list[LibrarySettingDTO],
+    ) -> None:
+        """
+        Sets Library Settings
+        Logs a warning if setting doesn't exist
+
+        Args:
+            settings (LibrarySettingDTO): The Setting to apply to this Library
+
+        Returns:
+            None: This method does not return a value
+        """
+        for setting in settings:
+            if setting.is_from_server:
+                name = setting.name
+                plex_setting = plex_server.settings.get(name)
+                if plex_setting:
+                    response = plex_setting.value
+
+                    server_setting = LibrarySettingDTO(
+                        name=setting.name,
+                        display_name=setting.display_name,
+                        description=setting.description,
+                        user_response=response,
+                        is_toggle=setting.is_toggle,
+                        is_value=setting.is_value,
+                        is_dropdown=setting.is_dropdown,
+                        dropdown=setting.dropdown,
+                        is_from_server=True,
+                    )
+                    response = Prompt.confirm_library_setting(server_setting)
+                else:
+                    description = (
+                        f"{Icons.WARNING} Could not load library setting "
+                        f"{name}\n"
+                        f"Skipping -> {name}"
+                    )
+                    PlexUtilLogger.get_logger().warning(description)
+                    continue
+            else:
+                response = Prompt.confirm_library_setting(setting)
+
+            try:
+                section.editAdvanced(**{response.name: response.user_response})
+            except NotFound:
+                description = (
+                    f"{Icons.WARNING} Library Setting not accepted "
+                    f"by the server: {response.name}\n"
+                    f"Skipping -> {response.name}:{response.user_response}"
+                )
+                PlexUtilLogger.get_logger().warning(description)
+                continue
 
     @staticmethod
     def override_dropdown_default(

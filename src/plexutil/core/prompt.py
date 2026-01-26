@@ -507,7 +507,7 @@ class Prompt(Static):
         for item in dropdown:
             if item.is_default:
                 offset = max_column_width - (
-                    len(item.display_name) + star_space
+                    len(item.display_name) - star_space
                 )
             else:
                 offset = max_column_width - len(item.display_name)
@@ -611,9 +611,9 @@ class Prompt(Static):
             question=question,
         )
         if default_selection:
-            description = f"\nAnswer ({Icons.STAR} y/n) {Icons.CHEVRON_RIGHT}"
+            description = f"\nAnswer ({Icons.STAR}y/n) {Icons.CHEVRON_RIGHT}"
         else:
-            description = f"\nAnswer (y/{Icons.STAR} n) {Icons.CHEVRON_RIGHT}"
+            description = f"\nAnswer (y/{Icons.STAR}n) {Icons.CHEVRON_RIGHT}"
 
         response = input(description).strip().lower()
 
