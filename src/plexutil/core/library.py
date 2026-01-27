@@ -123,8 +123,14 @@ class Library(ABC):
     def modify(self) -> None:
         settings = LibrarySetting.get_all(self.library_type)
 
+        self.assign_language(default=self.language)
+        self.get_section().edit(
+            agent=self.agent.get_value(),
+            scanner=self.scanner.get_value(),
+            language=self.language.get_value(),
+        )
+
         PlexOps.set_library_settings(
-            plex_server=self.plex_server,
             section=self.get_section(),
             settings=[x.to_dto(is_from_server=True) for x in settings],
         )
@@ -178,14 +184,18 @@ class Library(ABC):
         if self.is_strict:
             self.probe_library()
 
-    def assign_language(self) -> None:
+    def assign_language(
+        self, default: Language = Language.get_default()
+    ) -> None:
         """
         Ask user for Library Language, or use Default in none provided
 
         Returns:
             None: This method does not return a value.
         """
-        self.language = Prompt.confirm_language() or Language.get_default()
+        self.language = (
+            Prompt.confirm_language(default=default) or Language.get_default()
+        )
 
     def assign_locations(self) -> None:
         """
@@ -230,9 +240,7 @@ class Library(ABC):
         Returns:
             None: This method does not return a value.
         """
-        self.scanner = Prompt.confirm_scanner(
-            self.library_type
-        ) or Scanner.get_default(self.library_type)
+        self.scanner = Scanner.get_default(self.library_type)
 
     def assign_agent(self) -> None:
         """
@@ -241,9 +249,7 @@ class Library(ABC):
         Returns:
             None: This method does not return a value.
         """
-        self.agent = Prompt.confirm_agent(
-            self.library_type
-        ) or Agent.get_default(self.library_type)
+        self.agent = Agent.get_default(self.library_type)
 
     @abstractmethod
     def delete(self) -> None:

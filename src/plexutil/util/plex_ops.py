@@ -72,7 +72,6 @@ class PlexOps(Static):
 
     @staticmethod
     def set_library_settings(
-        plex_server: PlexServer,
         section: LibrarySection,
         settings: list[LibrarySettingDTO],
     ) -> None:
@@ -89,7 +88,20 @@ class PlexOps(Static):
         for setting in settings:
             if setting.is_from_server:
                 name = setting.name
-                plex_setting = plex_server.settings.get(name)
+                plex_setting = None
+                try:
+                    server_settings = section.settings()
+                    for server_setting in server_settings:
+                        if server_setting and server_setting.id == name:
+                            plex_setting = server_setting
+                except NotFound:
+                    description = (
+                        f"{Icons.WARNING} Could not load library setting "
+                        f"{name}\n"
+                        f"Skipping -> {name}"
+                    )
+                    PlexUtilLogger.get_logger().warning(description)
+                    continue
                 if plex_setting:
                     response = plex_setting.value
 

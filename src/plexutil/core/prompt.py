@@ -140,7 +140,9 @@ class Prompt(Static):
         )
 
     @staticmethod
-    def confirm_language() -> Language:
+    def confirm_language(
+        default: Language = Language.get_default(),
+    ) -> Language:
         """
         Prompts user for a Language
 
@@ -152,7 +154,7 @@ class Prompt(Static):
             DropdownItemDTO(
                 display_name=language.get_display_name(),
                 value=language,
-                is_default=Language.get_default() is language,
+                is_default=default is language,
             )
             for language in languages
         ]
@@ -501,13 +503,13 @@ class Prompt(Static):
         max_double_space = 100
         space = ""
         newline = "\n"
-        star_space = 1 if expect_input else 0
+        star_space = 2 if expect_input else 0
 
         description = f"{description}\n\n"
         for item in dropdown:
             if item.is_default:
                 offset = max_column_width - (
-                    len(item.display_name) - star_space
+                    len(item.display_name) + star_space
                 )
             else:
                 offset = max_column_width - len(item.display_name)

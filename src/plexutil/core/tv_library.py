@@ -40,6 +40,7 @@ class TVLibrary(Library):
                 UserRequest.UPDATE,
                 UserRequest.DELETE,
                 UserRequest.DISPLAY,
+                UserRequest.MODIFY,
             ],
             plex_server=plex_server,
             name=name,
@@ -69,7 +70,7 @@ class TVLibrary(Library):
         super().update()
 
     def modify(self) -> None:
-        super().update()
+        super().modify()
 
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=expect_input)
