@@ -36,7 +36,7 @@ class LibraryFactory(Static):
         Returns:
             Library: The initiazed Library chosen by the user
         """
-        is_strict = Prompt.confirm_strict()
+        is_strict = False
         libraries = []
         libraries.append(
             MovieLibrary(

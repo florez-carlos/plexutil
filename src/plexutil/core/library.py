@@ -123,7 +123,7 @@ class Library(ABC):
     def modify(self) -> None:
         settings = LibrarySetting.get_all(self.library_type)
 
-        self.assign_language(default=self.language)
+        self.assign_language(default=self.language, is_from_server=True)
         self.get_section().edit(
             agent=self.agent.get_value(),
             scanner=self.scanner.get_value(),
@@ -147,10 +147,6 @@ class Library(ABC):
         Raises:
             LibraryOpError: If Library already exists
         """
-        op_type = "CREATE"
-
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
-
         self.assign_name()
         self.error_if_exists()
         self.assign_locations()
@@ -158,34 +154,34 @@ class Library(ABC):
         self.assign_agent()
         self.assign_language()
 
+        op_type = "CREATE"
+
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
+
         self.plex_server.library.add(
             name=self.name,
             type=self.library_type.get_value(),
             agent=self.agent.get_value(),
             scanner=self.scanner.get_value(),
-            location=[str(x) for x in self.locations],  # pyright: ignore [reportArgumentType]
+            location=[str(x) for x in self.locations],
             language=self.language.get_value(),
         )
 
-        description = f"Successfully created: {self.name}"
-        PlexUtilLogger.get_logger().debug(description)
-
-        settings = LibrarySetting.get_all(self.library_type)
-
-        library_settings = [x.to_dto() for x in settings]
+        library_settings = [
+            x.to_dto() for x in LibrarySetting.get_all(self.library_type)
+        ]
 
         PlexOps.set_library_settings(
-            plex_server=self.plex_server,
             section=self.get_section(),
             settings=library_settings,
         )
 
         self.get_section().refresh()
-        if self.is_strict:
-            self.probe_library()
 
     def assign_language(
-        self, default: Language = Language.get_default()
+        self,
+        default: Language = Language.get_default(),
+        is_from_server: bool = False,
     ) -> None:
         """
         Ask user for Library Language, or use Default in none provided
@@ -194,7 +190,10 @@ class Library(ABC):
             None: This method does not return a value.
         """
         self.language = (
-            Prompt.confirm_language(default=default) or Language.get_default()
+            Prompt.confirm_language(
+                default=default, is_from_server=is_from_server
+            )
+            or Language.get_default()
         )
 
     def assign_locations(self) -> None:
@@ -203,6 +202,8 @@ class Library(ABC):
 
         Returns:
             None: This method does not return a value.
+        Raises:
+            LibraryOpError: If any location not isBrowsable()
         """
         description = (
             "Type Locations for this Library, separated by comma\n"
@@ -214,6 +215,18 @@ class Library(ABC):
             question="",
         )
         if locations:
+            for location in locations:
+                is_browsable = self.plex_server.isBrowsable(location)
+                if not is_browsable:
+                    description = (
+                        f"Plex Server cannot find the location: {location!s}\n"
+                        f"Consider rebooting the server "
+                    )
+                    raise LibraryOpError(
+                        op_type="ASSIGN LOCATIONS",
+                        library_type=self.library_type,
+                        description=description,
+                    )
             self.locations = [Path(location) for location in locations]
         else:
             self.locations = [Path.cwd()]
@@ -266,16 +279,15 @@ class Library(ABC):
         op_type = "DELETE"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
-        section = self.get_section()
-        try:
-            section.delete()
-        except LibrarySectionMissingError as e:
-            description = f"Does not exist: {section.title}"
+        if self.exists():
+            self.get_section().delete()
+        else:
+            description = f"Does not exist: {self.name}"
             raise LibraryOpError(
                 op_type=op_type,
                 description=description,
                 library_type=self.library_type,
-            ) from e
+            )
 
     @abstractmethod
     def exists(self) -> bool:
@@ -286,10 +298,6 @@ class Library(ABC):
             bool: If LibrarySection exists
 
         """
-        self.log_library(
-            operation="CHECK EXISTS", is_info=False, is_debug=True
-        )
-
         library = f"{self.name} | {self.library_type.get_value()}"
 
         try:
@@ -324,13 +332,9 @@ class Library(ABC):
                 library_type=self.library_type,
             )
             self.language = Language.get_from_str(selected_section.language)
-            if self.is_strict:
-                self.locations = [
-                    PathOps.get_path_from_str(location)
-                    for location in selected_section.locations
-                ]
-            else:
-                self.locations = []
+            self.locations = [
+                Path(location) for location in selected_section.locations
+            ]
 
     def error_if_exists(self) -> None:
         op_type = "ERROR IF EXISTS"
@@ -454,20 +458,21 @@ class Library(ABC):
         Returns:
             None: This method does not return a value.
         """
-        library = self.plex_server.library
-        library_id = library.key if library else "UNKNOWN"
+        if self.exists():
+            library_id = self.get_section().key or "NONE"
+        else:
+            library_id = "NONE"
         info = (
-            f"\n{Icons.BANNER_LEFT}{self.library_type} | {operation} | "
-            f"BEGIN{Icons.BANNER_RIGHT}\n"
+            f"\n{Icons.BANNER_LEFT}{self.library_type.get_display_name()} "
+            f"| {operation} | BEGIN{Icons.BANNER_RIGHT}\n"
             f"ID: {library_id}\n"
             f"Name: {self.name}\n"
-            f"Type: {self.library_type.get_value()}\n"
             f"Agent: {self.agent.get_value()}\n"
             f"Scanner: {self.scanner.get_value()}\n"
             f"Locations: {self.locations!s}\n"
             f"Language: {self.language.get_value()}\n"
-            f"\n{Icons.BANNER_LEFT}{self.library_type} | {operation} | "
-            f"END{Icons.BANNER_RIGHT}\n"
+            f"{Icons.BANNER_LEFT}{self.library_type.get_display_name()} "
+            f"| {operation} | END{Icons.BANNER_RIGHT}\n"
         )
         if not is_console:
             if is_info:
@@ -498,7 +503,7 @@ class Library(ABC):
         if self.name:
             description = f"Library not found: {self.name}"
         else:
-            description = "Library Name (-libn) not specified, see -h"
+            description = "Missing Library Name"
         raise LibrarySectionMissingError(description)
 
     def get_sections(self) -> list[LibrarySection]:
