@@ -126,6 +126,7 @@ class Prompt(Static):
                 description=library_setting.description,
                 dropdown=dropdown,
                 is_multi_column=True,
+                is_from_server=library_setting.is_from_server,
             ).value
 
         return LibrarySettingDTO(
