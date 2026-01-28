@@ -105,6 +105,19 @@ class PlexOps(Static):
                 if plex_setting:
                     response = plex_setting.value
 
+                    if setting.is_dropdown:
+                        dropdown = [
+                            DropdownItemDTO(
+                                display_name=x.display_name,
+                                value=x.value,
+                                is_default=x.value == response,
+                            )
+                            for x in setting.dropdown
+                        ]
+                        response = 0
+                    else:
+                        dropdown = setting.dropdown
+
                     server_setting = LibrarySettingDTO(
                         name=setting.name,
                         display_name=setting.display_name,
@@ -113,7 +126,7 @@ class PlexOps(Static):
                         is_toggle=setting.is_toggle,
                         is_value=setting.is_value,
                         is_dropdown=setting.is_dropdown,
-                        dropdown=setting.dropdown,
+                        dropdown=dropdown,
                         is_from_server=True,
                     )
                     response = Prompt.confirm_library_setting(server_setting)
