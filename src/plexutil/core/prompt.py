@@ -142,9 +142,14 @@ class Prompt(Static):
     @staticmethod
     def confirm_language(
         default: Language = Language.get_default(),
+        is_from_server: bool = False,
     ) -> Language:
         """
         Prompts user for a Language
+
+        Args:
+            default (Language): The Language to select by default
+            is_from_server (bool): Is this selection from the server
 
         Returns:
             Language: The chosen Language
@@ -164,6 +169,7 @@ class Prompt(Static):
             description="Choose the Language",
             dropdown=items,
             is_multi_column=True,
+            is_from_server=is_from_server,
         )
 
         return response.value
