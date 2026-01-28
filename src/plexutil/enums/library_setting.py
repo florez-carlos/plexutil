@@ -130,7 +130,8 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        False,
+        # False,
+        0,
     )
 
     ARTIST_BIOS = (
@@ -142,7 +143,8 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        False,
+        # False,
+        0,
     )
 
     ALBUM_REVIEWS = (
@@ -157,7 +159,8 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        False,
+        # False,
+        0,
     )
 
     POPULAR_TRACKS = (
@@ -173,6 +176,7 @@ class LibrarySetting(Enum):
         False,
         [],
         False,
+        0,
     )
 
     FIND_LYRICS = (
