@@ -4,7 +4,6 @@ from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
 from plexutil.core.prompt import Prompt
-from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.enums.library_setting import LibrarySetting
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.query_builder import QueryBuilder
@@ -80,11 +79,15 @@ class MusicLibrary(Library):
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=expect_input)
 
+    def delete(self) -> None:
+        return super().delete()
+
+    def exists(self) -> bool:
+        return super().exists()
+
     def create(self) -> None:
         """
         Creates a Music Library
-        This operation is expensive as it waits for all the music files
-        to be recognized by the server
 
         Returns:
             None: This method does not return a value
@@ -93,36 +96,18 @@ class MusicLibrary(Library):
             LibraryOpError: If Library already exists
             or when failure to create a Query
         """
-
-        op_type = "CREATE"
-
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
-
         super().assign_name()
         super().error_if_exists()
         super().assign_locations()
         super().assign_scanner()
         super().assign_agent()
+        super().assign_language()
 
-        settings = LibrarySetting.get_all(LibraryType.MUSIC)
-        library_settings = []
+        library_settings = [
+            x.to_dto() for x in LibrarySetting.get_all(self.library_type)
+        ]
+
         prefs = {}
-
-        for setting in settings:
-            library_settings.append(  # noqa: PERF401
-                LibrarySettingDTO(
-                    name=setting.get_name(),
-                    display_name=setting.get_display_name(),
-                    description=setting.get_description(),
-                    user_response=setting.get_default_selection(),
-                    is_toggle=setting.is_toggle(),
-                    is_value=setting.is_value(),
-                    is_dropdown=setting.is_dropdown(),
-                    dropdown=setting.get_dropdown(),
-                    is_from_server=False,
-                )
-            )
-
         for setting in library_settings:
             response = Prompt.confirm_library_setting(setting)
             prefs[setting.name] = response.user_response
@@ -140,11 +125,15 @@ class MusicLibrary(Library):
         )
         part = query_builder.build()
 
-        description = f"Query: {part}\n"
+        description = f"Query: {part}"
         PlexUtilLogger.get_logger().debug(description)
 
         # This posts a music library
         if part:
+            op_type = "CREATE"
+
+            self.log_library(operation=op_type, is_info=False, is_debug=True)
+
             self.plex_server.query(
                 part,
                 method=self.plex_server._session.post,
@@ -169,9 +158,3 @@ class MusicLibrary(Library):
         op_type = "QUERY"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
         return cast("MusicSection", self.get_section()).searchTracks()
-
-    def delete(self) -> None:
-        return super().delete()
-
-    def exists(self) -> bool:
-        return super().exists()
