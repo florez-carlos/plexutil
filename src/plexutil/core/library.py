@@ -22,7 +22,6 @@ from plexutil.exception.library_section_missing_error import (
 )
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.icons import Icons
-from plexutil.util.path_ops import PathOps
 from plexutil.util.plex_ops import PlexOps
 
 if TYPE_CHECKING:
@@ -34,17 +33,11 @@ if TYPE_CHECKING:
     from plexapi.video import Movie, Show
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
-    from plexutil.dto.movie_dto import MovieDTO
-    from plexutil.dto.song_dto import SongDTO
-    from plexutil.dto.tv_series_dto import TVSeriesDTO
 
 from alive_progress import alive_bar
 
 from plexutil.enums.library_type import LibraryType
 from plexutil.exception.library_op_error import LibraryOpError
-from plexutil.exception.library_unsupported_error import (
-    LibraryUnsupportedError,
-)
 
 
 class Library(ABC):
@@ -526,71 +519,3 @@ class Library(ABC):
         description = f"Filtered Sections: {filtered_sections!s}"
         PlexUtilLogger.get_logger().debug(description)
         return filtered_sections
-
-    def __get_local_files(
-        self,
-    ) -> list[SongDTO] | list[MovieDTO] | list[TVSeriesDTO]:
-        """
-        Private method to get local files
-
-        Returns:
-            [SongDTO | MovieDTO | TVEpisodeDTO]: Local files
-
-        Raises:
-            LibraryUnsupportedError: If Library Type not of MUSIC,
-            MUSIC_PLAYLIST, TV or MOVIE
-        """
-        library = self.get_section()
-
-        if LibraryType.is_eq(LibraryType.MUSIC, library) | LibraryType.is_eq(
-            LibraryType.MUSIC_PLAYLIST, library
-        ):
-            local_files = PathOps.get_local_songs(self.locations)
-        elif LibraryType.is_eq(LibraryType.TV, library):
-            local_files = PathOps.get_local_tv(self.locations)
-        elif LibraryType.is_eq(LibraryType.MOVIE, library):
-            local_files = PathOps.get_local_movies(self.locations)
-        else:
-            op_type = "Get Local Files"
-            raise LibraryUnsupportedError(
-                op_type,
-                LibraryType.get_from_section(library),
-            )
-
-        return local_files
-
-    def probe_library(self) -> None:
-        """
-        Verifies local files match server files, if not then it issues a
-        library update, polls for 1000s or until server matches local files
-
-        Returns:
-            None: This method does not return a value.
-
-        Raises:
-            LibraryIllegalStateError: If local files do not match server
-            LibraryUnsupportedError: If Library Type isn't supported
-        """
-        if not self.is_strict:
-            return
-        local_files = self.__get_local_files()
-        plex_files = self.query()
-        try:
-            PlexOps.validate_local_files(plex_files, self.locations)
-            description = "Local Files Successfully validated"
-            PlexUtilLogger.get_logger().debug(description)
-            return
-        except LibraryIllegalStateError:
-            description = (
-                "Plex Server does not match local files\n"
-                "A server update is necessary\n"
-                "This process may take several minutes\n"
-            )
-            PlexUtilLogger.get_logger().info(description)
-
-        expected_count = len(local_files)
-        self.get_section().update()
-
-        self.poll(100, expected_count, 10)
-        plex_files = self.query()
-        PlexOps.validate_local_files(plex_files, self.locations)

@@ -9,6 +9,7 @@ from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.server_setting import ServerSetting
+from plexutil.exception.plex_media_missing_error import PlexMediaMissingError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.icons import Icons
@@ -174,4 +175,32 @@ class PlexOps(Static):
 
     @staticmethod
     def get_song_dto(track: Track) -> SongDTO:
+        """
+        Maps a Track to a SongDTO
+
+        Args:
+            track (Track): The Track to map
+        Returns:
+            SongDTO: The Track mapped to a SongDTO
+        """
         return SongDTO(artist=track.grandparentTitle, title=track.title)
+
+    @staticmethod
+    def get_track(song_dto: SongDTO, tracks: list[Track]) -> Track:
+        """
+        Returns the Track that matches the provided SongDTO
+
+        Args:
+            song_dto (SongDTO): The Song to find
+            tracks (list[Track]): Where to look for the SongDTO
+        Returns:
+            Track: The found Track
+        Raises:
+            PlexMediaMissingError: if SongDTO does not match any of the Tracks
+        """
+        for track in tracks:
+            artist = track.grandparentTitle
+            title = track.title
+            if artist == song_dto.artist and title == song_dto.title:
+                return track
+        raise PlexMediaMissingError

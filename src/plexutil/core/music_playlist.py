@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, cast
 
 from plexutil.core.prompt import Prompt
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
+from plexutil.exception.plex_media_missing_error import PlexMediaMissingError
 from plexutil.service.music_playlist_service import MusicPlaylistService
 from plexutil.service.song_music_playlist_composite_service import (
     SongMusicPlaylistCompositeService,
@@ -168,47 +169,40 @@ class MusicPlaylist(Library):
         )
 
         section = self.get_section()
+        server_tracks = self.query()
         for dto in music_playlist_dtos:
             self.playlist_name = dto.name
-            self.name = section.title
 
             if self.exists_playlist():
                 info = (
-                    f"{Icons.WARNING} Music Playlist: {self.playlist_name} for"
-                    f" Library '{self.name}' already exists"
-                    f"Skipping create..."
+                    f"{Icons.WARNING} {self.playlist_name} already exists "
+                    f"| Skipping..."
                 )
                 PlexUtilLogger.get_logger().warning(info)
-                continue
-            tracks = self.query()
-            songs = dto.songs
-            known = [
-                track
-                for track in tracks
-                if PlexOps.get_song_dto(track) in songs
-            ]
-            unknown = [
-                PlexOps.get_song_dto(track=track)
-                for track in tracks
-                if PlexOps.get_song_dto(track) not in songs
-            ]
-            if unknown:
-                description = (
-                    f"WARNING: These songs were not found "
-                    f"in the plex server library: {self.name}\n"
+            else:
+                db_songs = dto.songs
+                tracks = []
+                for db_song in db_songs:
+                    try:
+                        tracks.append(
+                            PlexOps.get_track(
+                                song_dto=db_song, tracks=server_tracks
+                            )
+                        )
+                    except PlexMediaMissingError:
+                        description = (
+                            f"{Icons.WARNING} Song not found: {db_song!s} "
+                            "| Skipping..."
+                        )
+                        PlexUtilLogger.get_logger().warning(description)
+
+                section.createPlaylist(
+                    title=self.playlist_name,
+                    items=tracks,
                 )
-                for u in unknown:
-                    description = description + f"->{u!s}\n"
 
-                PlexUtilLogger.get_logger().warning(description)
-
-            section.createPlaylist(
-                title=self.playlist_name,
-                items=known,
-            )
-
-            description = f"Created Playlist: {self.playlist_name}"
-            PlexUtilLogger.get_logger().info(description)
+                description = f"Created Playlist: {self.playlist_name}"
+                PlexUtilLogger.get_logger().info(description)
 
     def __get_all_playlists(self) -> list[MusicPlaylistDTO]:
         """
