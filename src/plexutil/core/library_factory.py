@@ -36,14 +36,12 @@ class LibraryFactory(Static):
         Returns:
             Library: The initiazed Library chosen by the user
         """
-        is_strict = False
         libraries = []
         libraries.append(
             MovieLibrary(
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_strict=is_strict,
             )
         )
         libraries.append(
@@ -51,7 +49,6 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_strict=is_strict,
             )
         )
         libraries.append(
@@ -59,7 +56,6 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_strict=is_strict,
             )
         )
         libraries.append(
@@ -67,7 +63,6 @@ class LibraryFactory(Static):
                 plex_server=plex_server,
                 user_request=user_request,
                 bootstrap_paths_dto=bootstrap_paths_dto,
-                is_strict=is_strict,
             )
         )
         return Prompt.confirm_library(

@@ -32,7 +32,6 @@ class TVLibrary(Library):
         scanner: Scanner = Scanner.get_default(LibraryType.TV),
         name: str = LibraryType.TV.get_display_name(),
         language: Language = Language.get_default(),
-        is_strict: bool = False,
     ) -> None:
         super().__init__(
             supported_requests=[
@@ -51,7 +50,6 @@ class TVLibrary(Library):
             language=language,
             user_request=user_request,
             bootstrap_paths_dto=bootstrap_paths_dto,
-            is_strict=is_strict,
         )
 
     def download(self) -> None:
@@ -73,7 +71,6 @@ class TVLibrary(Library):
         super().create()
 
     def modify_show_language(self) -> None:
-        self.probe_library()
         shows = self.query()
 
         show = cast(

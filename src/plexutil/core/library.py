@@ -53,7 +53,6 @@ class Library(ABC):
         language: Language,
         user_request: UserRequest,
         bootstrap_paths_dto: BootstrapPathsDTO,
-        is_strict: bool,
     ) -> None:
         self.supported_requests = supported_requests
         self.plex_server = plex_server
@@ -65,7 +64,6 @@ class Library(ABC):
         self.language = language
         self.user_request = user_request
         self.bootstrap_paths_dto = bootstrap_paths_dto
-        self.is_strict = is_strict
 
     def do(self) -> None:
         match self.user_request:

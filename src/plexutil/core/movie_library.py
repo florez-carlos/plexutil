@@ -30,7 +30,6 @@ class MovieLibrary(Library):
         agent: Agent = Agent.get_default(LibraryType.MOVIE),
         scanner: Scanner = Scanner.get_default(LibraryType.MOVIE),
         name: str = LibraryType.MOVIE.get_display_name(),
-        is_strict: bool = False,
     ) -> None:
         super().__init__(
             supported_requests=[
@@ -49,7 +48,6 @@ class MovieLibrary(Library):
             language=language,
             user_request=user_request,
             bootstrap_paths_dto=bootstrap_paths_dto,
-            is_strict=is_strict,
         )
 
     def download(self) -> None:
