@@ -98,14 +98,6 @@ class Library(ABC):
                 self.update()
 
     @abstractmethod
-    def add_item(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def delete_item(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
     def download(self) -> None:
         raise NotImplementedError
 

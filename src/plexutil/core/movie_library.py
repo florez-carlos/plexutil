@@ -52,12 +52,6 @@ class MovieLibrary(Library):
             is_strict=is_strict,
         )
 
-    def add_item(self) -> None:
-        raise NotImplementedError
-
-    def delete_item(self) -> None:
-        raise NotImplementedError
-
     def download(self) -> None:
         raise NotImplementedError
 
