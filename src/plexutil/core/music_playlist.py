@@ -16,19 +16,17 @@ if TYPE_CHECKING:
 
     from plexapi.audio import Track
     from plexapi.library import MusicSection
-    from plexapi.server import Playlist, PlexServer
+    from plexapi.server import PlexServer
 
     from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
-    from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
-    from plexutil.dto.song_dto import SongDTO
 from plexutil.core.library import Library
+from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
 from plexutil.enums.library_type import LibraryType
 from plexutil.enums.scanner import Scanner
 from plexutil.enums.user_request import UserRequest
 from plexutil.exception.library_op_error import LibraryOpError
-from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.plex_ops import PlexOps
 
@@ -67,6 +65,9 @@ class MusicPlaylist(Library):
         )
         self.playlist_name = ""
 
+    def create(self) -> None:
+        raise NotImplementedError
+
     def update(self) -> None:
         raise NotImplementedError
 
@@ -81,7 +82,7 @@ class MusicPlaylist(Library):
         ):
             return
         dropdown = []
-        playlists = self.query_playlists()
+        playlists = self.get_section().playlists()
         for playlist in playlists:
             media_count = len(playlist.items())
             display_name = f"{playlist.title} ({media_count!s} items)"
@@ -98,50 +99,31 @@ class MusicPlaylist(Library):
         if expect_input:
             self.playlist_name = selected_playlist.title
 
-    def create(self) -> None:
-        raise NotImplementedError
-
     def query(self) -> list[Track]:
         op_type = "QUERY"
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         return cast("MusicSection", self.get_section()).searchTracks()
 
-    def query_playlists(self) -> list[Playlist]:
-        op_type = "QUERY PLAYLISTS"
-        self.log_library(operation=op_type, is_info=False, is_debug=True)
-
-        return cast("MusicSection", self.get_section()).playlists()
-
     def delete(self) -> None:
-        op_type = "DELETE"
         plex_playlists = self.get_section().playlists()
 
-        debug = (
-            "Received request to delete music playlist: \n"
-            f"Playlist: {self.playlist_name}\n"
-            f"Location: {self.locations!s}\n"
-            f"Playlists available in server: {plex_playlists!s}"
-        )
-        PlexUtilLogger.get_logger().debug(debug)
+        op_type = "DELETE"
+        self.log_library(operation=op_type, is_info=False, is_debug=True)
 
         for plex_playlist in plex_playlists:
             if plex_playlist.title == self.playlist_name:
-                debug = "Found playlist to delete"
-                PlexUtilLogger.get_logger().debug(debug)
                 plex_playlist.delete()
                 return
 
-        description = (
-            f"Playlist not found in server library: {self.playlist_name}"
-        )
+        description = f"Playlist not found: {self.playlist_name}"
         raise LibraryOpError(op_type, self.library_type, description)
 
     def exists(self) -> bool:
         return super().exists()
 
     def exists_playlist(self) -> bool:
-        plex_playlists = self.query_playlists()
+        plex_playlists = self.get_section().playlists()
 
         debug = (
             f"Checking playlist exist\n"
@@ -167,7 +149,7 @@ class MusicPlaylist(Library):
             missing_ok=True
         )
 
-        music_playlist_dtos = self.get_all_playlists()
+        music_playlist_dtos = self.__get_all_playlists()
 
         service = SongMusicPlaylistCompositeService(
             self.bootstrap_paths_dto.plexutil_playlists_db_dir
@@ -183,13 +165,10 @@ class MusicPlaylist(Library):
         )
         music_playlist_dtos = composite_service.get(
             entities=playlist_service.get_all(),
-            tracks=cast("list[Track]", self.query()),
         )
 
-        self.probe_library()
         section = self.get_section()
         for dto in music_playlist_dtos:
-            self.songs = dto.songs
             self.playlist_name = dto.name
             self.name = section.title
 
@@ -201,37 +180,52 @@ class MusicPlaylist(Library):
                 )
                 PlexUtilLogger.get_logger().warning(info)
                 continue
+            tracks = self.query()
+            songs = dto.songs
+            known = [
+                track
+                for track in tracks
+                if PlexOps.get_song_dto(track) in songs
+            ]
+            unknown = [
+                PlexOps.get_song_dto(track=track)
+                for track in tracks
+                if PlexOps.get_song_dto(track) not in songs
+            ]
+            if unknown:
+                description = (
+                    f"WARNING: These songs were not found "
+                    f"in the plex server library: {self.name}\n"
+                )
+                for u in unknown:
+                    description = description + f"->{u!s}\n"
+
+                PlexUtilLogger.get_logger().warning(description)
 
             section.createPlaylist(
                 title=self.playlist_name,
-                items=self.__get_filtered_tracks(),
+                items=known,
             )
 
             description = f"Created Playlist: {self.playlist_name}"
             PlexUtilLogger.get_logger().info(description)
 
-    def get_all_playlists(self) -> list[MusicPlaylistDTO]:
+    def __get_all_playlists(self) -> list[MusicPlaylistDTO]:
         """
         Gets ALL Playlists in a Library as a list of MusicPlaylistDTO
 
         Returns:
             list[MusicPlaylistDTO]: All the playlists in the current Library
         """
-        music_playlist_mapper = MusicPlaylistMapper()
-
         section = self.get_section()
         plex_playlists = section.playlists()
 
         playlists = []
         for plex_playlist in plex_playlists:
-            music_playlist_dto = music_playlist_mapper.get_dto(
-                PlexOps.get_music_playlist_entity(plex_playlist)
-            )
+            music_playlist_dto = MusicPlaylistDTO(name=plex_playlist.title)
 
             for track in plex_playlist.items():
-                song_dto = cast(
-                    "SongDTO", PlexOps.get_dto_from_plex_media(track)
-                )
+                song_dto = PlexOps.get_song_dto(track)
                 music_playlist_dto.songs.append(song_dto)
 
             playlists.append(music_playlist_dto)
@@ -244,97 +238,3 @@ class MusicPlaylist(Library):
             )
         PlexUtilLogger.get_logger().debug(description)
         return playlists
-
-    def delete_item(self) -> None:
-        """
-        Matches provided Songs to Plex Tracks in the playlist and deletes
-        the tracks from the playlist
-
-        Returns:
-            None: This method does not return a value
-        """
-        filtered_tracks = self.__get_filtered_tracks(is_playlist_tracks=False)
-        playlist = self.get_section().playlist(self.playlist_name)
-        playlist.removeItems(filtered_tracks)
-        description = (
-            f"Removed from playlist ({self.playlist_name}): {filtered_tracks}"
-        )
-        PlexUtilLogger.get_logger().debug(description)
-
-    def add_item(self) -> None:
-        """
-        Matches provided Songs to Plex Tracks in the library and adds
-        the tracks to the plex playlist
-
-        Returns:
-            None: This method does not return a value
-        """
-        self.probe_library()
-        filtered_tracks = self.__get_filtered_tracks()
-        playlist = self.get_section().playlist(self.playlist_name)
-        playlist.addItems(filtered_tracks)
-        description = (
-            f"Added to playlist ({self.playlist_name}): {filtered_tracks}"
-        )
-        PlexUtilLogger.get_logger().debug(description)
-
-    def __get_filtered_tracks(
-        self, is_playlist_tracks: bool = False
-    ) -> list[Track]:
-        """
-        Filters self.songs of this object against Tracks in the Server
-
-        Args:
-            is_playlist_tracks (bool):
-                True -> Compare self.songs against this Playlist in the Server
-                False -> Compare self.songs against ALL songs in the Library
-
-        Returns:
-            list[Track]: Plex Server Tracks that match the SongDTOs
-                         in this object's self.songs
-        """
-        if is_playlist_tracks:
-            all_tracks = cast(
-                "list[Track]",
-                self.get_section().playlist(self.playlist_name).items(),
-            )
-            if all_tracks is None:
-                all_tracks = []
-
-            description = (
-                f"Filtering against Playlist: {self.playlist_name}\n"
-                f"Songs Supplied: {len(self.songs)!s}\n"
-                f"Tracks in Server: {len(all_tracks)!s}\n"
-            )
-            PlexUtilLogger.get_logger().debug(description)
-        else:
-            all_tracks = cast("list[Track]", self.get_section().searchTracks())
-            if all_tracks is None:
-                all_tracks = []
-            description = (
-                f"Filtering against All tracks in: {self.name}\n"
-                f"Songs Supplied: {len(self.songs)!s}\n"
-                f"Tracks in Server: {len(all_tracks)!s}\n"
-            )
-            PlexUtilLogger.get_logger().debug(description)
-
-        known, unknown = PlexOps.filter_plex_media(all_tracks, self.songs)
-        if unknown:
-            description = (
-                f"WARNING: These songs were not found "
-                f"in the plex server library: {self.name}\n"
-            )
-            for u in unknown:
-                description = description + f"->{u!s}\n"
-
-            PlexUtilLogger.get_logger().warning(description)
-
-        filtered_tracks = []
-        for track in all_tracks:
-            dto = PlexOps.get_dto_from_plex_media(track)
-            if dto in known:
-                filtered_tracks.append(track)
-
-        description = f"Filtered Tracks: {filtered_tracks!s}"
-        PlexUtilLogger.get_logger().debug(description)
-        return filtered_tracks

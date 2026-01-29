@@ -1,17 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
-
-from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
-from plexutil.util.plex_ops import PlexOps
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from plexapi.audio import Track
-
-    from plexutil.dto.song_dto import SongDTO
-
+    from plexutil.dto.music_playlist_dto import MusicPlaylistDTO
 
 from plexutil.mapper.music_playlist_mapper import MusicPlaylistMapper
 from plexutil.mapper.song_mapper import SongMapper
@@ -30,7 +24,7 @@ class SongMusicPlaylistCompositeService:
     def get(
         self,
         entities: list[MusicPlaylistEntity],
-        tracks: list[Track],
+        # tracks: list[Track],
     ) -> list[MusicPlaylistDTO]:
         with db_manager(
             self.db_path,
@@ -71,20 +65,7 @@ class SongMusicPlaylistCompositeService:
                     playlists[music_playlist_dto.name] = music_playlist_dto
 
                 playlists[music_playlist_dto.name].songs.append(song_dto)
-            raw_playlist_dtos = list(playlists.values())
-
-            normalized_music_playlist_dtos = []
-            for dto in raw_playlist_dtos:
-                normalized_songs = [
-                    PlexOps.normalize_dto(song, tracks) for song in dto.songs
-                ]
-                normalized_music_playlist_dtos.append(
-                    MusicPlaylistDTO(
-                        name=dto.name,
-                        songs=cast("list[SongDTO]", normalized_songs),
-                    )
-                )
-            return normalized_music_playlist_dtos
+            return list(playlists.values())
 
     def add(self, music_playlist_dto: MusicPlaylistDTO) -> None:
         self.add_many([music_playlist_dto])

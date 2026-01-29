@@ -4,11 +4,11 @@ from plexutil.model.song_entity import SongEntity
 
 class SongMapper:
     def get_dto(self, song_entity: SongEntity) -> SongDTO:
+        name = str(song_entity.name).split(" - ")
         return SongDTO(
-            name=str(song_entity.name),
+            artist=str(name[0]),
+            title=str(name[1]),
         )
 
     def get_entity(self, song_dto: SongDTO) -> SongEntity:
-        return SongEntity(
-            name=song_dto.name,
-        )
+        return SongEntity(name=str(song_dto))

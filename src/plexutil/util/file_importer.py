@@ -18,11 +18,20 @@ import yaml
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
-from plexutil.util.path_ops import PathOps
 
 
 class FileImporter(Static):
     encoding = "utf-8"
+
+    @staticmethod
+    def get_project_root() -> Path:
+        """
+        Gets the root of this project
+
+        Returns:
+            pathlib.Path: The project's root
+        """
+        return Path(__file__).parent.parent.parent
 
     @staticmethod
     def get_logging_config(logging_config_path: Path) -> dict:
@@ -33,7 +42,9 @@ class FileImporter(Static):
 
     @staticmethod
     def get_pyproject() -> dict:
-        return toml.load(PathOps.get_project_root().parent / "pyproject.toml")
+        return toml.load(
+            FileImporter.get_project_root().parent / "pyproject.toml"
+        )
 
     @staticmethod
     def get_jwt(location: Path) -> tuple[str, str]:
@@ -99,7 +110,7 @@ class FileImporter(Static):
                     log_file.unlink()
 
             log_config_file_path = (
-                PathOps.get_project_root()
+                FileImporter.get_project_root()
                 / "plexutil"
                 / "config"
                 / "log_config.yaml"
