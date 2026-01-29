@@ -176,33 +176,6 @@ class Prompt(Static):
         return response.value
 
     @staticmethod
-    def confirm_strict() -> bool:
-        """
-        Prompts user if this device is running the Plex Server
-
-        Returns:
-            bool: Is this a remote device (Not the Plex Server)
-        """
-        description = (
-            f"{Icons.CHEVRON_RIGHT}The files in this device will be "
-            "compared against those in the chosen Plex Server.\n\n"
-            f"{Icons.CHEVRON_RIGHT}This is useful to avoid conflicts with "
-            "certain operations such as trying to add songs to a playlist "
-            "but the songs haven't been added to the server yet\n\n"
-            f"{Icons.CHEVRON_RIGHT}DO NOT PICK YES IF PLEX SERVER IS RUNNING "
-            "ON A DIFFERENT DEVICE\n\n"
-        )
-        question = "Enable strict mode"
-        response = Prompt.__get_toggle_response(
-            title="Strict Mode",
-            description=description,
-            question=question,
-            default_selection=False,
-            is_from_server=False,
-        )
-        return bool(response)
-
-    @staticmethod
     def confirm_text(title: str, description: str, question: str) -> list[str]:
         """
         Prompts the user for text,
