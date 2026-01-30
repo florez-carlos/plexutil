@@ -62,6 +62,12 @@ class MusicLibrary(Library):
     def upload(self) -> None:
         raise NotImplementedError
 
+    def add_item(self) -> None:
+        raise NotImplementedError
+
+    def remove_item(self) -> None:
+        raise NotImplementedError
+
     def update(self) -> None:
         super().update()
 

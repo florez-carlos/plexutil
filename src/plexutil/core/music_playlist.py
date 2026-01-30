@@ -51,6 +51,8 @@ class MusicPlaylist(Library):
                 UserRequest.DISPLAY,
                 UserRequest.UPLOAD,
                 UserRequest.DOWNLOAD,
+                UserRequest.ADD_TO_PLAYLIST,
+                UserRequest.REMOVE_FROM_PLAYLIST,
             ],
             plex_server=plex_server,
             name=name,
@@ -63,6 +65,57 @@ class MusicPlaylist(Library):
             bootstrap_paths_dto=bootstrap_paths_dto,
         )
         self.playlist_name = ""
+
+    def add_item(self) -> None:
+        songs = Prompt.graphical_confirm_songs(
+            songs=[PlexOps.get_song_dto(track=x) for x in self.query()],
+            playlist_name=self.playlist_name,
+            command="Add",
+        )
+        if not songs:
+            return
+        server_tracks = self.query()
+        tracks = []
+        for song in songs:
+            try:
+                tracks.append(
+                    PlexOps.get_track(song_dto=song, tracks=server_tracks)
+                )
+            except PlexMediaMissingError:
+                description = (
+                    f"{Icons.WARNING} Song not found: {song!s} | Skipping..."
+                )
+                PlexUtilLogger.get_logger().warning(description)
+        playlist = self.get_section().playlist(self.playlist_name)
+        playlist.addItems(tracks)
+
+    def remove_item(self) -> None:
+        playlist = self.get_section().playlist(self.playlist_name)
+        playlist_tracks = playlist.items()
+        playlist_songs = [
+            PlexOps.get_song_dto(track=x) for x in playlist_tracks
+        ]
+
+        songs = Prompt.graphical_confirm_songs(
+            songs=playlist_songs,
+            playlist_name=self.playlist_name,
+            command="Remove",
+        )
+        if not songs:
+            return
+        tracks = []
+        for song in songs:
+            try:
+                tracks.append(
+                    PlexOps.get_track(song_dto=song, tracks=playlist_tracks)
+                )
+            except PlexMediaMissingError:
+                description = (
+                    f"{Icons.WARNING} Song not found: {song!s} | Skipping..."
+                )
+                PlexUtilLogger.get_logger().warning(description)
+
+        playlist.removeItems(tracks)
 
     def create(self) -> None:
         raise NotImplementedError
@@ -123,13 +176,6 @@ class MusicPlaylist(Library):
 
     def exists_playlist(self) -> bool:
         plex_playlists = self.get_section().playlists()
-
-        debug = (
-            f"Checking playlist exist\n"
-            f"Requested: {self.playlist_name}\n"
-            f"In server: {plex_playlists!s}\n"
-        )
-        PlexUtilLogger.get_logger().debug(debug)
 
         if not plex_playlists or not self.playlist_name:
             return False

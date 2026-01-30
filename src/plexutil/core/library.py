@@ -87,6 +87,12 @@ class Library(ABC):
                 self.display(expect_input=True)
                 self.modify()
                 self.update()
+            case UserRequest.ADD_TO_PLAYLIST:
+                self.display(expect_input=True)
+                self.add_item()
+            case UserRequest.REMOVE_FROM_PLAYLIST:
+                self.display(expect_input=True)
+                self.remove_item()
 
     @abstractmethod
     def download(self) -> None:
@@ -94,6 +100,14 @@ class Library(ABC):
 
     @abstractmethod
     def upload(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_item(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def remove_item(self) -> None:
         raise NotImplementedError
 
     @abstractmethod

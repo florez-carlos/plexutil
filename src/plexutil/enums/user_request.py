@@ -10,9 +10,10 @@ class UserRequest(Enum):
     DELETE = "delete"
     DOWNLOAD = "download"
     UPLOAD = "upload"
-    CHANGE_SHOW_LANGUAGE = "change_show_language"
     DISPLAY = "display"
     UPDATE = "update"
+    ADD_TO_PLAYLIST = "add_to_playlist"
+    REMOVE_FROM_PLAYLIST = "remove_from_playlist"
 
     @staticmethod
     # Forward Reference used here in type hint

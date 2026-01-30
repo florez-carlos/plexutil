@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import argparse
+import os
+import platform
 import sys
 from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, cast
+
+from plexutil.exception.device_error import DeviceError
+from plexutil.graphical.selection_window import SelectionWindow
 
 if TYPE_CHECKING:
     from plexapi.audio import Audio, Playlist
@@ -18,6 +23,7 @@ if TYPE_CHECKING:
     from plexapi.video import Movie, Show
 
     from plexutil.core.library import Library
+    from plexutil.dto.song_dto import SongDTO
 
 from plexutil.dto.dropdown_item_dto import DropdownItemDTO
 from plexutil.dto.library_setting_dto import LibrarySettingDTO
@@ -713,3 +719,40 @@ class Prompt(Static):
             )
         PlexUtilLogger.get_logger().warning(description)
         return default_item
+
+    @staticmethod
+    def graphical_confirm_songs(
+        songs: list[SongDTO],
+        playlist_name: str,
+        command: str,
+    ) -> list[SongDTO]:
+        Prompt.__halt_non_interactive()
+        items = [
+            DropdownItemDTO(display_name=str(song), value=song)
+            for song in songs
+        ]
+        window = SelectionWindow(
+            items=items,
+            items_label="Songs",
+            recipient_label=playlist_name,
+            command=command,
+        )
+        window.start()
+        return [x.value for x in window.get_selections()]
+
+    @staticmethod
+    def __halt_non_interactive() -> None:
+        system = platform.system()
+
+        if system == "Windows":
+            return
+        elif system == "Linux":
+            session = os.getenv("XDG_SESSION_TYPE") or ""
+            if session.startswith(("wayland", "x11")):
+                return
+            else:
+                description = f"Not a graphical session: {session}"
+                raise DeviceError(description)
+        else:
+            description = f"Unsupported system: {system}"
+            raise DeviceError(description)
