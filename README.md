@@ -35,33 +35,44 @@ CLI for Plex Media Server.
 ```bash
 pip install plexutil
 ```
----
 
 ## Usage
 ### Creating a media library or music playlist:
-> [!NOTE]
-> If language is not supplied, the default is en-US
 ```bash
 plexutil create
 ```
-
+---
 ### Deleting a media library or music playlist:
 ```bash
 plexutil delete
 ```
-
+---
 ### Exporting/Importing Music Playlists
 Music Playlists can be exported to a playlists.db file, this file can later be imported to another Plex server with plexutil
 ```bash
 plexutil download
 ```
 This action will create a playlists.db file in your current directory <br >
-This file can then be used to recreate the playlists in another Plex Server with plexutil by doing
+This file can then be used to recreate the playlists into another Plex Server
+> [!NOTE]
+> Ensure the playlists.db file is in the current directory
 ```bash
 plexutil upload
 ```
-> [!NOTE]
-> The songs in the Music Library of the importing server must match the songs in the exporting server
+---
+### Modifying Music Playlists
+> [!WARNING]
+> This feature requires a graphical session (X11 or Wayland) <br>
+
+To add songs to an existing music playlist
+```bash
+plexutil add_to_playlist
+```
+To remove songs from an existing music playlist
+```bash
+plexutil remove_from_playlist
+```
+
 
 ## Development
 > [!NOTE]
@@ -82,8 +93,6 @@ C:\Users\<YOUR_USER>\Documents\plexutil\log
 ```bash
 $HOME/plexutil/log
 ```
-> [!NOTE]
-> Log files are archived based on date, such as yyyy-mm-dd.log
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
