@@ -145,11 +145,25 @@ class MusicPlaylist(Library):
         selected_playlist = Prompt.confirm_playlist(
             playlists=playlists,
             library_type=self.library_type,
-            expect_input=expect_input,
+            expect_input=True,
         )
+        self.playlist_name = selected_playlist.title
 
-        if expect_input:
-            self.playlist_name = selected_playlist.title
+        playlist = self.get_section().playlist(self.playlist_name)
+
+        dropdown = []
+        for track in playlist.items():
+            display_name = str(PlexOps.get_song_dto(track))
+            dropdown.append(
+                DropdownItemDTO(display_name=display_name, value=playlist)
+            )
+        Prompt.draw_dropdown(
+            title=self.playlist_name,
+            description="",
+            dropdown=dropdown,
+            expect_input=expect_input,
+            is_multi_column=False,
+        )
 
     def query(self) -> list[Track]:
         op_type = "QUERY"

@@ -127,7 +127,7 @@ class Prompt(Static):
             pass
         elif library_setting.is_dropdown:
             dropdown = library_setting.dropdown
-            user_response = Prompt.__draw_dropdown(
+            user_response = Prompt.draw_dropdown(
                 title=library_setting.display_name,
                 description=library_setting.description,
                 dropdown=dropdown,
@@ -171,7 +171,7 @@ class Prompt(Static):
             for language in languages
         ]
 
-        response = Prompt.__draw_dropdown(
+        response = Prompt.draw_dropdown(
             title="Language Selection",
             description="Choose the Language",
             dropdown=items,
@@ -237,7 +237,7 @@ class Prompt(Static):
             )
             for filtered_scanner in filtered_scanners
         ]
-        user_response = Prompt.__draw_dropdown(
+        user_response = Prompt.draw_dropdown(
             title="Scanner Selection",
             description=description,
             dropdown=dropdown,
@@ -271,7 +271,7 @@ class Prompt(Static):
             )
             for filtered_agent in filtered_agents
         ]
-        user_response = Prompt.__draw_dropdown(
+        user_response = Prompt.draw_dropdown(
             "Agent Selection", description, dropdown=dropdown
         )
         return user_response.value
@@ -310,7 +310,7 @@ class Prompt(Static):
             if user_request in library.supported_requests
         ]
 
-        return Prompt.__draw_dropdown(
+        return Prompt.draw_dropdown(
             title="Library Type",
             description=f"Choose a Library Type to {user_request.value}",
             dropdown=dropdown,
@@ -352,7 +352,7 @@ class Prompt(Static):
 
         library_type_name = library_type.get_display_name()
 
-        return Prompt.__draw_dropdown(
+        return Prompt.draw_dropdown(
             title=f"{library_type_name}",
             description=f"Displaying Available {library_type_name} Libraries",
             dropdown=dropdown,
@@ -375,7 +375,7 @@ class Prompt(Static):
             )
 
         library_type_name = library_type.get_display_name()
-        return Prompt.__draw_dropdown(
+        return Prompt.draw_dropdown(
             f"{library_type_name}",
             f"Displaying Available {library_type_name}",
             dropdown=dropdown,
@@ -406,7 +406,7 @@ class Prompt(Static):
                 is_default = False
                 dropdown.append(item)
 
-        return Prompt.__draw_dropdown(
+        return Prompt.draw_dropdown(
             title="Available Servers",
             description="Choose a server to connect to",
             dropdown=dropdown,
@@ -433,14 +433,14 @@ class Prompt(Static):
             DropdownItemDTO(display_name=media.title, value=media)
             for media in plex_media
         ]
-        return Prompt.__draw_dropdown(
+        return Prompt.draw_dropdown(
             title=title,
             description=description,
             dropdown=dropdown,
         ).value
 
     @staticmethod
-    def __draw_dropdown(
+    def draw_dropdown(
         title: str,
         description: str,
         dropdown: list[DropdownItemDTO],
