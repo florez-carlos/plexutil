@@ -126,7 +126,7 @@ class MusicPlaylist(Library):
     def modify(self) -> None:
         raise NotImplementedError
 
-    def display(self, expect_input: bool = False) -> None:
+    def display(self, expect_input: bool = False) -> None:  # noqa: ARG002
         super().display(expect_input=True)
         if (
             self.user_request is UserRequest.DOWNLOAD
@@ -149,6 +149,12 @@ class MusicPlaylist(Library):
         )
         self.playlist_name = selected_playlist.title
 
+        if (
+            self.user_request is UserRequest.ADD_TO_PLAYLIST
+            or self.user_request is UserRequest.REMOVE_FROM_PLAYLIST
+        ):
+            return
+
         playlist = self.get_section().playlist(self.playlist_name)
 
         dropdown = []
@@ -161,7 +167,7 @@ class MusicPlaylist(Library):
             title=self.playlist_name,
             description="",
             dropdown=dropdown,
-            expect_input=expect_input,
+            expect_input=False,
             is_multi_column=False,
         )
 
