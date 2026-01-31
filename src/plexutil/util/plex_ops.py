@@ -11,6 +11,9 @@ from plexutil.dto.library_setting_dto import LibrarySettingDTO
 from plexutil.dto.song_dto import SongDTO
 from plexutil.enums.server_setting import ServerSetting
 from plexutil.exception.plex_media_missing_error import PlexMediaMissingError
+from plexutil.exception.unexpected_naming_pattern_error import (
+    UnexpectedNamingPatternError,
+)
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.static import Static
 from plexutil.util.icons import Icons
@@ -183,17 +186,11 @@ class PlexOps(Static):
             track (Track): The Track to map
         Returns:
             SongDTO: The Track mapped to a SongDTO
+        Raises:
+            UnexpectedNamingPatternError: If file does not
+            follow Artist - Title pattern
         """
-        locations = track.locations
-        if locations:
-            location = locations[0]
-            file = Path(location).stem
-            artist, title = file.split(" - ", 1)
-        else:
-            artist = track.grandparentTitle
-            title = track.title
-
-        return SongDTO(artist=artist, title=title)
+        return PlexOps.__resolve_track_name(track=track)
 
     @staticmethod
     def get_track(song_dto: SongDTO, tracks: list[Track]) -> Track:
@@ -207,16 +204,43 @@ class PlexOps(Static):
             Track: The found Track
         Raises:
             PlexMediaMissingError: if SongDTO does not match any of the Tracks
+            UnexpectedNamingPatternError: If file does not
+            follow Artist - Title pattern
         """
         for track in tracks:
-            locations = track.locations
-            if locations:
-                location = locations[0]
-                file = Path(location).stem
-                artist, title = file.split(" - ", 1)
-            else:
-                artist = track.grandparentTitle
-                title = track.title
+            dto = PlexOps.__resolve_track_name(track=track)
+            artist = dto.artist
+            title = dto.title
             if artist == song_dto.artist and title == song_dto.title:
                 return track
         raise PlexMediaMissingError
+
+    @staticmethod
+    def __resolve_track_name(track: Track) -> SongDTO:
+        """
+        Resolves artist, title from a Track
+
+        Args:
+            track (Track): The Plex Track
+        Returns:
+            SongDTO: with the artist, title from the track
+        Raises:
+            UnexpectedNamingPatternError: If file does not
+            follow Artist - Title pattern
+        """
+        locations = track.locations
+        file = ""
+
+        try:
+            location = locations[0]
+            file = Path(location).stem
+            artist, title = file.split(" - ", 1)
+            return SongDTO(artist=artist, title=title)
+        except Exception as e:
+            description = (
+                f"Track with unexpected naming pattern: "
+                f"{file if file else track.title}\n"
+                f"A track file is expected to follow this pattern: "
+                f"Artist - Title.mp3"
+            )
+            raise UnexpectedNamingPatternError(description) from e
