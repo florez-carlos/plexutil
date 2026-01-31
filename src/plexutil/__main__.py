@@ -21,6 +21,9 @@ from plexutil.exception.library_section_missing_error import (
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
 )
+from plexutil.exception.unexpected_naming_pattern_error import (
+    UnexpectedNamingPatternError,
+)
 from plexutil.exception.user_error import UserError
 from plexutil.plex_util_logger import PlexUtilLogger
 from plexutil.util.file_importer import FileImporter
@@ -108,6 +111,15 @@ def main() -> None:
         sys.tracebacklimit = 0
         description = (
             f"\n{Icons.BANNER_LEFT}Library Not Found Error"
+            f"{Icons.BANNER_RIGHT}\n{e!s}"
+        )
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
+    except UnexpectedNamingPatternError as e:
+        sys.tracebacklimit = 0
+        description = (
+            f"\n{Icons.BANNER_LEFT}Unexpected Naming Pattern Error"
             f"{Icons.BANNER_RIGHT}\n{e!s}"
         )
         PlexUtilLogger.get_logger().error(description)
