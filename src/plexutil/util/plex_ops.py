@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from plexapi.exceptions import NotFound
@@ -183,7 +184,16 @@ class PlexOps(Static):
         Returns:
             SongDTO: The Track mapped to a SongDTO
         """
-        return SongDTO(artist=track.grandparentTitle, title=track.title)
+        locations = track.locations
+        if locations:
+            location = locations[0]
+            file = Path(location).stem
+            artist, title = file.split(" - ", 1)
+        else:
+            artist = track.grandparentTitle
+            title = track.title
+
+        return SongDTO(artist=artist, title=title)
 
     @staticmethod
     def get_track(song_dto: SongDTO, tracks: list[Track]) -> Track:
@@ -199,8 +209,14 @@ class PlexOps(Static):
             PlexMediaMissingError: if SongDTO does not match any of the Tracks
         """
         for track in tracks:
-            artist = track.grandparentTitle
-            title = track.title
+            locations = track.locations
+            if locations:
+                location = locations[0]
+                file = Path(location).stem
+                artist, title = file.split(" - ", 1)
+            else:
+                artist = track.grandparentTitle
+                title = track.title
             if artist == song_dto.artist and title == song_dto.title:
                 return track
         raise PlexMediaMissingError
