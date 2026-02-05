@@ -239,7 +239,7 @@ class PlexOps(Static):
         except Exception as e:
             description = (
                 f"Track with unexpected naming pattern: "
-                f"{file if file else track.title}\n"
+                f"{file or track.title}\n"
                 f"A track file is expected to follow this pattern: "
                 f"Artist - Title.mp3"
             )

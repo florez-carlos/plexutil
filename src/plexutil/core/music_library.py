@@ -110,6 +110,10 @@ class MusicLibrary(Library):
             response = Prompt.confirm_library_setting(setting)
             prefs[setting.name] = response.user_response
 
+        locations = self.locations
+        if "linux" in self.plex_server.platform.lower():
+            locations = [location.as_posix() for location in self.locations]
+
         part = ""
         query_builder = QueryBuilder(
             "/library/sections",
@@ -118,7 +122,7 @@ class MusicLibrary(Library):
             agent=self.agent.get_value(),
             scanner=self.scanner.get_value(),
             language=self.language.get_value(),
-            location=self.locations,
+            location=locations,
             prefs=prefs,
         )
         part = query_builder.build()

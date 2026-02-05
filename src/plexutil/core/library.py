@@ -155,12 +155,16 @@ class Library(ABC):
 
         self.log_library(operation=op_type, is_info=False, is_debug=True)
 
+        locations = self.locations
+        if "linux" in self.plex_server.platform.lower():
+            locations = [location.as_posix() for location in self.locations]
+
         self.plex_server.library.add(
             name=self.name,
             type=self.library_type.get_value(),
             agent=self.agent.get_value(),
             scanner=self.scanner.get_value(),
-            location=[str(x) for x in self.locations],
+            location=[str(x) for x in locations],
             language=self.language.get_value(),
         )
 
