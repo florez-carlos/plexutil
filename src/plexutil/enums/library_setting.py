@@ -130,8 +130,7 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        # False,
-        0,
+        1,
     )
 
     ARTIST_BIOS = (
@@ -143,8 +142,7 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        # False,
-        0,
+        1,
     )
 
     ALBUM_REVIEWS = (
@@ -159,7 +157,6 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        # False,
         0,
     )
 
@@ -188,7 +185,7 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        0,
+        1,
     )
 
     CONCERTS = (
@@ -200,7 +197,7 @@ class LibrarySetting(Enum):
         False,
         False,
         [],
-        0,
+        1,
     )
 
     GENRES = (
