@@ -440,6 +440,31 @@ class Prompt(Static):
         ).value
 
     @staticmethod
+    def confirm_media_modification() -> bool:
+        """
+        Prompts user whether to modify the library or the associated media
+
+        Returns:
+            bool: Is media modification requested?
+
+        """
+
+        title = "Modify Media?"
+        description = (
+            "yes -> Modify a specific media item in this library\n"
+            "no -> Modify this library instead\n"
+        )
+        question = "Modify a specific media item in this library"
+
+        return Prompt.__get_toggle_response(
+            title=title,
+            description=description,
+            question=question,
+            is_from_server=False,
+            default_selection=False,
+        )
+
+    @staticmethod
     def draw_dropdown(
         title: str,
         description: str,
