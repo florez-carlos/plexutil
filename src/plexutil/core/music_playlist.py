@@ -152,6 +152,7 @@ class MusicPlaylist(Library):
         if (
             self.user_request is UserRequest.ADD_TO_PLAYLIST
             or self.user_request is UserRequest.REMOVE_FROM_PLAYLIST
+            or self.user_request is UserRequest.DELETE
         ):
             return
 
