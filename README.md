@@ -64,15 +64,10 @@ plexutil upload
 > [!WARNING]
 > This feature requires a graphical session (X11 or Wayland) <br>
 
-To add songs to an existing music playlist
+To add songs to an existing music playlist or to remove songs from an existing music playlist
 ```bash
-plexutil add_to_playlist
+plexutil modify
 ```
-To remove songs from an existing music playlist
-```bash
-plexutil remove_from_playlist
-```
-
 
 ## Development
 > [!NOTE]
