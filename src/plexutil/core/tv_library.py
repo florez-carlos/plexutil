@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import field
 from typing import TYPE_CHECKING, cast
 
+from plexutil.dto.dropdown_item_dto import DropdownItemDTO
+
 if TYPE_CHECKING:
     from pathlib import Path
 
@@ -67,11 +69,29 @@ class TVLibrary(Library):
     def update(self) -> None:
         super().update()
 
-    def modify(self) -> None:
-        super().modify()
+    def modify(self, is_modify_media: bool = False) -> None:
+        is_modify_media = Prompt.confirm_media_modification()
+        super().modify(is_modify_media=is_modify_media)
 
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=expect_input)
+
+    def display_media(self, expect_input: bool = False) -> Show:
+        title = "Choose Series to modify"
+        description = ""
+        dropdown = [
+            DropdownItemDTO(
+                display_name=series.title, value=series, is_default=False
+            )
+            for series in self.query()
+        ]
+
+        return Prompt.draw_dropdown(
+            title=title,
+            description=description,
+            dropdown=dropdown,
+            expect_input=expect_input,
+        ).value
 
     def create(self) -> None:
         super().create()

@@ -51,8 +51,7 @@ class MusicPlaylist(Library):
                 UserRequest.DISPLAY,
                 UserRequest.UPLOAD,
                 UserRequest.DOWNLOAD,
-                UserRequest.ADD_TO_PLAYLIST,
-                UserRequest.REMOVE_FROM_PLAYLIST,
+                UserRequest.MODIFY,
             ],
             plex_server=plex_server,
             name=name,
@@ -121,10 +120,38 @@ class MusicPlaylist(Library):
         raise NotImplementedError
 
     def update(self) -> None:
+        # None of MusicPlaylist operations benefit from a refresh/reload
+        return
+
+    def display_media(self, expect_input: bool = False) -> Track:
         raise NotImplementedError
 
-    def modify(self) -> None:
-        raise NotImplementedError
+    def modify(self, is_modify_media: bool = False) -> None:  # noqa: ARG002
+
+        action_add_display_name = "Add Songs To Playlist"
+        action_delete_display_name = "Delete Songs From Playlist"
+
+        actions = [
+            DropdownItemDTO(
+                display_name=action_add_display_name,
+                value=False,
+                is_default=True,
+            ),
+            DropdownItemDTO(
+                display_name=action_delete_display_name,
+                value=False,
+                is_default=False,
+            ),
+        ]
+        title = "Playlist Modification"
+        description = "Select from the supported modifications"
+        selected_action = Prompt.draw_dropdown(
+            title=title, description=description, dropdown=actions
+        )
+        if selected_action.display_name == action_add_display_name:
+            self.add_item()
+        elif selected_action.display_name == action_delete_display_name:
+            self.remove_item()
 
     def display(self, expect_input: bool = False) -> None:  # noqa: ARG002
         super().display(expect_input=True)
@@ -150,8 +177,7 @@ class MusicPlaylist(Library):
         self.playlist_name = selected_playlist.title
 
         if (
-            self.user_request is UserRequest.ADD_TO_PLAYLIST
-            or self.user_request is UserRequest.REMOVE_FROM_PLAYLIST
+            self.user_request is UserRequest.MODIFY
             or self.user_request is UserRequest.DELETE
         ):
             return

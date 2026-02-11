@@ -12,8 +12,6 @@ class UserRequest(Enum):
     UPLOAD = "upload"
     DISPLAY = "display"
     UPDATE = "update"
-    ADD_TO_PLAYLIST = "add_to_playlist"
-    REMOVE_FROM_PLAYLIST = "remove_from_playlist"
 
     @staticmethod
     # Forward Reference used here in type hint

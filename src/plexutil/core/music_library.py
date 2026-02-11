@@ -68,11 +68,14 @@ class MusicLibrary(Library):
     def remove_item(self) -> None:
         raise NotImplementedError
 
+    def display_media(self, expect_input: bool = False) -> Track:
+        raise NotImplementedError
+
     def update(self) -> None:
         super().update()
 
-    def modify(self) -> None:
-        super().modify()
+    def modify(self, is_modify_media: bool = False) -> None:
+        super().modify(is_modify_media=is_modify_media)
 
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=expect_input)

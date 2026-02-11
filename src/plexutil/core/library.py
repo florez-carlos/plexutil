@@ -87,12 +87,6 @@ class Library(ABC):
                 self.display(expect_input=True)
                 self.modify()
                 self.update()
-            case UserRequest.ADD_TO_PLAYLIST:
-                self.display(expect_input=True)
-                self.add_item()
-            case UserRequest.REMOVE_FROM_PLAYLIST:
-                self.display(expect_input=True)
-                self.remove_item()
 
     @abstractmethod
     def download(self) -> None:
@@ -111,26 +105,60 @@ class Library(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def query(self) -> list[Track] | list[Show] | list[Movie] | list[Playlist]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def display_media(
+        self, expect_input: bool = False
+    ) -> Movie | Show | Track:
+        raise NotImplementedError
+
+    @abstractmethod
     def update(self) -> None:
         section = self.get_section()
         section.update()
         section.refresh()
+        [media.refresh() for media in self.query()]
 
     @abstractmethod
-    def modify(self) -> None:
-        settings = LibrarySetting.get_all(self.library_type)
+    def modify(self, is_modify_media: bool = False) -> None:
 
-        self.assign_language(default=self.language, is_from_server=True)
-        self.get_section().edit(
-            agent=self.agent.get_value(),
-            scanner=self.scanner.get_value(),
-            language=self.language.get_value(),
-        )
+        if is_modify_media:
+            selected_media = self.display_media(expect_input=True)
 
-        PlexOps.set_library_settings(
-            section=self.get_section(),
-            settings=[x.to_dto(is_from_server=True) for x in settings],
-        )
+            language = self.language
+            language_override = selected_media.languageOverride
+            if language_override:
+                language = Language.get_from_str(language_override)
+
+            selected_language = Prompt.confirm_language(
+                default=language,
+                is_from_server=True,
+            )
+
+            if selected_language is self.language:
+                # Sets to Libary Default if selected language matches Library
+                selected_media.editAdvanced(languageOverride="")  # pyright: ignore [reportOptionalCall]
+            else:
+                selected_media.editAdvanced(
+                    languageOverride=selected_language.get_value()  # pyright: ignore [reportOptionalCall]
+                )
+
+        else:
+            settings = LibrarySetting.get_all(self.library_type)
+
+            self.assign_language(default=self.language, is_from_server=True)
+            self.get_section().edit(
+                agent=self.agent.get_value(),
+                scanner=self.scanner.get_value(),
+                language=self.language.get_value(),
+            )
+
+            PlexOps.set_library_settings(
+                section=self.get_section(),
+                settings=[x.to_dto(is_from_server=True) for x in settings],
+            )
 
     @abstractmethod
     def create(self) -> None:
@@ -435,10 +463,6 @@ class Library(ABC):
         )
 
         PlexUtilLogger.get_logger().debug(debug)
-
-    @abstractmethod
-    def query(self) -> list[Track] | list[Show] | list[Movie] | list[Playlist]:
-        raise NotImplementedError
 
     def log_library(
         self,

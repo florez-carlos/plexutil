@@ -68,51 +68,29 @@ class MovieLibrary(Library):
     def update(self) -> None:
         super().update()
 
-    def modify(self) -> None:
-
+    def modify(self, is_modify_media: bool = False) -> None:
         is_modify_media = Prompt.confirm_media_modification()
-
-        if is_modify_media:
-            title = "Choose Movie to modify"
-            description = ""
-            dropdown = [
-                DropdownItemDTO(
-                    display_name=movie.title, value=movie, is_default=False
-                )
-                for movie in self.query()
-            ]
-
-            selected_movie = Prompt.draw_dropdown(
-                title=title,
-                description=description,
-                dropdown=dropdown,
-            ).value
-
-            language = self.language
-            language_override = selected_movie.languageOverride
-            if language_override:
-                language = Language.get_from_str(language_override)
-
-            selected_language = Prompt.confirm_language(
-                default=language,
-                is_from_server=True,
-            )
-
-            if selected_language is self.language:
-                # Sets to Libary Default if selected language matches Library
-                selected_movie.editAdvanced(languageOverride="")
-            else:
-                selected_movie.editAdvanced(
-                    languageOverride=selected_language.get_value()
-                )
-
-            selected_movie.refresh()
-
-        else:
-            super().modify()
+        super().modify(is_modify_media=is_modify_media)
 
     def display(self, expect_input: bool = False) -> None:
         super().display(expect_input=expect_input)
+
+    def display_media(self, expect_input: bool = False) -> Movie:
+        title = "Choose Movie to modify"
+        description = ""
+        dropdown = [
+            DropdownItemDTO(
+                display_name=movie.title, value=movie, is_default=False
+            )
+            for movie in self.query()
+        ]
+
+        return Prompt.draw_dropdown(
+            title=title,
+            description=description,
+            dropdown=dropdown,
+            expect_input=expect_input,
+        ).value
 
     def create(self) -> None:
         super().create()
