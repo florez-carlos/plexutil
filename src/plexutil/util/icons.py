@@ -23,3 +23,7 @@ class Icons(Static):
         "► " if sys.stdout.encoding.lower().startswith("utf") else "> "
     )
     STAR = "●" if sys.stdout.encoding.lower().startswith("utf") else "*"
+    SUCCESS = (
+        "🟢" if sys.stdout.encoding.lower().startswith("utf") else "SUCCESS"
+    )
+    FAILURE = "🔴" if sys.stdout.encoding.lower().startswith("utf") else "FAIL"

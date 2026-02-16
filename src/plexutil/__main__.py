@@ -18,6 +18,7 @@ from plexutil.exception.library_poll_timeout_error import (
 from plexutil.exception.library_section_missing_error import (
     LibrarySectionMissingError,
 )
+from plexutil.exception.server_connection_error import ServerConnectionError
 from plexutil.exception.unexpected_argument_error import (
     UnexpectedArgumentError,
 )
@@ -46,9 +47,7 @@ def main() -> None:
             bootstrap_paths_dto.token_dir.unlink(missing_ok=True)
             plex_resources = Auth.get_resources(bootstrap_paths_dto)
 
-        plex_server = Prompt.confirm_server(
-            plex_resources=plex_resources
-        ).connect()
+        plex_server = Prompt.confirm_server(plex_resources=plex_resources)
 
         if user_request is UserRequest.SETTINGS:
             PlexOps.set_server_settings(plex_server=plex_server)
@@ -76,6 +75,14 @@ def main() -> None:
         sys.tracebacklimit = 0
         description = (
             f"\n{Icons.BANNER_LEFT}User Error{Icons.BANNER_RIGHT}\n{e!s}"
+        )
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
+
+    except ServerConnectionError as e:
+        sys.tracebacklimit = 0
+        description = (
+            f"\n{Icons.BANNER_LEFT}Connection Error{Icons.BANNER_RIGHT}\n{e!s}"
         )
         PlexUtilLogger.get_logger().error(description)
         sys.exit(1)

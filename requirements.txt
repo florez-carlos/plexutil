@@ -8,3 +8,4 @@ peewee==3.18.3
 colorlog==6.10.1
 pyjwt[crypto]==2.10.1
 ttkthemes==3.3.0
+yaspin==3.4.0

@@ -8,7 +8,11 @@ from argparse import RawTextHelpFormatter
 from importlib.metadata import PackageNotFoundError, version
 from typing import TYPE_CHECKING, cast
 
+from plexapi.exceptions import NotFound
+from yaspin import yaspin
+
 from plexutil.exception.device_error import DeviceError
+from plexutil.exception.server_connection_error import ServerConnectionError
 from plexutil.graphical.selection_window import SelectionWindow
 
 if TYPE_CHECKING:
@@ -20,6 +24,7 @@ if TYPE_CHECKING:
         ShowSection,
     )
     from plexapi.myplex import MyPlexResource
+    from plexapi.server import PlexServer
     from plexapi.video import Movie, Show
 
     from plexutil.core.library import Library
@@ -383,7 +388,7 @@ class Prompt(Static):
         ).value
 
     @staticmethod
-    def confirm_server(plex_resources: list[MyPlexResource]) -> MyPlexResource:
+    def confirm_server(plex_resources: list[MyPlexResource]) -> PlexServer:
         """
         Prompts user for a Plex Media Server selection
 
@@ -392,7 +397,9 @@ class Prompt(Static):
             anything other than a Plex Media Server is filtered
 
         Returns:
-            MyPlexResource: The chosen Plex Media Server
+            PlexServer: The chosen Plex Media Server
+        Raises:
+            ServerConnectionError: If unable to connect
         """
         is_default = True
         dropdown = []
@@ -406,11 +413,37 @@ class Prompt(Static):
                 is_default = False
                 dropdown.append(item)
 
-        return Prompt.draw_dropdown(
+        plex_resource = Prompt.draw_dropdown(
             title="Available Servers",
             description="Choose a server to connect to",
             dropdown=dropdown,
         ).value
+
+        with yaspin(text="Connecting", color="yellow") as spinner:
+            try:
+                plex_server = plex_resource.connect()
+            except NotFound as e:
+                spinner.fail(f"{Icons.FAILURE} Connection Failure")
+                description = (
+                    f"Failed to connect to: {plex_resource.name} "
+                    f"({plex_resource.device})\n"
+                    f"Reason: [Unavailable/Not Found]"
+                )
+                raise ServerConnectionError(description) from e
+            except Exception as e:
+                spinner.fail(f"{Icons.FAILURE} Connection Failure")
+                description = (
+                    f"Failed to connect to: {plex_resource.name} "
+                    f"({plex_resource.device})\n"
+                    f"Reason: [Unknown]"
+                )
+                raise ServerConnectionError(description) from e
+
+            spinner.ok(f"{Icons.SUCCESS} Connected")
+
+        description = f"Connected to: {plex_server}"
+        PlexUtilLogger.get_logger().debug(description)
+        return plex_server
 
     @staticmethod
     def confirm_plex_media(
