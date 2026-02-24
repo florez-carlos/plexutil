@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from yaspin import yaspin
+
 from plexutil.core.prompt import Prompt
 from plexutil.enums.agent import Agent
 from plexutil.enums.language import Language
@@ -116,10 +118,36 @@ class Library(ABC):
 
     @abstractmethod
     def update(self) -> None:
+        start = time.time()
         section = self.get_section()
         section.update()
         section.refresh()
         [media.refresh() for media in self.query()]
+
+        is_updating = any(
+            "updating" in x.title.lower() or "scanning" in x.title.lower()
+            for x in self.plex_server.activities
+        )
+        while is_updating:
+            with yaspin(text="Updating", color="yellow") as spinner:
+                elapsed = time.time() - start
+                spinner.write(
+                    f"# of items: {len(self.query())!s} [{elapsed:.2f}s]"
+                )
+                is_updating = any(
+                    "updating" in x.title.lower()
+                    or "scanning" in x.title.lower()
+                    for x in self.plex_server.activities
+                )
+                if not is_updating:
+                    spinner.ok(f"{Icons.SUCCESS} Updated")
+
+        elapsed = time.time() - start
+        description = (
+            f"\nFinished update in {elapsed:.2f}s\n"
+            f"# of items: {len(self.query())!s}"
+        )
+        PlexUtilLogger.get_console_logger().info(description)
 
     @abstractmethod
     def modify(self, is_modify_media: bool = False) -> None:
