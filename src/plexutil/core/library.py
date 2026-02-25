@@ -118,6 +118,12 @@ class Library(ABC):
 
     @abstractmethod
     def update(self) -> None:
+        """
+        Updates and Refreshes a Library, including each of its media items
+
+        Returns:
+            None: This method does not return a value
+        """
         start = time.time()
         section = self.get_section()
         section.update()
@@ -151,7 +157,12 @@ class Library(ABC):
 
     @abstractmethod
     def modify(self, is_modify_media: bool = False) -> None:
+        """
+        Modifies a Library
 
+        Returns:
+            None: This method does not return a value
+        """
         if is_modify_media:
             selected_media = self.display_media(expect_input=True)
 

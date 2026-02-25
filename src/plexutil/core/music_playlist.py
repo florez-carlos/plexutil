@@ -47,6 +47,7 @@ class MusicPlaylist(Library):
     ) -> None:
         super().__init__(
             supported_requests=[
+                UserRequest.CREATE,
                 UserRequest.DELETE,
                 UserRequest.DISPLAY,
                 UserRequest.UPLOAD,
@@ -85,8 +86,14 @@ class MusicPlaylist(Library):
                     f"{Icons.WARNING} Song not found: {song!s} | Skipping..."
                 )
                 PlexUtilLogger.get_logger().warning(description)
-        playlist = self.get_section().playlist(self.playlist_name)
-        playlist.addItems(tracks)
+
+        if self.user_request is UserRequest.CREATE:
+            self.get_section().createPlaylist(
+                title=self.playlist_name, items=tracks
+            )
+        else:
+            playlist = self.get_section().playlist(self.playlist_name)
+            playlist.addItems(tracks)
 
     def remove_item(self) -> None:
         playlist = self.get_section().playlist(self.playlist_name)
@@ -117,11 +124,40 @@ class MusicPlaylist(Library):
         playlist.removeItems(tracks)
 
     def create(self) -> None:
-        raise NotImplementedError
+
+        op_type = "Create Playlist"
+
+        self.display(expect_input=True)
+
+        text = Prompt.confirm_text(
+            "Playlist Name",
+            "Playlist requires a name",
+            "What should the playlist name be",
+        )
+        if not text:
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=self.library_type,
+                description="No name supplied?",
+            )
+        self.playlist_name = text[0]
+        exists = any(
+            x.name == self.playlist_name for x in self.__get_all_playlists()
+        )
+        if exists:
+            description = (
+                f"{self.playlist_name} already exists in Library ({self.name})"
+            )
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=self.library_type,
+                description=description,
+            )
+
+        self.add_item()
 
     def update(self) -> None:
-        # None of MusicPlaylist operations benefit from a refresh/reload
-        return
+        raise NotImplementedError
 
     def display_media(self, expect_input: bool = False) -> Track:
         raise NotImplementedError
@@ -158,6 +194,7 @@ class MusicPlaylist(Library):
         if (
             self.user_request is UserRequest.DOWNLOAD
             or self.user_request is UserRequest.UPLOAD
+            or self.user_request is UserRequest.CREATE
         ):
             return
         dropdown = []

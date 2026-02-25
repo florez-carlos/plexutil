@@ -7,6 +7,7 @@ from plexutil.core.auth import Auth
 from plexutil.core.library_factory import LibraryFactory
 from plexutil.core.prompt import Prompt
 from plexutil.enums.user_request import UserRequest
+from plexutil.exception.auth_error import AuthError
 from plexutil.exception.bootstrap_error import BootstrapError
 from plexutil.exception.library_illegal_state_error import (
     LibraryIllegalStateError,
@@ -70,6 +71,15 @@ def main() -> None:
             )
             PlexUtilLogger.get_logger().exception(description)
             raise
+
+    except AuthError as e:
+        sys.tracebacklimit = 0
+        description = (
+            f"\n{Icons.BANNER_LEFT}Authentication "
+            f"Error{Icons.BANNER_RIGHT}\n{e!s}"
+        )
+        PlexUtilLogger.get_logger().error(description)
+        sys.exit(1)
 
     except UserError as e:
         sys.tracebacklimit = 0
