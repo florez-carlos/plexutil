@@ -157,7 +157,9 @@ class MusicPlaylist(Library):
         self.add_item()
 
     def update(self) -> None:
-        raise NotImplementedError
+        # None of MusicPlaylist operations benefit from a refresh/reload
+        # Cannot be NotImplemented!
+        return
 
     def display_media(self, expect_input: bool = False) -> Track:
         raise NotImplementedError
