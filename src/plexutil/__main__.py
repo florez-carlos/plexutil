@@ -38,7 +38,7 @@ def main() -> None:
         bootstrap_paths_dto = FileImporter.bootstrap()
         user_request = Prompt.confirm_user_request()
         try:
-            plex_resources = Auth.get_resources(bootstrap_paths_dto)
+            plex_account = Auth.get_account(bootstrap_paths_dto)
         except Unauthorized:
             description = f"{Icons.WARNING} Reauthentication required\n"
             PlexUtilLogger.get_logger().warning(description)
@@ -46,12 +46,46 @@ def main() -> None:
             bootstrap_paths_dto.private_key_dir.unlink(missing_ok=True)
             bootstrap_paths_dto.public_key_dir.unlink(missing_ok=True)
             bootstrap_paths_dto.token_dir.unlink(missing_ok=True)
-            plex_resources = Auth.get_resources(bootstrap_paths_dto)
+            plex_account = Auth.get_account(bootstrap_paths_dto)
 
-        plex_server = Prompt.confirm_server(plex_resources=plex_resources)
+        plex_server = Prompt.confirm_server(plex_account=plex_account)
+
+        release = plex_server.checkForUpdate()
+        current_version = plex_server.version
+
+        if release and user_request is not UserRequest.CHANGELOG:
+            release_version = release.version
+            description = (
+                f"{Icons.WARNING} A Server update is available: "
+                f"{release_version} (Current: {current_version})\n"
+                f"plexutil changelog (to display changes)"
+            )
+            PlexUtilLogger.get_logger().warning(description)
 
         if user_request is UserRequest.SETTINGS:
             PlexOps.set_server_settings(plex_server=plex_server)
+        elif user_request is UserRequest.CHANGELOG:
+            if release:
+                release_version = release.version
+                added = release.added
+                fixed = release.fixed
+
+                description = (
+                    f"{Icons.BANNER_LEFT}{release_version}{Icons.BANNER_RIGHT}\n"
+                    f"{Icons.BANNER_LEFT}\nADDED\n{Icons.BANNER_LEFT}\n"
+                    f"{added}\n"
+                    f"{Icons.BANNER_LEFT}\nFIXED\n{Icons.BANNER_LEFT}\n"
+                    f"{fixed}"
+                )
+
+            else:
+                description = (
+                    f"{Icons.SUCCESS} Server is up-to-date ({current_version})"
+                )
+
+            PlexUtilLogger.get_logger().info(description)
+            sys.exit(0)
+
         else:
             library = LibraryFactory.get(
                 user_request=user_request,

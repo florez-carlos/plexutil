@@ -1,7 +1,7 @@
 import uuid
 from importlib.metadata import PackageNotFoundError, version
 
-from plexapi.myplex import MyPlexAccount, MyPlexJWTLogin, MyPlexResource
+from plexapi.myplex import MyPlexAccount, MyPlexJWTLogin
 
 from plexutil.dto.bootstrap_paths_dto import BootstrapPathsDTO
 from plexutil.exception.auth_error import AuthError
@@ -13,9 +13,9 @@ from plexutil.util.icons import Icons
 
 class Auth(Static):
     @staticmethod
-    def get_resources(
+    def get_account(
         bootstrap_paths_dto: BootstrapPathsDTO,
-    ) -> list[MyPlexResource]:
+    ) -> MyPlexAccount:
         """
         Login to Plex and returns a list of all the available Plex Resources
         (Servers and Clients)
@@ -82,8 +82,4 @@ class Auth(Static):
         description = "Auth exists"
         PlexUtilLogger.get_logger().debug(description)
         token, _ = FileImporter.get_jwt(bootstrap_paths_dto.token_dir)
-        account = MyPlexAccount(token=token)
-        resources = account.resources()
-        description = f"Available Resources: {resources}"
-        PlexUtilLogger.get_logger().debug(description)
-        return resources
+        return MyPlexAccount(token=token)

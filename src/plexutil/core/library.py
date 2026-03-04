@@ -146,6 +146,7 @@ class Library(ABC):
                     for x in self.plex_server.activities
                 )
                 if not is_updating:
+                    spinner.text = ""
                     spinner.ok(f"{Icons.SUCCESS} Updated")
 
         elapsed = time.time() - start

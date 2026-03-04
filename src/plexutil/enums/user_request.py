@@ -12,6 +12,7 @@ class UserRequest(Enum):
     UPLOAD = "upload"
     DISPLAY = "display"
     UPDATE = "update"
+    CHANGELOG = "changelog"
 
     @staticmethod
     # Forward Reference used here in type hint

@@ -23,7 +23,7 @@ if TYPE_CHECKING:
         MusicSection,
         ShowSection,
     )
-    from plexapi.myplex import MyPlexResource
+    from plexapi.myplex import MyPlexAccount
     from plexapi.server import PlexServer
     from plexapi.video import Movie, Show
 
@@ -388,7 +388,7 @@ class Prompt(Static):
         ).value
 
     @staticmethod
-    def confirm_server(plex_resources: list[MyPlexResource]) -> PlexServer:
+    def confirm_server(plex_account: MyPlexAccount) -> PlexServer:
         """
         Prompts user for a Plex Media Server selection
 
@@ -403,10 +403,17 @@ class Prompt(Static):
         """
         is_default = True
         dropdown = []
+        plex_resources = plex_account.resources()
+        description = f"Available Resources: {plex_resources}"
+        PlexUtilLogger.get_logger().debug(description)
+
+        pass_icon = f"{Icons.PASS} " if plex_account.subscriptionActive else ""
+
         for resource in plex_resources:
+            display_name = f"{pass_icon}{resource.name} ({resource.device})"
             if resource.product == "Plex Media Server":
                 item = DropdownItemDTO(
-                    display_name=f"{resource.name} ({resource.device})",
+                    display_name=display_name,
                     value=resource,
                     is_default=is_default,
                 )
@@ -423,6 +430,7 @@ class Prompt(Static):
             try:
                 plex_server = plex_resource.connect()
             except NotFound as e:
+                spinner.text = ""
                 spinner.fail(f"{Icons.FAILURE} Connection Failure")
                 description = (
                     f"Failed to connect to: {plex_resource.name} "
@@ -431,6 +439,7 @@ class Prompt(Static):
                 )
                 raise ServerConnectionError(description) from e
             except Exception as e:
+                spinner.text = ""
                 spinner.fail(f"{Icons.FAILURE} Connection Failure")
                 description = (
                     f"Failed to connect to: {plex_resource.name} "
@@ -439,6 +448,7 @@ class Prompt(Static):
                 )
                 raise ServerConnectionError(description) from e
 
+            spinner.text = ""
             spinner.ok(f"{Icons.SUCCESS} Connected")
 
         description = f"Connected to: {plex_server}"
@@ -560,11 +570,11 @@ class Prompt(Static):
 
             space = " " * offset
             if dropdown_count < max_single_space:
-                number_format = f"[  {dropdown_count}] "
+                number_format = f"[  {dropdown_count}]"
             elif dropdown_count < max_double_space:
-                number_format = f"[ {dropdown_count}] "
+                number_format = f"[ {dropdown_count}]"
             else:
-                number_format = f"[{dropdown_count}] "
+                number_format = f"[{dropdown_count}]"
 
             if item.is_default and expect_input:
                 display_name = f"{item.display_name} {Icons.STAR}"

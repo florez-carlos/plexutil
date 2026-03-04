@@ -27,3 +27,6 @@ class Icons(Static):
         "🟢" if sys.stdout.encoding.lower().startswith("utf") else "SUCCESS"
     )
     FAILURE = "🔴" if sys.stdout.encoding.lower().startswith("utf") else "FAIL"
+    PASS = (
+        "🎟" if sys.stdout.encoding.lower().startswith("utf") else "*PlexPass*"
+    )
