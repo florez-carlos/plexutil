@@ -15,7 +15,7 @@ class SelectionWindow:
         list_title: str = "Available",
         command: str = "Add",
         default_width: int = 500,
-        default_height: int = 750,
+        default_height: int = 850,
     ) -> None:
         self.root = ThemedTk(theme="arc")
         self.items = [x.display_name for x in items]
