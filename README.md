@@ -25,7 +25,7 @@ CLI for Plex Media Server.
   * [Deleting a media library](#deleting-a-media-library-or-music-playlist)
   * [Exporting/Importing Music Playlists](#exportingimporting-music-playlists)
 * [Development](#development)
-* [Log Location](#log-location)
+* [Logs](#logs)
 
 
 ## Installation
@@ -76,18 +76,13 @@ plexutil modify
 source init.sh
 ```
 
-## Log Location
-The log directory of Plexutil is located:
+## Logs
+
 > [!NOTE]
-> Replace <YOUR_USER> with your Windows UserName
-- Windows
-```bash
-C:\Users\<YOUR_USER>\Documents\plexutil\log
-```
-- Linux
-```bash
-$HOME/plexutil/log
-```
+> Logs can be found in:
+> - Windows -> C:\Users\User\Documents\crcutil\log
+> - Linux -> $XDG_STATE_HOME/crcutil/log
+> - MacOS -> ~/Library/Application Support/crcutil/log
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
