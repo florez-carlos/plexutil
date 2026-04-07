@@ -80,9 +80,9 @@ source init.sh
 
 > [!NOTE]
 > Logs can be found in:
-> - Windows -> C:\Users\User\Documents\crcutil\log
-> - Linux -> $XDG_STATE_HOME/crcutil/log
-> - MacOS -> ~/Library/Application Support/crcutil/log
+> - Windows -> C:\Users\User\Documents\plexutil\log
+> - Linux -> $XDG_STATE_HOME/plexutil/log
+> - MacOS -> ~/Library/Application Support/plexutil/log
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
