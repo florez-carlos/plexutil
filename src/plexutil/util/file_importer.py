@@ -81,8 +81,11 @@ class FileImporter(Static):
                     description = "Could not locate Documents folder"
                     raise FileNotFoundError(description)
 
+            elif system == "Darwin":
+                home_folder = Path.home() / "Library/Application Support"
+
             elif system == "Linux":
-                home_folder = os.getenv("HOME") or ""
+                home_folder = Path.home() / ".local/state"
                 session = os.getenv("XDG_SESSION_TYPE") or ""
                 session = session.lower()
 

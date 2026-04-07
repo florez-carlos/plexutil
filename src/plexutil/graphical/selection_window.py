@@ -47,7 +47,10 @@ class SelectionWindow:
         self.update_listbox()
 
         # Bind events
-        self.search_var.trace("w", lambda *args: self.filter_list())  # noqa: ARG005
+
+        # https://github.com/orgs/Homebrew/discussions/5809#discussioncomment-11638857
+        # trace("w") not working in MacOS >= 3.12
+        self.search_var.trace_add("write", lambda *args: self.filter_list())  # noqa: ARG005
         self.tree.bind("<<TreeviewSelect>>", self.update_status)
         self.added_tree.bind("<<TreeviewSelect>>", self.update_added_status)
 

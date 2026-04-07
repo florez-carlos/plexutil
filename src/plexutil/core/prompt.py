@@ -812,7 +812,7 @@ class Prompt(Static):
     def __halt_non_interactive() -> None:
         system = platform.system()
 
-        if system == "Windows":
+        if system in {"Windows", "Darwin"}:
             return
         elif system == "Linux":
             session = os.getenv("XDG_SESSION_TYPE") or ""
