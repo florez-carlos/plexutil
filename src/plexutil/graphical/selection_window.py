@@ -14,8 +14,6 @@ class SelectionWindow:
         recipient_label: str = "recipient",
         list_title: str = "Available",
         command: str = "Add",
-        default_width: int = 500,
-        default_height: int = 850,
     ) -> None:
         self.root = ThemedTk(theme="arc")
         self.items = [x.display_name for x in items]
@@ -25,7 +23,9 @@ class SelectionWindow:
         self.list_title = list_title
         self.command = command
         self.root.title(f"Select {self.items_label}")
-        self.root.geometry(f"{default_width!s}x{default_height!s}")
+        # Adjusts automatically based on the size of nested elements
+        # if wanting to set the window size manually: "400x500"
+        self.root.geometry("")
 
         self.all_items = self.items[:]
         self.filtered_items = self.items[:]
@@ -39,6 +39,9 @@ class SelectionWindow:
         # Create styles
         style = ttk.Style()
         style.configure("Selected.TLabel", foreground="green")
+
+        # Set all dropdown items row height
+        style.configure("Treeview", rowheight=60)
 
         # Create widgets
         self.create_widgets()
