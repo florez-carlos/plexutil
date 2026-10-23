@@ -30,7 +30,7 @@ CLI for Plex Media Server.
 
 ## Installation
 > [!NOTE]
-> - Requires Python 3.11+<br >
+> - Requires Python 3.12+<br >
 > - Requires pip
 ```bash
 pip install plexutil
