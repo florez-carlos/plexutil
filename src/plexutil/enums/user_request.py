@@ -4,15 +4,30 @@ from enum import Enum
 
 
 class UserRequest(Enum):
-    SETTINGS = "settings"
-    CREATE = "create"
-    MODIFY = "modify"
-    DELETE = "delete"
-    DOWNLOAD = "download"
-    UPLOAD = "upload"
-    DISPLAY = "display"
-    UPDATE = "update"
-    CHANGELOG = "changelog"
+    SETTINGS = ("settings", "Modify Plex Server Settings")
+    CREATE = ("create", "Movie, Music, TV Libraries or Music Playlist")
+    MODIFY = ("modify", "An existing library or music playlist")
+    DELETE = ("delete", "An existing library or music playlist")
+    DOWNLOAD = (
+        "download",
+        "A music playlist, saved as playlist.db file in current dir",
+    )
+    UPLOAD = (
+        "upload",
+        "A music playlist, reads a playlist.db file in current dir",
+    )
+    DISPLAY = ("display", "List the items in a library")
+    UPDATE = (
+        "update",
+        (
+            "Perform an update on a library and poll for # of items "
+            "while update is in progress"
+        ),
+    )
+    CHANGELOG = (
+        "changelog",
+        "Display a server update changelog if an update is available",
+    )
 
     @staticmethod
     # Forward Reference used here in type hint
@@ -20,17 +35,18 @@ class UserRequest(Enum):
         return list(UserRequest)
 
     @staticmethod
-    def get_user_request_from_str(
-        user_request_candidate: str,
-    ) -> UserRequest:
+    def get_from_str(candidate: str) -> UserRequest:
         requests = UserRequest.get_all()
-        user_request_candidate = user_request_candidate.lower()
 
         for request in requests:
-            if (
-                user_request_candidate == request.value
-                or user_request_candidate.replace("_", " ") == request.value
-            ):
+            if candidate.lower() == request.get_value().lower():
                 return request
 
-        raise ValueError("Request not supported: " + user_request_candidate)
+        description = f"Request not supported: {candidate}"
+        raise ValueError(description)
+
+    def get_display_name(self) -> str:
+        return self.value[1]
+
+    def get_value(self) -> str:
+        return self.value[0]

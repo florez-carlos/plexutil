@@ -16,7 +16,7 @@ from plexutil.exception.server_connection_error import ServerConnectionError
 from plexutil.graphical.selection_window import SelectionWindow
 
 if TYPE_CHECKING:
-    from plexapi.audio import Audio, Playlist
+    from plexapi.audio import Audio
     from plexapi.library import (
         LibrarySection,
         MovieSection,
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
         ShowSection,
     )
     from plexapi.myplex import MyPlexAccount
+    from plexapi.playlist import Playlist
     from plexapi.server import PlexServer
     from plexapi.video import Movie, Show
 
@@ -63,7 +64,14 @@ class Prompt(Static):
         request_help_str = "Supported Requests: \n"
 
         for request in UserRequest.get_all():
-            request_help_str += "-> " + request.value + "\n"
+            request_help_str += (
+                "-> "
+                + request.get_value().upper()
+                + "    ("
+                + request.get_display_name()
+                + ")"
+                + "\n"
+            )
 
         parser.add_argument(
             "request",
@@ -102,11 +110,14 @@ class Prompt(Static):
             PlexUtilLogger.get_logger().debug(debug)
             PlexUtilLogger.get_logger().info(plexutil_version)
             sys.exit(0)
+        elif not request:
+            PlexUtilLogger.get_console_logger().info(request_help_str)
+            sys.exit(0)
 
         debug = f"Received a User Request: {request or None}"
         PlexUtilLogger.get_logger().debug(debug)
 
-        return UserRequest.get_user_request_from_str(request)
+        return UserRequest.get_from_str(request)
 
     @staticmethod
     def confirm_library_setting(
@@ -317,7 +328,7 @@ class Prompt(Static):
 
         return Prompt.draw_dropdown(
             title="Library Type",
-            description=f"Choose a Library Type to {user_request.value}",
+            description=f"Choose a Library Type to {user_request.get_value()}",
             dropdown=dropdown,
             is_multi_column=is_multi_column,
             expect_input=expect_input,
