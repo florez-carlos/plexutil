@@ -9,14 +9,6 @@ Manage a Plex Server via CLI
 ![CLI](https://img.shields.io/badge/Interface-CLI-important)
 
 
-> [!NOTE]
-> Installation is supported only for the following: 
-> - Windows (amd64)
-> - Linux (amd64)
->    - X11
->    - Wayland
-
-
 ## Table of Contents
 
 * [Installation](#installation)
