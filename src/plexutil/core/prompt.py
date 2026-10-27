@@ -57,8 +57,9 @@ class Prompt(Static):
         Returns:
             UserRequest: Based on user's input
         """
+        description_str = "Plexutil\nManage a Plex Server via CLI"
         parser = argparse.ArgumentParser(
-            description="Plexutil", formatter_class=RawTextHelpFormatter
+            description=description_str, formatter_class=RawTextHelpFormatter
         )
 
         request_help_str = "Supported Requests: \n"
@@ -111,7 +112,8 @@ class Prompt(Static):
             PlexUtilLogger.get_logger().info(plexutil_version)
             sys.exit(0)
         elif not request:
-            PlexUtilLogger.get_console_logger().info(request_help_str)
+            msg = f"\n{description_str}\n\n{request_help_str}"
+            PlexUtilLogger.get_console_logger().info(msg)
             sys.exit(0)
 
         debug = f"Received a User Request: {request or None}"
