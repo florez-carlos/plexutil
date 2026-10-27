@@ -85,5 +85,4 @@ source init.sh
 > - MacOS -> ~/Library/Application Support/plexutil/log
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
-
+[GNU GPLv3](https://github.com/florez-carlos/plexutil/blob/main/LICENSE)
