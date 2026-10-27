@@ -123,6 +123,25 @@ class MusicPlaylist(Library):
 
         playlist.removeItems(tracks)
 
+    def rename(self, name: str) -> None:
+
+        op_type = f"Rename Playlist ({self.playlist_name})"
+
+        if not name:
+            raise LibraryOpError(
+                op_type=op_type,
+                library_type=self.library_type,
+                description="No name supplied?",
+            )
+
+        playlist = self.get_section().playlist(self.playlist_name)
+        playlist.editTitle(name)
+
+        description = f"Renamed Playlist: {self.playlist_name} -> {name}"
+        PlexUtilLogger.get_logger().debug(description)
+
+        self.playlist_name = name
+
     def create(self) -> None:
 
         op_type = "Create Playlist"
@@ -168,6 +187,7 @@ class MusicPlaylist(Library):
 
         action_add_display_name = "Add Songs To Playlist"
         action_delete_display_name = "Delete Songs From Playlist"
+        action_rename_display_name = "Rename Playlist"
 
         actions = [
             DropdownItemDTO(
@@ -177,6 +197,11 @@ class MusicPlaylist(Library):
             ),
             DropdownItemDTO(
                 display_name=action_delete_display_name,
+                value=False,
+                is_default=False,
+            ),
+            DropdownItemDTO(
+                display_name=action_rename_display_name,
                 value=False,
                 is_default=False,
             ),
@@ -190,6 +215,15 @@ class MusicPlaylist(Library):
             self.add_item()
         elif selected_action.display_name == action_delete_display_name:
             self.remove_item()
+        elif selected_action.display_name == action_rename_display_name:
+            description = (
+                f"Enter a new name for this playlist: {self.playlist_name}"
+            )
+            text = Prompt.confirm_text(
+                title="Rename Playlist", description=description, question=""
+            )
+            name = " ".join(text)
+            self.rename(name)
 
     def display(self, expect_input: bool = False) -> None:  # noqa: ARG002
         super().display(expect_input=True)

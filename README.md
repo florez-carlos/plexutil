@@ -1,6 +1,6 @@
 # Plexutil
 
-CLI for Plex Media Server.
+Manage a Plex Server via CLI
 
 ![PyPI Version](https://img.shields.io/pypi/v/plexutil)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
@@ -31,9 +31,9 @@ CLI for Plex Media Server.
 ## Installation
 > [!NOTE]
 > - Requires Python 3.12+<br >
-> - Requires pip
+> - Requires pipx
 ```bash
-pip install plexutil
+pipx install plexutil
 ```
 
 ## Usage
@@ -81,7 +81,7 @@ source init.sh
 > [!NOTE]
 > Logs can be found in:
 > - Windows -> C:\Users\User\Documents\plexutil\log
-> - Linux -> $XDG_STATE_HOME/plexutil/log
+> - Linux -> $HOME/.local/state/plexutil/log
 > - MacOS -> ~/Library/Application Support/plexutil/log
 
 ## License
