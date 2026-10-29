@@ -3,7 +3,7 @@
 Manage a Plex Server via CLI
 
 ![PyPI Version](https://img.shields.io/pypi/v/plexutil)
-![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![Python](https://img.shields.io/badge/Python-3.12+-blue)
 ![Platform](https://img.shields.io/badge/Platform-Cross--Platform-success)
 ![PyPI Status](https://img.shields.io/pypi/status/plexutil)
 ![CLI](https://img.shields.io/badge/Interface-CLI-important)
